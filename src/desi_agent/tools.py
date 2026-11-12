@@ -53,7 +53,9 @@ def _get_account_balance(account_type: str) -> dict:
     return {"account_type": account_type, "balance_inr": base, "as_of": "2026-11-12"}
 
 
-_MERCHANTS = ["Swiggy", "Amazon", "IRCTC", "Airtel", "BigBasket", "Zomato", "Uber", "Salary ACME Ltd", "UPI ramesh@okaxis", "Electricity BESCOM"]
+_DEBITS = ["Swiggy", "Amazon", "IRCTC", "Airtel recharge", "BigBasket", "Zomato", "Uber", "Electricity BESCOM",
+           "UPI to ramesh@okaxis", "Netflix", "Apollo Pharmacy", "Petrol HPCL"]
+_CREDITS = ["Salary ACME Ltd", "Refund Amazon", "UPI from priya@ybl", "Cashback Paytm"]
 
 
 def _get_recent_transactions(count: int, txn_type: str = "all") -> dict:
@@ -61,14 +63,16 @@ def _get_recent_transactions(count: int, txn_type: str = "all") -> dict:
     i = 0
     while len(out) < count and i < 200:
         h = _h("txn", i)
-        kind = "credit" if h % 5 == 0 else "debit"
+        kind = "credit" if h % 6 == 0 else "debit"
         if txn_type in ("all", kind):
+            names = _CREDITS if kind == "credit" else _DEBITS
+            amount = 20000 + (h % 6000000) / 100 if names is _CREDITS and h % 4 == 0 else 50 + (h % 500000) / 100
             out.append({
                 "transaction_id": f"TXN{100000 + (h % 900000):06d}",
                 "date": f"2026-11-{12 - (i % 11):02d}",
                 "type": kind,
-                "amount_inr": round(50 + (h % 500000) / 100, 2),
-                "description": _MERCHANTS[h % len(_MERCHANTS)],
+                "amount_inr": round(amount, 2),
+                "description": names[(h // 7) % len(names)],
             })
         i += 1
     return {"transactions": out}
