@@ -40,7 +40,7 @@ def values(text: str) -> set[str]:
     out = set()
     for v in VALUE_RX.findall(t):
         v = v.rstrip(".,").replace(",", "")
-        if v and (not v[0].isdigit() or len(v.replace(".", "")) >= 2):
+        if v:  # single digits too: "last 5 transactions" -> count=5 must survive
             out.add(v.lower())
     return out
 

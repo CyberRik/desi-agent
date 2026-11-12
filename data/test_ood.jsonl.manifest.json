@@ -1,0 +1,9 @@
+{
+  "inp": "data/test.jsonl",
+  "out": "/kaggle/working/out/data/test_ood.jsonl",
+  "model": "CohereLabs/aya-expanse-8b",
+  "seed": 1234,
+  "git_sha": "3accc962a70241dded08a08ca5ddfe1cfb948250",
+  "kept": 436,
+  "rejected": 50
+}
