@@ -56,8 +56,8 @@ W = "/tmp/desi-agent"
 sh(["git", "clone", "-q", "-b", BRANCH, {repo_url!r}, W])
 sh(["git", "-C", W, "log", "--oneline", "-1"])
 sh("pip install -q uv")
-sh("uv venv -q -p 3.12 /tmp/venv")
-sh("VIRTUAL_ENV=/tmp/venv uv pip install -q --index-strategy unsafe-best-match "
+sh("env -u UV_SYSTEM_PYTHON -u UV_PYTHON uv venv -q -p 3.12 --python-preference managed /tmp/venv")
+sh("uv pip install --python /tmp/venv/bin/python -q --index-strategy unsafe-best-match "
    "--extra-index-url https://download.pytorch.org/whl/cu126 torch==2.11.0 -e '.[train]'", cwd=W)
 py = "/tmp/venv/bin/python"
 sh([py, "-c", "import torch, transformers, peft, agenttune; print(torch.__version__, transformers.__version__, "
