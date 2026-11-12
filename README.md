@@ -37,7 +37,7 @@ task success · tool-selection accuracy · exact-args accuracy · schema-valid r
 | `src/desi_agent/data`, `eval` | data generation, curation, splits, metrics, eval runner |
 | `src/desi_agent/train` | policy loading, AgentTune SFT / GRPO |
 | `space/` | Gradio demo |
-| `docs/PLAN.md` | tasks + owners · `docs/DECISIONS.md` decision log · `docs/HACKATHON.md` rules |
+| `docs/PLAN.md` | tasks + owners · `docs/DECISIONS.md` decision log · `docs/HACKATHON.md` rules · `docs/COMPUTE.md` GPU budget |
 | `CLAUDE.md` | working rules for collaborators (human and AI) |
 
 ## Quickstart

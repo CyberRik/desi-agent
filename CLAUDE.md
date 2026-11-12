@@ -122,7 +122,7 @@ If a contract is wrong, raise it in a `CONTRACT:` PR. Don't silently work around
 ## 7. Engineering conventions
 
 - Python 3.12 (AgentTune requires >=3.12). `uv` for envs: `uv venv -p 3.12 && uv pip install -e .[dev]`.
-- Local machine (R) has only a 4 GB GPU, so it is for CPU work and smoke tests. Real training and
+- Local machine (R) has only a 4 GB GPU, so it is for CPU work and smoke tests. GPU budget and who launches paid jobs: `docs/COMPUTE.md` (read before any GPU run).
   inference run on Kaggle / Colab / HF ZeroGPU. Notebooks must run top-to-bottom on a fresh Kaggle T4x2.
 - Seeds fixed (`SEED=1234`), every script takes `--out` and writes a JSON manifest
   (inputs, git sha, model id, seed) next to its output.
