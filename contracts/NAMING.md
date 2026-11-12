@@ -1,7 +1,6 @@
 # NAMING
 
-Fill in `HF_NS` once (the HF user or org that will own everything; both humans need write access,
-so an HF org is easiest). Record it in `docs/DECISIONS.md`.
+**`HF_NS` = `ToolWallah`** (HF organization; both humans are members). All repos below live there.
 
 ## Model tags (used in `results/<model_tag>/`)
 | tag | what |
@@ -14,13 +13,13 @@ so an HF org is easiest). Record it in `docs/DECISIONS.md`.
 ## Hugging Face repos (all public, un-gated)
 | repo | type | owner |
 |---|---|---|
-| `HF_NS/desi-agent-tinyaya-sft-lora` | model (adapter) | F |
-| `HF_NS/desi-agent-tinyaya-sft-grpo-lora` | model (adapter) | F |
-| `HF_NS/desi-agent-tinyaya-merged` | model (best, merged) | F |
-| `HF_NS/desi-bank-toolcalls` | dataset (train/val/test + raw teacher data) | R |
-| `HF_NS/desi-agent-eval-traces` | dataset (results + traces for every model tag) | R |
-| `HF_NS/desi-agent-training-logs` | dataset (trainer logs, configs, manifests) | F |
-| `HF_NS/desi-agent-demo` | space (Gradio) | F |
+| `ToolWallah/desi-agent-tinyaya-sft-lora` | model (adapter) | F |
+| `ToolWallah/desi-agent-tinyaya-sft-grpo-lora` | model (adapter) | F |
+| `ToolWallah/desi-agent-tinyaya-merged` | model (best, merged) | F |
+| `ToolWallah/desi-bank-toolcalls` | dataset (train/val/test + raw teacher data) | R |
+| `ToolWallah/desi-agent-eval-traces` | dataset (results + traces for every model tag) | R |
+| `ToolWallah/desi-agent-training-logs` | dataset (trainer logs, configs, manifests) | F |
+| `ToolWallah/desi-agent-demo` | space (Gradio) | F |
 
 Collections: `Desi Agent: models` and `Desi Agent: datasets` (S1).
 
