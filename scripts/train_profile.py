@@ -70,11 +70,11 @@ def main() -> None:
             del pm
         del m
         torch.cuda.empty_cache()
-        print("[F] profile so far:", json.dumps(res), flush=True)
+        print("[F] profile so far:", json.dumps(res, default=str), flush=True)
 
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
-    (out / "manifest.json").write_text(json.dumps(res, indent=2))
-    print("[F] profile:", json.dumps(res, indent=1))
+    (out / "manifest.json").write_text(json.dumps(res, indent=2, default=str))
+    print("[F] profile:", json.dumps(res, indent=1, default=str))
 
 
 if __name__ == "__main__":
