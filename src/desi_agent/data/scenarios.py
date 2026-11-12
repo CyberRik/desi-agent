@@ -18,8 +18,10 @@ STYLE = {
     "en": "English, as an Indian bank customer would write it.",
     "hi": "Hindi in Devanagari script. Banking words like UPI, ATM, EMI, PIN may stay in English letters.",
     "bn": "Bengali in Bengali script. Banking words like UPI, ATM, EMI, PIN may stay in English letters.",
-    "hi-en": "Hinglish: Hindi written in Roman/Latin letters, freely mixed with English words, like a WhatsApp message. No Devanagari.",
-    "bn-en": "Banglish: Bengali written in Roman/Latin letters, freely mixed with English words, like a WhatsApp message. No Bengali script.",
+    "hi-en": ("Hinglish: mostly HINDI words written in Roman/Latin letters, mixed with a few English words, like a WhatsApp "
+              "message. No Devanagari. NOT plain English. Example style: 'Mera card kho gaya hai yaar, jaldi block kar do please'."),
+    "bn-en": ("Banglish: mostly BENGALI words written in Roman/Latin letters, mixed with a few English words, like a WhatsApp "
+              "message. No Bengali script. NOT plain English. Example style: 'Amar card ta haria geche, ekhuni block kore dao please'."),
 }
 TONES = ["polite", "urgent and worried", "casual", "short and blunt", "slightly annoyed", "formal, elderly customer", "confused first-time user"]
 

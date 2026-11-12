@@ -39,7 +39,7 @@ def user_prompt(s: Scenario, tone: str) -> str:
                          + ", ".join(s.must_include) + ".")
     if s.category == "clarify":
         lines.append("Do NOT include any card numbers, amounts, UPI ids, reference numbers, rates or durations.")
-    lines.append("Write 1-2 sentences. Vary the wording; don't start with a greeting every time.")
+    lines.append("Write ONE message of 1-2 sentences (no alternatives, no line breaks). Vary the wording; don't start with a greeting every time.")
     return "\n".join(lines)
 
 
@@ -83,13 +83,15 @@ class Teacher:
         self.sem = asyncio.Semaphore(concurrency)
         self.extra = {"chat_template_kwargs": {"enable_thinking": False}} if "qwen3" in model.lower() else {}
 
-    async def __call__(self, system: str, prompt: str, temperature: float) -> str:
+    async def __call__(self, system: str, prompt: str, temperature: float, max_tokens: int = 200) -> str:
         async with self.sem:
             for attempt in range(4):
                 try:
                     r = await self.client.chat.completions.create(
-                        model=self.model, temperature=temperature, max_tokens=400, extra_body=self.extra or None,
-                        messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}])
+                        model=self.model, temperature=temperature, max_tokens=max_tokens, extra_body=self.extra or None,
+                        frequency_penalty=0.3, messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}])
+                    if r.choices[0].finish_reason == "length":
+                        return ""  # cut off mid-sentence (often a repetition loop): reject and retry
                     return clean_teacher_text(r.choices[0].message.content or "")
                 except Exception:  # noqa: BLE001 - network/rate-limit: back off and retry
                     if attempt == 3:
@@ -121,7 +123,7 @@ async def make_one(teacher: Teacher, idx: int, s: Scenario, rng: random.Random, 
     tone = rng.choice(TONES)
     problems: list[str] = []
     for _ in range(tries):
-        user_msg = await teacher(USER_SYS, user_prompt(s, tone), 0.9)
+        user_msg = await teacher(USER_SYS, user_prompt(s, tone), 0.9, 150)
         problems = user_msg_problems(user_msg, s.lang, s.must_include, s.forbid)
         if not problems:
             break
@@ -129,8 +131,8 @@ async def make_one(teacher: Teacher, idx: int, s: Scenario, rng: random.Random, 
         return None, {"idx": idx, "stage": "user", "problems": problems, "text": user_msg, "scenario": s.__dict__}
     results = [(n, a, tools.execute(n, a)) for n, a in s.calls]
     for _ in range(tries):
-        final = await teacher(FINAL_SYS, final_prompt(s, user_msg, results), 0.4)
-        problems = final_problems(final, s.lang, s.must_include + _latin_values(results))
+        final = await teacher(FINAL_SYS, final_prompt(s, user_msg, results), 0.4, 300)
+        problems = final_problems(final, s.lang, s.must_include + _latin_values(results), user_msg)
         if not problems:
             return build_row(idx, s, user_msg, final, results, teacher.model), None
     return None, {"idx": idx, "stage": "final", "problems": problems, "text": final, "scenario": s.__dict__}
