@@ -51,6 +51,7 @@ DEFAULTS: dict = {
     "save_steps": 50,
     "resume": False,             # continue from checkpoints/<run_name>/latest in ckpt_repo
     "max_hours": None,           # stop + checkpoint after this many hours of training (Kaggle limit is 12)
+    "push_epoch_adapters": True,  # after each epoch (but the last): adapter -> ckpt_repo runs/<run>/epoch-<n>/
     "seed": SEED,
 }
 
@@ -122,7 +123,26 @@ def _callbacks(c: dict):
                 if state.is_world_process_zero:
                     print(f"[F] time budget {c['max_hours']} h reached at step {state.global_step}, stopping", flush=True)
 
-    return [HubCheckpoint(), TimeBudget()]
+    class EpochAdapter(TrainerCallback):
+        """Publish the LoRA adapter at each epoch boundary, so R can eval epoch 1 while epoch 2 trains."""
+
+        def on_epoch_end(self, args, state, control, model=None, processing_class=None, **kw):
+            n = round(state.epoch or 0)
+            if not (c["ckpt_repo"] and c["push_epoch_adapters"] and state.is_world_process_zero and model is not None):
+                return
+            if n < 1 or n >= args.num_train_epochs or state.global_step >= state.max_steps:
+                return  # the final adapter is published by train_sft itself
+            from huggingface_hub import HfApi
+            folder = Path(args.output_dir) / f"epoch-{n}-adapter"
+            model.save_pretrained(folder)
+            if processing_class is not None:
+                processing_class.save_pretrained(folder)
+            HfApi().upload_folder(folder_path=str(folder), repo_id=c["ckpt_repo"], repo_type="dataset",
+                                  path_in_repo=f"runs/{c['run_name']}/epoch-{n}/adapter",
+                                  commit_message=f"[F] {c['run_name']} epoch {n} adapter (step {state.global_step})")
+            print(f"[F] epoch {n} adapter -> {c['ckpt_repo']}/runs/{c['run_name']}/epoch-{n}/adapter", flush=True)
+
+    return [HubCheckpoint(), TimeBudget(), EpochAdapter()]
 
 
 class _ResumingTrainer:
@@ -174,8 +194,11 @@ class TinyAyaSFTFactory:
     def __call__(self, *, model: str, train_dataset: list[dict], **_):
         import torch
         from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+        import transformers
         from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
 
+        # warmup_steps < 1 is a ratio only on transformers 5.x (on 4.x it would mean ~0 warmup steps)
+        assert int(transformers.__version__.split(".")[0]) >= 5, transformers.__version__
         c = self.cfg
         cuda = torch.cuda.is_available()
         bf16 = cuda and torch.cuda.is_bf16_supported()
@@ -230,6 +253,7 @@ class TinyAyaSFTFactory:
             remove_unused_columns=False)
         self.callbacks = _callbacks(c)
         self.trainer = Trainer(model=self.model, args=args, train_dataset=train, eval_dataset=val,
+                               processing_class=self.tok,
                                data_collator=Collator(self.tok.pad_token_id), callbacks=self.callbacks)
         if self.resume_from and is_main:
             print(f"[F] resuming from {self.resume_from}", flush=True)
@@ -301,6 +325,8 @@ def train_sft(cfg: dict) -> dict:
     factory.tok.save_pretrained(adapter_path)
     metrics = {"train_loss": getattr(result, "training_loss", None), "runtime_s": round(runtime, 1),
                **{k: v for k, v in (getattr(result, "metrics", None) or {}).items() if isinstance(v, (int, float))}}
+    if torch.cuda.is_available():
+        metrics["peak_mem_gb"] = round(torch.cuda.max_memory_allocated() / 2**30, 2)
     metrics.update({"global_step": state.global_step, "max_steps": state.max_steps,
                     "complete": not stopped_early, "resumed_from": resume_from})
     if val_rows:
