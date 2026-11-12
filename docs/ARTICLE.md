@@ -111,6 +111,12 @@ every training row is the fixed system prompt (tool schemas plus the chat templa
 1,490 tokens), rows are almost the same length and padding costs nothing. On a T4, memory rather than padding
 limits the batch: batch size 2 runs out of memory, mostly because of the 262k-token vocabulary.
 
+**Why no reinforcement learning.** We planned GRPO on top of SFT with the same reward as evaluation, but measured
+first whether it would have anything to learn. Sampling 8 first turns at temperature 1.0 for 377 training prompts
+in the two areas where SFT still errs (asking for missing details, and the block-card reason), 95.7% of samples
+were already correct and only 12.7% of prompts produced any reward difference. With a 97.7% SFT model and almost
+no learning signal, we stopped there rather than risk degrading it.
+
 ## Evaluation
 
 The code is in `src/desi_agent/eval/`, and results plus every trace are in
@@ -188,12 +194,48 @@ nice the reply sounds. Reply wording is not scored.
 - **3 one-offs:** a UPI reference with a dropped digit, a transfer missing the note the customer asked for, and an EMI
   calculated when the tenure was missing.
 
+## Is it overfitting? Four checks
+
+The test set comes from the same generator as the training data, so a high score could mean the model learned our
+generator rather than the task. We checked four ways (`results/robustness.json`, `scripts/eval_ood_*.py`,
+`scripts/eval_variants.py`).
+
+1. **Loss curves.** Validation loss was still falling at the last step (0.424 to 0.273), and the train/validation
+   gap stayed small and stable (about 0.07). There was no upturn.
+2. **Near-copies.** We bucketed test conversations by how similar the customer message is to its closest
+   training message (character 4-gram overlap). Task success is flat across the four quartiles, from least to most
+   similar: 97.5%, 99.2%, 97.5%, 96.7%. The model does not depend on having seen a similar sentence.
+3. **A bank with different numbers.** We re-ran the test with a mock bank that returns shifted balances, amounts and
+   transaction / reference ids (the gold dispute target is remapped the same way). Task success stays at **97.7%**,
+   and **no reply quotes a value from the original bank**. It reads the tool result rather than remembering
+   training data. (In the normal run, 0 of 486 replies quote bank data the model did not retrieve; the base model
+   does it 20 times, mostly with invented placeholders.)
+4. **Wording from a different model family.** Aya Expanse 8B rewrote every test customer message in the same
+   language and style, keeping every number and id. A first pass showed the rewriter sometimes changed the request
+   ("lost" became "expired") or dropped details ("last 5 transactions" became "recent transactions"), which makes the
+   gold wrong. So a judge (Qwen3-14B, yes/no checklist on the original/rewrite pair only) kept the 380 rewrites
+   that ask for exactly the same thing.
+
+| Same 380 conversations | Original wording | **Reworded** | Wrong action (reworded) |
+|---|---|---|---|
+| Base Tiny Aya | 46.6% | 49.7% | 20.5% |
+| **Ours** | 97.1% | **91.8%** | **5.5%** |
+
+| Reworded, by slice | English | Hindi | Hinglish | Bengali | Banglish | Single | Two-step | Ask first | No action |
+|---|---|---|---|---|---|---|---|---|---|
+| Base | 45.1% | 47.7% | 58.0% | 47.1% | 49.2% | 61.4% | 1.2% | 48.7% | 91.2% |
+| **Ours** | **98.6%** | **98.9%** | **93.2%** | **87.1%** | **77.8%** | **88.6%** | **85.5%** | **94.8%** | **100%** |
+
+The gain holds on unseen wording, with a drop of about five points. English and Hindi barely move. Banglish,
+Bengali and two-step tasks drop most: the model then disputes the wrong transaction more often or picks a different
+block reason. Part of the Banglish drop may still be rewrite quality, since the judge is not strong at Banglish
+either.
+
 ## Limits, stated plainly
 
-- **The test set is in-distribution.** It comes from the same scenario templates and the same teacher as the
-  training data. No customer message is shared, but the style is, so part of the 97.7% is the model learning our
-  generator's style. The teacher was not trained on it, so the comparison favours the student. *An
-  out-of-distribution check (test scenarios reworded by a different model family) is in progress and will be added here.*
+- **The headline test set is in-distribution.** It comes from the same scenario templates and the same teacher as
+  the training data. The checks above suggest the model learned the task rather than the generator, but the
+  reworded score (91.8%) is the more conservative number, and code-mixed Bengali is the weakest spot.
 - **The bank is a mock.** It has deterministic results, eight tools and one account per user. Real banking APIs,
   authentication and multi-session context are out of scope.
 - **The reply wording is noisier than the tool calls.** The teacher's Banglish and Hinglish replies contain some
