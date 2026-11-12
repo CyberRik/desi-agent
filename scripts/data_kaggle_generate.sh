@@ -19,7 +19,8 @@ if ! curl -sf localhost:8000/health >/dev/null; then
 fi
 
 if [ "$MODE" = smoke ]; then
-  python -m desi_agent.data.generate --model "$MODEL" --out data/raw/smoke.jsonl --limit 40 --concurrency 32
+  # SMOKE_ARGS e.g. "--limit 60 --langs bn-en,hi-en" to smoke-test one language
+  python -m desi_agent.data.generate --model "$MODEL" --out data/raw/smoke.jsonl ${SMOKE_ARGS:---limit 40} --concurrency 32
   python scripts/validate_data.py data/raw/smoke.jsonl
   python - <<'EOF'
 import json

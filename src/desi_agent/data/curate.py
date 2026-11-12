@@ -21,7 +21,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .checks import final_problems, user_msg_problems
+from .checks import final_problems, required_refs, user_msg_problems
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -57,7 +57,8 @@ def quality_problems(row: dict) -> list[str]:
     user, final = row["messages"][0]["content"], row["messages"][-1]["content"]
     allowed = _latin_allowed(row)
     p = [f"user:{x}" for x in user_msg_problems(user, row["lang"], [], []) if x != "markup" or "<tool_call>" in user]
-    p += [f"final:{x}" for x in final_problems(final, row["lang"], allowed, user)]
+    refs = required_refs([m["content"] for m in row["messages"] if m["role"] == "tool"])
+    p += [f"final:{x}" for x in final_problems(final, row["lang"], allowed, user, refs)]
     return p
 
 

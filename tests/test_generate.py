@@ -30,7 +30,8 @@ class FakeTeacher:
         m = re.search(r"exactly as written: (.*)\.$", prompt, flags=re.M) or re.search(r"values;.*?: (.*)\.$", prompt, flags=re.M)
         vals = m.group(1) if m else ""
         if "Customer message:" in prompt:  # final reply
-            return BOT[self.lang]
+            refs = " ".join(sorted(set(re.findall(r"\b(?:BLK|DSP)\d+\b", prompt))))
+            return f"{BOT[self.lang]} {refs}".strip()
         return f"{FILLER[self.lang]} {vals}".strip()
 
 
@@ -85,3 +86,16 @@ def test_assistant_persona():
     assert addresses_customer("আপনার সেভিংস একাউন্টের ব্যালেন্স ₹48,250.75", "bn")
     assert addresses_customer("Hi! I can check balances, block cards and raise disputes.", "en")
     assert not addresses_customer("My card ending 5198 is blocked and I will get a new one in 7 days.", "en")
+
+
+def test_language_hygiene_and_refs():
+    from desi_agent.data.checks import final_problems, lang_hygiene, required_refs
+    assert "hindi_in_bn-en" in lang_hygiene("Aapke last 4 transaction dekha gaya, dispute id DSP7150719", "bn-en")
+    assert lang_hygiene("Apnar card ta block kora hoyeche, reference BLK53057343", "bn-en") == []
+    assert "bengali_in_hi-en" in lang_hygiene("Aapka card block kore dao", "hi-en")
+    assert "bad_term" in lang_hygiene("बहस का संदर्भ संख्या DSP7775912 है", "hi")
+    assert "broken_chars" in lang_hygiene("উপি� রেফারেন্স", "bn")
+    refs = required_refs(['{"dispute_id": "DSP7775912", "status": "dispute_raised"}', '{"transactions": [{"transaction_id": "TXN1"}]}'])
+    assert refs == ["DSP7775912"]
+    assert "missing_ref:DSP7775912" in final_problems("Your dispute has been raised.", "en", [], "", refs)
+    assert not [x for x in final_problems("Your dispute DSP7775912 has been raised.", "en", [], "", refs) if x.startswith("missing")]

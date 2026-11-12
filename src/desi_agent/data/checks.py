@@ -119,6 +119,26 @@ def clean_teacher_text(text: str) -> str:
     return text.strip("“”").strip()
 
 
+# Code-mixed text must not drift into the OTHER Indian language (the teacher often answers Banglish in Hindi).
+_HINDI_IN_BNEN = re.compile(r"\b(aap(?!ni\b|nar\b|nake\b|nader\b)\w*|hai|hain|gaya|gayi|jayega|jayegi|raha|rahi|mein|nahi|kijiye|dijiye)\b", re.I)
+_BENGALI_IN_HIEN = re.compile(r"\b(apnar|apnake|korun|hobe|kore|koro|dao|ache|achhe|ami|amar|theke|korte)\b", re.I)
+# Teacher mistranslations of "dispute" seen in R2 data: बहस (debate), बर्बर (barbaric), অপরাধ (crime).
+BAD_TERMS = {"hi": ["बहस", "बर्बर"], "bn": ["অপরাধ"]}
+
+
+def lang_hygiene(text: str, lang: str) -> list[str]:
+    p = []
+    if "�" in text:
+        p.append("broken_chars")
+    if lang == "bn-en" and _HINDI_IN_BNEN.search(text):
+        p.append("hindi_in_bn-en")
+    if lang == "hi-en" and _BENGALI_IN_HIEN.search(text):
+        p.append("bengali_in_hi-en")
+    if any(t in text for t in BAD_TERMS.get(lang, [])):
+        p.append("bad_term")
+    return p
+
+
 def user_msg_problems(text: str, lang: str, must_include: list[str], forbid: list[str]) -> list[str]:
     p = []
     if not text or len(text) < 4:
@@ -135,6 +155,7 @@ def user_msg_problems(text: str, lang: str, must_include: list[str], forbid: lis
         p.append("not_romanized_" + lang)
     if repetitive(text):
         p.append("repetitive")
+    p += lang_hygiene(text, lang)
     norm = to_ascii_digits(text).lower()
     for s in must_include:
         if s.lower() not in norm:
@@ -145,7 +166,9 @@ def user_msg_problems(text: str, lang: str, must_include: list[str], forbid: lis
     return p
 
 
-def final_problems(text: str, lang: str, allowed_latin: list[str] | None = None, user_msg: str = "") -> list[str]:
+def final_problems(text: str, lang: str, allowed_latin: list[str] | None = None, user_msg: str = "",
+                   required: list[str] | None = None) -> list[str]:
+    """required: reference ids from tool results (BLK..., DSP...) the reply must quote."""
     p = []
     if not text or len(text) < 2:
         p.append("empty")
@@ -163,4 +186,12 @@ def final_problems(text: str, lang: str, allowed_latin: list[str] | None = None,
         p.append("echoes_user")
     if not addresses_customer(text, lang):
         p.append("not_addressing_customer")
+    p += lang_hygiene(text, lang)
+    norm = to_ascii_digits(text)
+    p += [f"missing_ref:{r}" for r in (required or []) if r not in norm]
     return p
+
+
+def required_refs(tool_results: list[str]) -> list[str]:
+    """Block / dispute reference ids the customer needs; the final reply must contain them."""
+    return sorted({m for t in tool_results for m in re.findall(r"\b(?:BLK|DSP)\d+\b", t)})
