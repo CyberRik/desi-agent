@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desi Agent Lab</title>
+<meta name="description" content="Base Tiny Aya vs our fine-tuned banking agent, replayed from real test traces.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* [F] F4/Lab: static test explorer + showcase. Data = real eval files on ToolW/desi-agent-eval-traces. */
+:root{
+  --bg:#f4f1ec; --surface:#fffdf9; --ink:#1d1b18; --ink2:#5d574e; --ink3:#8b8478; --line:#e3ddd2;
+  --phone:#fbfaf7; --cust:#1f4d3a; --cust-ink:#f5fbf7; --bot:#ffffff;
+  --done:#1f7a4d; --done-bg:#e7f3ec; --rej:#b3412f; --rej-bg:#f8e9e5; --info:#5a5f8a; --info-bg:#eceefa;
+  --accent:#1f4d3a; --shadow:0 1px 2px rgba(29,27,24,.06),0 8px 24px rgba(29,27,24,.06);
+  --font:"Noto Sans","Noto Sans Devanagari","Noto Sans Bengali",system-ui,sans-serif;
+  --mono:"Noto Sans Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15140f; --surface:#1d1c17; --ink:#efebe3; --ink2:#b7b0a3; --ink3:#857e72; --line:#2f2d26;
+    --phone:#1a1914; --cust:#2f6b52; --cust-ink:#f2faf5; --bot:#24231d;
+    --done:#6cc79a; --done-bg:#1d3329; --rej:#ee8a77; --rej-bg:#3a221d; --info:#a9aee0; --info-bg:#25273a;
+    --accent:#6cc79a; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+.top{display:flex;align-items:center;gap:20px;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:5}
+.brand{font-weight:700;font-size:17px;letter-spacing:-.01em}
+.brand small{font-weight:400;color:var(--ink3);margin-left:8px;font-size:13px}
+nav{display:flex;gap:4px;margin-left:auto}
+nav a{padding:6px 12px;border-radius:8px;text-decoration:none;color:var(--ink2);font-weight:500}
+nav a.on{background:var(--bg);color:var(--ink)}
+main{padding:24px;max-width:1240px;margin:0 auto}
+.muted{color:var(--ink3)} .small{font-size:13px}
+.err{background:var(--rej-bg);color:var(--rej);padding:12px 16px;border-radius:10px;margin:16px 0}
+
+/* ---------- phones ---------- */
+.stage{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.phone{background:var(--phone);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:560px;max-width:440px;width:100%;justify-self:center}
+.phone-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface)}
+.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;background:#8b8478}
+.phone.ft .avatar{background:var(--accent)}
+.phone-title{font-weight:600}
+.phone-sub{font-size:12px;color:var(--ink3)}
+.pill{margin-left:auto;font-size:12px;padding:2px 10px;border-radius:999px;background:var(--bg);color:var(--ink2);white-space:nowrap}
+.chat{padding:16px 14px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.msg{max-width:86%;padding:9px 13px;border-radius:16px;word-wrap:break-word;white-space:pre-wrap}
+.msg.cust{align-self:flex-end;background:var(--cust);color:var(--cust-ink);border-bottom-right-radius:5px}
+.msg.bot{align-self:flex-start;background:var(--bot);border:1px solid var(--line);border-bottom-left-radius:5px}
+.gloss{align-self:flex-end;max-width:86%;font-size:12.5px;color:var(--ink3);font-style:italic;margin-top:-4px;text-align:right}
+.typing{align-self:flex-start;background:var(--bot);border:1px solid var(--line);border-radius:16px;padding:10px 14px;display:flex;gap:4px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--ink3);animation:blink 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+/* receipts */
+.rcpt{align-self:flex-start;width:92%;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px 10px;position:relative}
+.rcpt-k{font-size:12px;color:var(--ink3)}
+.rcpt-t{font-weight:600;margin:1px 0 4px;padding-right:96px}
+.rcpt-l{font-size:13.5px;color:var(--ink2)}
+.rcpt-rows{margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.rcpt-row{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--ink2)}
+.rcpt-row b{font-weight:500;color:var(--ink)}
+.stamp{position:absolute;top:10px;right:12px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:6px;border:1.5px solid currentColor;transform:rotate(-4deg)}
+.stamp.done{color:var(--done);background:var(--done-bg)} .stamp.rej{color:var(--rej);background:var(--rej-bg)} .stamp.info{color:var(--info);background:var(--info-bg)}
+.raw{font-family:var(--mono);font-size:11.5px;color:var(--ink3);margin-top:7px;overflow-wrap:anywhere}
+.verdict{margin:14px 18px 18px;padding:10px 12px;border-radius:10px;font-weight:600;font-size:14px}
+.verdict.good{background:var(--done-bg);color:var(--done)} .verdict.bad{background:var(--rej-bg);color:var(--rej)}
+
+/* motion (tour only): one orchestrated entrance */
+.enter{animation:rise .35s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rcpt.enter{animation:slide .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes slide{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.enter,.rcpt.enter{animation:none}}
+
+/* ---------- tour ---------- */
+.tour-head{display:flex;align-items:baseline;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.tour-head h1{font-size:24px;letter-spacing:-.015em}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tag{font-size:12.5px;padding:3px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink2)}
+.controls{display:flex;align-items:center;gap:10px;margin:22px auto 0;justify-content:center}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--ink3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.dots{display:flex;gap:6px}
+.dots b{width:8px;height:8px;border-radius:50%;background:var(--line);cursor:pointer}
+.dots b.on{background:var(--accent)}
+.card{max-width:720px;margin:60px auto;text-align:center}
+.card h1{font-size:40px;letter-spacing:-.02em;margin-bottom:12px}
+.card p{font-size:18px;color:var(--ink2);margin-bottom:10px}
+.card .big{font-size:22px;color:var(--ink);font-weight:600;margin:22px 0 6px}
+body.record .top,body.record .controls,body.record .hint{display:none}
+body.record main{padding-top:40px}
+
+/* ---------- explorer ---------- */
+.ex{display:grid;grid-template-columns:330px 1fr;gap:22px;align-items:start}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.filters select,.filters input{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
+.filters .full{grid-column:1/-1}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:12px;max-height:calc(100vh - 260px);overflow:auto}
+.row{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.row:hover{background:var(--bg)} .row.on{background:var(--bg);box-shadow:inset 3px 0 var(--accent)}
+.row-t{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-m{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--ink3);margin-top:2px}
+.ok,.no{display:inline-block;width:9px;height:9px;border-radius:50%}
+.ok{background:var(--done)} .no{background:var(--rej)}
+.count{font-size:13px;color:var(--ink3);margin:6px 2px 8px}
+.gold{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13.5px}
+.gold code{font-family:var(--mono);font-size:12.5px}
+.scores{display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 16px}
+.sc{font-size:12px;padding:2px 8px;border-radius:6px;background:var(--bg);color:var(--ink2)}
+.sc.bad{background:var(--rej-bg);color:var(--rej)}
+
+/* ---------- results ---------- */
+.res h1{font-size:24px;margin-bottom:6px;letter-spacing:-.015em}
+.lead{font-size:17px;color:var(--ink2);margin-bottom:24px;max-width:860px}
+.lead b{color:var(--ink)}
+table{border-collapse:collapse;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:26px}
+th,td{padding:8px 12px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;font-size:13px;color:var(--ink2);background:var(--bg)}
+td.best{font-weight:700;color:var(--done)}
+h2{font-size:17px;margin:6px 0 10px}
+.note{font-size:13.5px;color:var(--ink3);max-width:900px;margin-bottom:8px}
+@media (max-width:900px){.stage,.ex{grid-template-columns:1fr}.top{flex-wrap:wrap}main{padding:16px}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">Desi Agent Lab<small>Tiny Aya · banking tool-calling · en · hi · bn · Hinglish · Banglish</small></div>
+  <nav><a href="#/tour" data-v="tour">Tour</a><a href="#/explore" data-v="explore">Test explorer</a><a href="#/results" data-v="results">Results</a></nav>
+</div>
+<main id="app"><p class="muted">Loading evaluation traces…</p></main>
+
+<script>
+"use strict";
+/* ============ data ============ */
+const REPO = "ToolW/desi-agent-eval-traces";
+const RAW = p => `https://huggingface.co/datasets/${REPO}/resolve/main/${p}`;
+const TREE = p => `https://huggingface.co/api/datasets/${REPO}/tree/main/${p}`;
+const KNOWN = {  // display names + order; unknown tags (e.g. OOD runs) are appended automatically
+  "tinyaya-global-base": {name: "Base Tiny Aya", short: "Base", av: "B"},
+  "tinyaya-sft-a-epoch1": {name: "Fine-tuned · epoch 1", short: "Epoch 1", av: "E1"},
+  "tinyaya-sft-a-final": {name: "Fine-tuned (ours)", short: "Fine-tuned", av: "FT"},
+  "teacher-qwen3-14b": {name: "Teacher · Qwen3-14B", short: "Teacher", av: "T"},
+};
+const BASE = "tinyaya-global-base", FINAL = "tinyaya-sft-a-final";
+const LANG = {en: "English", hi: "Hindi", bn: "Bengali", "hi-en": "Hinglish", "bn-en": "Banglish"};
+const CAT = {single_tool: "Single action", multi_tool: "Two-step task", clarify: "Missing info: should ask", no_tool: "No action needed"};
+const STATE_CHANGING = new Set(["block_card", "raise_dispute", "transfer_money"]);
+const D = {runs: {}, order: [], tour: null};  // runs[key] = {tag, split, meta, traces: Map|null}
+
+async function j(url) { const r = await fetch(url); if (!r.ok) throw new Error(`${r.status} ${url}`); return r.json(); }
+async function discover() {
+  const dirs = (await j(TREE("results"))).filter(e => e.type === "directory").map(e => e.path.split("/").pop());
+  const tags = [...Object.keys(KNOWN).filter(t => dirs.includes(t)), ...dirs.filter(t => !KNOWN[t]).sort()];
+  for (const tag of tags) {
+    const files = (await j(TREE(`results/${tag}`))).map(e => e.path.split("/").pop());
+    for (const f of files.filter(f => f.endsWith(".json") && !f.includes(".auditkit") && files.includes(f.replace(/\.json$/, ".traces.jsonl")))) {
+      const split = f.replace(/\.json$/, ""), key = split === "test" ? tag : `${tag}/${split}`;
+      D.runs[key] = {tag, split, key, meta: null, traces: null};
+      D.order.push(key);
+    }
+  }
+  await Promise.all(D.order.map(async k => { const r = D.runs[k]; r.meta = await j(RAW(`results/${r.tag}/${r.split}.json`)); }));
+  try { D.tour = normTour(await j(RAW("results/tour.json"))); } catch { D.tour = null; }
+}
+function normTour(t) {  // R's results/tour.json: {episodes:[{id, gloss_en, kind, base:{tag,caption}, final:{tag,caption}}]}
+  const side = (v, dflt) => (v && typeof v === "object") ? {tag: v.tag ?? dflt, caption: v.caption ?? null} : {tag: dflt, caption: v ?? null};
+  return {episodes: (t.episodes || []).map(e => {
+    const b = side(e.base, t.left ?? BASE), f = side(e.final, t.right ?? FINAL);
+    return {id: e.id, gloss: e.gloss_en ?? e.gloss ?? null, kind: e.kind ?? null, left: b.tag, right: f.tag, base: b.caption, final: f.caption};
+  })};
+}
+async function traces(key) {
+  const r = D.runs[key];
+  if (!r.traces) {
+    const txt = await (await fetch(RAW(`results/${r.tag}/${r.split}.traces.jsonl`))).text();
+    r.traces = new Map(txt.split("\n").filter(Boolean).map(l => { const o = JSON.parse(l); return [o.id, o]; }));
+  }
+  return r.traces;
+}
+const label = k => (KNOWN[D.runs[k]?.tag]?.name ?? D.runs[k]?.tag ?? k) + (D.runs[k]?.split !== "test" ? ` · ${D.runs[k].split}` : "");
+const short = k => (KNOWN[D.runs[k]?.tag]?.short ?? k) + (D.runs[k]?.split !== "test" ? ` (${D.runs[k].split})` : "");
+
+/* ============ receipts: tool call + result -> plain English ============ */
+const inr = n => new Intl.NumberFormat("en-IN", {style: "currency", currency: "INR", maximumFractionDigits: 2}).format(n);
+const day = s => { const d = new Date(s + "T00:00:00"); return isNaN(d) ? s : d.toLocaleDateString("en-IN", {day: "numeric", month: "short"}); };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const PATTERN = {"^[0-9]{4}$": "must be the card's last 4 digits", "^TXN[0-9]{6}$": "must be a transaction id like TXN123456",
+                 "^[0-9]{12}$": "must be a 12-digit UPI reference", "^[0-9]{6}$": "must be a 6-digit PIN code"};
+function humanError(e) {
+  let m = e.match(/^'(.*)' does not match '(.*)'$/);
+  if (m) return `“${m[1]}” ${PATTERN[m[2]] ?? "is not in the expected format"}`;
+  m = e.match(/^'(.*)' is not one of (.*)$/);
+  if (m) return `“${m[1]}” is not an accepted value`;
+  m = e.match(/^'(.*)' is a required property$/);
+  if (m) return `missing ${m[1].replace(/_/g, " ")}`;
+  if (/unknown tool/.test(e)) return "no such banking service";
+  if (/could not parse/.test(e)) return "the request was malformed and could not be read";
+  return e;
+}
+function receipt(name, args, resultText) {
+  let res = {}; try { res = JSON.parse(resultText); } catch { res = {error: String(resultText)}; }
+  const a = args || {};
+  const R = {kind: name.replace(/_/g, " "), title: "", lines: [], rows: [], stamp: "done", stampText: "Done"};
+  if (name === "__invalid__") return {kind: "request", title: "Request could not be read", lines: ["The model wrote a tool call the bank could not parse."], rows: [], stamp: "rej", stampText: "Rejected by bank"};
+  if (res.error) {
+    const T = {block_card: "Block card", raise_dispute: "Raise a dispute", transfer_money: "Send money", check_upi_status: "UPI status",
+               get_recent_transactions: "Recent transactions", get_account_balance: "Balance", find_nearest_branch: "Find a branch", calculate_loan_emi: "Loan EMI"}[name] ?? name;
+    return {kind: T.toLowerCase(), title: `${T}: not done`, lines: [humanError(res.error)], rows: [], stamp: "rej", stampText: "Rejected by bank"};
+  }
+  switch (name) {
+    case "get_account_balance":
+      R.kind = "balance"; R.stamp = "info"; R.stampText = "Checked";
+      if (res.account_type === "credit_card") { R.title = `Credit card · ${inr(res.outstanding_inr)} outstanding`;
+        R.lines = [`${inr(res.available_limit_inr)} limit available · due ${day(res.due_date)}`]; }
+      else { R.title = `${res.account_type === "current" ? "Current" : "Savings"} account · ${inr(res.balance_inr)}`; R.lines = [`as of ${day(res.as_of)}`]; }
+      break;
+    case "get_recent_transactions": {
+      const t = res.transactions || []; R.kind = "statement"; R.stamp = "info"; R.stampText = "Checked";
+      R.title = `Last ${t.length} ${a.txn_type && a.txn_type !== "all" ? a.txn_type + " " : ""}transaction${t.length === 1 ? "" : "s"}`;
+      R.rows = t.slice(0, 5).map(x => [`${day(x.date)} · ${x.description}`, `${x.type === "credit" ? "+" : "−"}${inr(x.amount_inr)}`, x.transaction_id]);
+      if (t.length > 5) R.lines = [`+ ${t.length - 5} more`];
+      break; }
+    case "block_card":
+      R.kind = "card"; R.title = `Card ending ${String(res.card).slice(-4)} blocked`;
+      R.lines = [`reason: ${res.reason} · ref ${res.reference} · new card in ${res.replacement_eta_days} days`]; break;
+    case "raise_dispute":
+      R.kind = "dispute"; R.title = `Dispute raised on ${res.transaction_id}`;
+      R.lines = [`reason: ${String(res.reason).replace(/_/g, " ")} · ref ${res.dispute_id} · resolution in ${res.resolution_days} days`]; break;
+    case "check_upi_status":
+      R.kind = "UPI"; R.stamp = res.status === "success" ? "done" : "info"; R.stampText = res.status === "success" ? "Success" : res.status;
+      R.title = `UPI payment ${res.upi_ref}`; R.lines = [`status: ${res.status}`]; break;
+    case "transfer_money":
+      R.kind = "UPI transfer"; R.title = `${inr(res.amount_inr)} sent to ${res.to}`;
+      R.lines = [`${res.note ? `note “${res.note}” · ` : ""}UPI ref ${res.upi_ref}`]; break;
+    case "find_nearest_branch":
+      R.kind = res.kind === "atm" ? "ATM" : "branch"; R.stamp = "info"; R.stampText = "Found";
+      R.title = `${res.name} · ${res.distance_km} km`; R.lines = [`PIN ${res.pincode} · ${res.open_now ? "open now" : "closed now"}`]; break;
+    case "calculate_loan_emi":
+      R.kind = "loan"; R.stamp = "info"; R.stampText = "Calculated";
+      R.title = `EMI ${inr(res.emi_inr)} / month`;
+      R.lines = [`${inr(a.principal)} at ${a.annual_rate_pct}% for ${a.tenure_months} months · total interest ${inr(res.total_interest_inr)}`]; break;
+    default: R.title = name; R.lines = [resultText];
+  }
+  return R;
+}
+function rawCall(name, argStr) {
+  if (name === "__invalid__") return String(argStr).slice(0, 200);
+  let a = argStr; try { a = JSON.stringify(typeof argStr === "string" ? JSON.parse(argStr) : argStr); } catch {}
+  return `${name}(${a})`;
+}
+
+/* ============ trace -> chat steps ============ */
+function steps(trace) {  // [{t:"cust", text} | {t:"rcpt", r, raw} | {t:"bot", text}]
+  const out = [], ms = trace.messages, results = {};
+  for (const m of ms) if (m.role === "tool") results[m.tool_call_id] = m.content;
+  for (const m of ms) {
+    if (m.role === "user") out.push({t: "cust", text: m.content});
+    else if (m.role === "assistant" && m.tool_calls) for (const c of m.tool_calls) {
+      let args = null; try { args = JSON.parse(c.function.arguments); } catch {}
+      out.push({t: "rcpt", r: receipt(c.function.name, args, results[c.id] ?? '{"error":"no result"}'), raw: rawCall(c.function.name, c.function.arguments)});
+    }
+    else if (m.role === "assistant") out.push({t: "bot", text: m.content || ""});
+  }
+  if (trace.scores?.truncated) out.push({t: "bot", text: "(stopped: no final answer after 6 steps)"});
+  return out;
+}
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+function rcptHTML(r, raw) {
+  return `<div class="rcpt"><span class="stamp ${r.stamp}">${esc(r.stampText)}</span><div class="rcpt-k">${esc(r.kind)}</div>
+    <div class="rcpt-t">${esc(r.title)}</div>${r.lines.map(l => `<div class="rcpt-l">${esc(l)}</div>`).join("")}
+    ${r.rows.length ? `<div class="rcpt-rows">${r.rows.map(([a, b]) => `<div class="rcpt-row"><span>${esc(a)}</span><b>${esc(b)}</b></div>`).join("")}</div>` : ""}
+    <div class="raw">${esc(raw)}</div></div>`;
+}
+function phoneShell(key, cls) {
+  const k = KNOWN[D.runs[key]?.tag] ?? {av: "?"};
+  return `<div class="phone ${cls}"><div class="phone-head"><div class="avatar">${esc(k.av)}</div><div><div class="phone-title">${esc(label(key))}</div>
+    <div class="phone-sub">${key === BASE ? "CohereLabs/tiny-aya-global" : key.startsWith("tinyaya-sft") ? "tiny-aya-global + our LoRA" : D.runs[key]?.meta?.model_id ?? ""}</div></div></div>
+    <div class="chat"></div></div>`;
+}
+function renderStatic(chat, trace, gloss) {
+  chat.innerHTML = steps(trace).map((s, i) => s.t === "cust" ? `<div class="msg cust">${esc(s.text)}</div>${i === 0 && gloss ? `<div class="gloss">“${esc(gloss)}”</div>` : ""}`
+    : s.t === "rcpt" ? rcptHTML(s.r, s.raw) : `<div class="msg bot">${md(s.text)}</div>`).join("");
+}
+
+/* ============ tour (orchestrated playback) ============ */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let play = {token: 0, idx: 0, auto: true, speed: 1};
+function defaultTour() {  // used only until R's results/tour.json (captions checked against traces) is published
+  return {intro: null, episodes: [
+    "hi-en-clarify-upi_no_ref-02271", "hi-clarify-block_card_no_card-01040", "bn-multi_tool-block_then_balance-01563",
+    "bn-en-multi_tool-txn_then_dispute-02723", "en-single_tool-block_card-00097"].map(id => ({id}))};
+}
+async function playPane(chat, trace, gloss, tok) {  // customer bubble is already typed in
+  const ss = steps(trace).slice(1);
+  if (gloss) { const g = document.createElement("div"); g.className = "gloss enter"; g.textContent = `“${gloss}”`; chat.append(g); }
+  for (const s of ss) {
+    if (tok !== play.token) return;
+    const ty = document.createElement("div"); ty.className = "typing enter"; ty.innerHTML = "<i></i><i></i><i></i>"; chat.append(ty);
+    await sleep((s.t === "rcpt" ? 900 : 700) / play.speed); ty.remove();
+    if (tok !== play.token) return;
+    if (s.t === "rcpt") { chat.insertAdjacentHTML("beforeend", rcptHTML(s.r, s.raw)); chat.lastElementChild.classList.add("enter"); await sleep(1100 / play.speed); }
+    else {
+      const b = document.createElement("div"); b.className = "msg bot enter"; chat.append(b);
+      const words = s.text.split(/(\s+)/); let acc = "";
+      for (const w of words) { if (tok !== play.token) return; acc += w; b.innerHTML = md(acc); if (w.trim()) await sleep(55 / play.speed); }
+      await sleep(400 / play.speed);
+    }
+  }
+}
+async function tourEpisode(i) {
+  const tok = ++play.token, tour = D.tour ?? defaultTour(), n = tour.episodes.length + 2;
+  play.idx = Math.max(0, Math.min(i, n - 1));
+  const app = document.getElementById("app");
+  const ctl = () => `<div class="controls"><button class="btn" id="prev">← Back</button><button class="btn primary" id="pp">${play.auto ? "Pause" : "Play"}</button>
+    <button class="btn" id="next">Next →</button><div class="dots">${Array.from({length: n}, (_, k) => `<b class="${k === play.idx ? "on" : ""}" data-k="${k}"></b>`).join("")}</div>
+    <select class="btn" id="spd">${[1, 1.5, 2].map(s => `<option ${s === play.speed ? "selected" : ""}>${s}×</option>`).join("")}</select></div>
+    <p class="hint muted small" style="text-align:center;margin-top:10px">Replayed from real test-set traces (fp16 eval, greedy). Nothing is regenerated. Space / ← → to navigate.</p>`;
+  const fin = D.runs[FINAL]?.meta?.overall, base = D.runs[BASE]?.meta?.overall, tch = D.runs["teacher-qwen3-14b"]?.meta?.overall;
+  if (play.idx === 0) {
+    app.innerHTML = `<div class="card enter"><p class="muted">Lexsi AI Safety &amp; Alignment Hackathon · Track 3</p><h1>Desi Agent</h1>
+      <p>A 3.35B Tiny Aya Global, fine-tuned with AgentTune into a banking assistant that calls tools in English, Hindi, Bengali, Hinglish and Banglish.</p>
+      <p>Same customer message on both phones: the untouched base model on the left, our fine-tuned model on the right. Every tool call is shown as the bank would record it.</p>
+      ${fin && base ? `<p class="big">${(base.task_success * 100).toFixed(1)}% → ${(fin.task_success * 100).toFixed(1)}% of ${D.runs[FINAL].meta.n} held-out test conversations handled correctly</p>` : ""}</div>${ctl()}`;
+  } else if (play.idx === n - 1) {
+    app.innerHTML = `<div class="card enter"><h1>Small model, right action</h1>
+      ${fin && base ? `<p>Task success ${(base.task_success * 100).toFixed(1)}% → <b>${(fin.task_success * 100).toFixed(1)}%</b>. Unwanted bank actions ${(base.false_action * 100).toFixed(1)}% → <b>${(fin.false_action * 100).toFixed(1)}%</b>.
+      ${tch ? `The 14B teacher it learned from scores ${(tch.task_success * 100).toFixed(1)}% on the same test.` : ""}</p>` : ""}
+      <p class="muted small">Synthetic test set from the same generator as training, with no shared customer messages. See the test explorer for every conversation, including the ones it still gets wrong.</p>
+      <p style="margin-top:18px"><a href="#/explore">Open the test explorer</a> · <a href="#/results">Full results</a> · <a href="https://github.com/CyberRik/desi-agent">github.com/CyberRik/desi-agent</a></p></div>${ctl()}`;
+  } else {
+    const ep = tour.episodes[play.idx - 1], left = D.runs[ep.left] ? ep.left : BASE, right = D.runs[ep.right] ? ep.right : FINAL;
+    const [tl, tr] = await Promise.all([traces(left), traces(right)]);
+    const a = tl.get(ep.id), b = tr.get(ep.id);
+    if (tok !== play.token) return;
+    if (!a || !b) { app.innerHTML = `<div class="err">Episode ${esc(ep.id)} not found in the traces.</div>${ctl()}`; }
+    else {
+      app.innerHTML = `<div class="meta"><span class="tag">${esc(LANG[a.lang] ?? a.lang)}</span><span class="tag">${esc(CAT[a.category] ?? a.category)}</span>
+        ${ep.kind === "still_failing" ? `<span class="tag" style="color:var(--rej)">still failing after fine-tuning</span>` : ""}<span class="muted small" style="margin-left:auto">${esc(ep.id)}</span></div>
+        <div class="stage">${phoneShell(left, "base")}${phoneShell(right, "ft")}</div>${ctl()}`;
+      const chats = app.querySelectorAll(".chat"), user = a.messages[0].content;
+      const els = [...chats].map(c => { const e = document.createElement("div"); e.className = "msg cust enter"; c.append(e); return e; });
+      await sleep(250 / play.speed);  // the customer message types in once, mirrored on both phones
+      const chars = [...user];
+      for (let k = 1; k <= chars.length; k += 2) { if (tok !== play.token) return; els.forEach(e => e.textContent = chars.slice(0, k).join("")); await sleep(22 / play.speed); }
+      els.forEach(e => e.textContent = user);
+      await Promise.all([playPane(chats[0], a, ep.gloss, tok), playPane(chats[1], b, ep.gloss, tok)]);
+      if (tok !== play.token) return;
+      const verdict = (phone, ok, cap) => phone.insertAdjacentHTML("beforeend", `<div class="verdict ${ok ? "good" : "bad"} enter">${ok ? "✓" : "✗"} ${esc(cap ?? (ok ? "Handled correctly" : "Not handled correctly"))}</div>`);
+      const ph = app.querySelectorAll(".phone");
+      verdict(ph[0], a.scores.task_success === 1, ep.base); verdict(ph[1], b.scores.task_success === 1, ep.final);
+    }
+  }
+  wireControls(n);
+  if (play.auto && tok === play.token) { await sleep((play.idx === 0 || play.idx === n - 1 ? 5000 : 3800) / play.speed); if (tok === play.token && play.auto && play.idx < n - 1) tourEpisode(play.idx + 1); }
+}
+function wireControls(n) {
+  const $ = id => document.getElementById(id);
+  if (!$("pp")) return;
+  $("prev").onclick = () => tourEpisode(play.idx - 1);
+  $("next").onclick = () => tourEpisode(play.idx + 1);
+  $("pp").onclick = () => { play.auto = !play.auto; $("pp").textContent = play.auto ? "Pause" : "Play"; if (play.auto) tourEpisode(play.idx + (play.idx === n - 1 ? -play.idx : 1)); };
+  $("spd").onchange = e => { play.speed = parseFloat(e.target.value); };
+  document.querySelectorAll(".dots b").forEach(d => d.onclick = () => tourEpisode(+d.dataset.k));
+}
+document.addEventListener("keydown", e => {
+  if (view() !== "tour" || e.target.matches("input,select")) return;
+  if (e.key === "ArrowRight") tourEpisode(play.idx + 1); else if (e.key === "ArrowLeft") tourEpisode(play.idx - 1);
+  else if (e.key === " ") { e.preventDefault(); document.getElementById("pp")?.click(); }
+});
+
+/* ============ explorer ============ */
+const EX = {lang: "", cat: "", outcome: "", q: "", left: BASE, right: FINAL, sel: null};
+const OUTCOMES = {"": "All outcomes", fixed: "Fixed by fine-tuning", still: "Fine-tuned still fails", regress: "Regressions (base right, fine-tuned wrong)",
+                  bothok: "Both right", teacher: "Teacher fails"};
+async function explore(selId) {
+  const keys = D.order.filter(k => D.runs[k].split === "test");
+  const all = await Promise.all(keys.map(k => traces(k)));
+  const T = Object.fromEntries(keys.map((k, i) => [k, all[i]]));
+  if (!T[EX.left]) EX.left = keys[0]; if (!T[EX.right]) EX.right = keys[keys.length > 1 ? 1 : 0];
+  const ids = [...T[EX.left].keys()];
+  const ok = (k, id) => T[k]?.get(id)?.scores?.task_success === 1;
+  const pass = id => {
+    const e = T[EX.left].get(id);
+    if (EX.lang && e.lang !== EX.lang) return false; if (EX.cat && e.category !== EX.cat) return false;
+    if (EX.q && !(id + " " + e.messages[0].content).toLowerCase().includes(EX.q.toLowerCase())) return false;
+    switch (EX.outcome) {
+      case "fixed": return !ok(EX.left, id) && ok(EX.right, id);
+      case "still": return !ok(EX.right, id);
+      case "regress": return ok(EX.left, id) && !ok(EX.right, id);
+      case "bothok": return ok(EX.left, id) && ok(EX.right, id);
+      case "teacher": return T["teacher-qwen3-14b"] && !ok("teacher-qwen3-14b", id);
+    }
+    return true;
+  };
+  const shown = ids.filter(pass);
+  if (selId) EX.sel = selId; if (!EX.sel || !shown.includes(EX.sel)) EX.sel = shown[0] ?? null;
+  const opt = (o, v) => Object.entries(o).map(([k, n]) => `<option value="${k}" ${k === v ? "selected" : ""}>${esc(n)}</option>`).join("");
+  const mopt = v => keys.map(k => `<option value="${k}" ${k === v ? "selected" : ""}>${esc(label(k))}</option>`).join("");
+  document.getElementById("app").innerHTML = `<div class="ex"><div>
+    <div class="filters"><select id="fl">${opt({"": "All languages", ...LANG}, EX.lang)}</select><select id="fc">${opt({"": "All task types", ...CAT}, EX.cat)}</select>
+    <select id="fo" class="full">${opt(OUTCOMES, EX.outcome)}</select>
+    <select id="mL">${mopt(EX.left)}</select><select id="mR">${mopt(EX.right)}</select>
+    <input id="fq" class="full" placeholder="Search message or id" value="${esc(EX.q)}"></div>
+    <div class="count">${shown.length} of ${ids.length} test conversations · dots: ${keys.map(short).join(" · ")}</div>
+    <div class="list">${shown.map(id => { const e = T[EX.left].get(id); return `<div class="row ${id === EX.sel ? "on" : ""}" data-id="${esc(id)}">
+      <div class="row-t">${esc(e.messages[0].content)}</div><div class="row-m">${keys.map(k => `<span class="${ok(k, id) ? "ok" : "no"}" title="${esc(label(k))}"></span>`).join("")}
+      <span>${esc(LANG[e.lang] ?? e.lang)} · ${esc(CAT[e.category] ?? e.category)}</span></div></div>`; }).join("")}</div></div>
+    <div id="detail"></div></div>`;
+  const $ = id => document.getElementById(id), re = () => explore();
+  $("fl").onchange = e => { EX.lang = e.target.value; re(); }; $("fc").onchange = e => { EX.cat = e.target.value; re(); };
+  $("fo").onchange = e => { EX.outcome = e.target.value; re(); };
+  $("mL").onchange = e => { EX.left = e.target.value; re(); }; $("mR").onchange = e => { EX.right = e.target.value; re(); };
+  let t; $("fq").oninput = e => { clearTimeout(t); t = setTimeout(() => { EX.q = e.target.value; re().then(() => { const q = $("fq"); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }); }, 250); };
+  document.querySelectorAll(".row").forEach(r => r.onclick = () => { history.replaceState(null, "", `#/explore/${r.dataset.id}`); explore(r.dataset.id); });
+  if (!EX.sel) { $("detail").innerHTML = `<p class="muted">No conversations match these filters.</p>`; return; }
+  const a = T[EX.left].get(EX.sel), b = T[EX.right].get(EX.sel), g = a.gold;
+  const goldTxt = g.tool_sequence.length ? g.tool_sequence.map(c => `<code>${esc(c.name)}(${esc(JSON.stringify(c.arguments))})</code>`).join(" → ")
+    : g.must_ask_clarification ? "no tool call: ask the customer for the missing detail" : "no tool call: answer directly";
+  const sc = s => `<div class="scores">${["task_success", "tool_selection_correct", "args_exact", "schema_valid", "false_action", "redundant_calls"].map(k =>
+    `<span class="sc ${(k === "false_action" || k === "redundant_calls") ? (s[k] > 0 ? "bad" : "") : (s[k] < 1 ? "bad" : "")}">${k.replace(/_/g, " ")} ${+s[k].toFixed(2)}</span>`).join("")}</div>`;
+  $("detail").innerHTML = `<div class="meta"><span class="tag">${esc(LANG[a.lang] ?? a.lang)}</span><span class="tag">${esc(CAT[a.category] ?? a.category)}</span><span class="muted small" style="margin-left:auto">${esc(a.id)}</span></div>
+    <div class="gold"><b>Expected:</b> ${goldTxt}</div><div class="stage">${phoneShell(EX.left, "base")}${phoneShell(EX.right, "ft")}</div>`;
+  const chats = $("detail").querySelectorAll(".chat"), phones = $("detail").querySelectorAll(".phone");
+  renderStatic(chats[0], a); renderStatic(chats[1], b);
+  phones[0].insertAdjacentHTML("beforeend", sc(a.scores)); phones[1].insertAdjacentHTML("beforeend", sc(b.scores));
+}
+
+/* ============ results ============ */
+async function results() {
+  const keys = D.order, pct = v => v == null ? "–" : (v * 100).toFixed(1) + "%";
+  const unreq = {};  // false_action, unrequested view: a state-changing call to a tool that is not in the gold sequence at all
+  await Promise.all(keys.map(async k => { const T = await traces(k); let n = 0, c = 0;
+    for (const e of T.values()) { n++; const gold = new Set(e.gold.tool_sequence.map(x => x.name));
+      if (e.messages.some(m => (m.tool_calls || []).some(t => STATE_CHANGING.has(t.function.name) && !gold.has(t.function.name)))) c++; }
+    unreq[k] = n ? c / n : null; }));
+  const M = k => D.runs[k].meta;
+  const rows = [["task_success", "Task success", "max"], ["tool_selection_correct", "Right tool(s)", "max"], ["args_exact", "Exact arguments", "max"],
+    ["schema_valid", "Valid tool calls", "max"], ["false_action", "Unwanted bank action (strict: any state-changing call not exactly in gold)", "min"],
+    ["_unreq", "Unwanted bank action (unrequested: tool not in gold at all)", "min"], ["redundant_calls", "Redundant calls", "min"], ["truncated", "No final answer", "min"]];
+  const val = (k, f) => f === "_unreq" ? unreq[k] : M(k).overall[f];
+  const table = (title, head, body) => `<h2>${title}</h2><table><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr>${body}</table>`;
+  const bestCls = (vals, v, dir) => { const f = vals.filter(x => x != null); if (v == null || f.length < 2 || Math.max(...f) === Math.min(...f)) return "";
+    return v === (dir === "max" ? Math.max(...f) : Math.min(...f)) ? "best" : ""; };
+  const ov = rows.map(([f, n, dir]) => { const vs = keys.map(k => val(k, f)); return `<tr><td>${esc(n)}</td>${vs.map(v => `<td class="${bestCls(vs, v, dir)}">${pct(v)}</td>`).join("")}</tr>`; }).join("")
+    + `<tr><td>AuditKIT tool-call exact match</td>${keys.map(k => `<td>${pct(M(k).auditkit?.means?.tool_call_exact)}</td>`).join("")}</tr>`
+    + `<tr><td>Episodes</td>${keys.map(k => `<td>${M(k).n}</td>`).join("")}</tr>`;
+  const grp = (g, names) => Object.keys(names).filter(x => keys.some(k => M(k)[g]?.[x])).map(x => { const vs = keys.map(k => M(k)[g]?.[x]?.task_success ?? null);
+    return `<tr><td>${esc(names[x])} <span class="muted small">n=${M(keys[0])[g]?.[x]?.n ?? ""}</span></td>${vs.map(v => `<td class="${bestCls(vs, v, "max")}">${pct(v)}</td>`).join("")}</tr>`; }).join("");
+  const head = ["", ...keys.map(k => esc(label(k)))];
+  const b = M(BASE)?.overall, f = M(FINAL)?.overall, t = M("teacher-qwen3-14b")?.overall;
+  document.getElementById("app").innerHTML = `<div class="res"><h1>Results</h1>
+    <p class="lead">${b && f ? `On ${M(FINAL).n} held-out test conversations, task success goes from <b>${pct(b.task_success)}</b> (base) to <b>${pct(f.task_success)}</b> (fine-tuned)${t ? `, above the 14B teacher at ${pct(t.task_success)}` : ""}. Unwanted bank actions drop from ${pct(b.false_action)} to ${pct(f.false_action)}.` : ""}</p>
+    ${table("Overall", head, ov)}${table("Task success by language", head, grp("by_lang", LANG))}${table("Task success by task type", head, grp("by_category", CAT))}
+    <p class="note">How to read this: metrics follow contracts/METRICS.md. fp16 evaluation with greedy decoding, max 6 steps, tools are a deterministic mock bank. The test set comes from the same synthetic generator as training (no shared customer messages), so these are in-distribution numbers; new result sets (for example an out-of-distribution run) appear here as extra columns automatically.</p>
+    <p class="note">Data: <a href="https://huggingface.co/datasets/${REPO}">${REPO}</a> · code: <a href="https://github.com/CyberRik/desi-agent">github.com/CyberRik/desi-agent</a></p></div>`;
+}
+
+/* ============ router ============ */
+const view = () => (location.hash.split("/")[1] || "tour");
+async function route() {
+  const v = view(), id = decodeURIComponent(location.hash.split("/")[2] || "");
+  document.querySelectorAll("nav a").forEach(a => a.classList.toggle("on", a.dataset.v === v));
+  play.token++;
+  try { if (v === "explore") await explore(id || null); else if (v === "results") await results(); else tourEpisode(0); }
+  catch (e) { document.getElementById("app").innerHTML = `<div class="err">Could not load: ${esc(e.message)}</div>`; }
+}
+(async () => {
+  const qs = new URLSearchParams(location.search);
+  if (qs.has("record")) document.body.classList.add("record");
+  if (qs.has("speed")) play.speed = parseFloat(qs.get("speed")) || 1;
+  try { await discover(); } catch (e) { document.getElementById("app").innerHTML = `<div class="err">Could not reach ${REPO}: ${esc(e.message)}</div>`; return; }
+  window.addEventListener("hashchange", route); route();
+})();
+</script>
+</body>
+</html>
