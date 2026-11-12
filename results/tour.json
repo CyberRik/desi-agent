@@ -1,0 +1,124 @@
+{
+  "traces_repo": "ToolW/desi-agent-eval-traces",
+  "episodes": [
+    {
+      "id": "hi-en-clarify-upi_no_ref-02271",
+      "lang": "hi-en",
+      "category": "clarify",
+      "gloss_en": null,
+      "base": {
+        "tag": "tinyaya-global-base",
+        "caption": "Checks a UPI payment using a placeholder reference; the bank rejects it",
+        "task_success": 0.0
+      },
+      "final": {
+        "tag": "tinyaya-sft-a-final",
+        "caption": "Asks for the 12-digit UPI reference before doing anything",
+        "task_success": 1.0
+      },
+      "kind": "fixed_by_sft"
+    },
+    {
+      "id": "hi-clarify-block_card_no_card-01040",
+      "lang": "hi",
+      "category": "clarify",
+      "gloss_en": "I need my card blocked immediately, please act as soon as possible.",
+      "base": {
+        "tag": "tinyaya-global-base",
+        "caption": "Invents card number 123456 and tries to block it; the bank rejects it",
+        "task_success": 0.0
+      },
+      "final": {
+        "tag": "tinyaya-sft-a-final",
+        "caption": "Asks for the last 4 digits and the reason first",
+        "task_success": 1.0
+      },
+      "kind": "fixed_by_sft"
+    },
+    {
+      "id": "bn-multi_tool-block_then_balance-01563",
+      "lang": "bn",
+      "category": "multi_tool",
+      "gloss_en": "My credit card ending 8907 was stolen. Block it and tell me my current outstanding.",
+      "base": {
+        "tag": "tinyaya-global-base",
+        "caption": "Blocks the card as 'lost' (the customer said stolen) and never checks the outstanding",
+        "task_success": 0.0
+      },
+      "final": {
+        "tag": "tinyaya-sft-a-final",
+        "caption": "Blocks it as stolen, then fetches and reports the outstanding",
+        "task_success": 1.0
+      },
+      "kind": "fixed_by_sft"
+    },
+    {
+      "id": "bn-en-multi_tool-txn_then_dispute-02723",
+      "lang": "bn-en",
+      "category": "multi_tool",
+      "gloss_en": null,
+      "base": {
+        "tag": "tinyaya-global-base",
+        "caption": "Tries to dispute transaction 'YOUR_TRANSACTION_ID'; the bank rejects it",
+        "task_success": 0.0
+      },
+      "final": {
+        "tag": "tinyaya-sft-a-final",
+        "caption": "Looks up the last 4 transactions, finds BigBasket and disputes it for the wrong amount",
+        "task_success": 1.0
+      },
+      "kind": "fixed_by_sft"
+    },
+    {
+      "id": "en-single_tool-block_card-00097",
+      "lang": "en",
+      "category": "single_tool",
+      "gloss_en": null,
+      "base": {
+        "tag": "tinyaya-global-base",
+        "caption": "Blocks the card but records the reason as 'lost' instead of fraud",
+        "task_success": 0.0
+      },
+      "final": {
+        "tag": "tinyaya-sft-a-final",
+        "caption": "Blocks the card with reason 'fraud'",
+        "task_success": 1.0
+      },
+      "kind": "fixed_by_sft"
+    },
+    {
+      "id": "hi-en-multi_tool-balance_then_transfer-02179",
+      "lang": "hi-en",
+      "category": "multi_tool",
+      "gloss_en": null,
+      "base": {
+        "tag": "tinyaya-global-base",
+        "caption": "Checks the balance and stops; the money is never sent",
+        "task_success": 0.0
+      },
+      "final": {
+        "tag": "tinyaya-sft-a-final",
+        "caption": "Checks the balance, then sends the money to the right UPI id",
+        "task_success": 1.0
+      },
+      "kind": "fixed_by_sft"
+    },
+    {
+      "id": "en-clarify-block_card_no_card-00441",
+      "lang": "en",
+      "category": "clarify",
+      "gloss_en": null,
+      "base": {
+        "tag": "tinyaya-global-base",
+        "caption": "Acts without the card number",
+        "task_success": 0.0
+      },
+      "final": {
+        "tag": "tinyaya-sft-a-final",
+        "caption": "Still fails: invents card 1234 and blocks it instead of asking (4 of our 11 test failures look like this)",
+        "task_success": 0.0
+      },
+      "kind": "still_failing"
+    }
+  ]
+}
