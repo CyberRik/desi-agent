@@ -158,6 +158,24 @@ h2{font-size:18px;margin:6px 0 10px;color:#fff}
 .note{font-size:13.5px;color:var(--desk-mute);max-width:900px;margin-bottom:8px}
 .ex .screen{height:auto;min-height:420px}
 @media (max-width:900px){.stage,.ex,.intro{grid-template-columns:1fr}.top{flex-wrap:wrap}main{padding:16px}.intro h1{font-size:44px}.outro .rows{grid-template-columns:1fr}}
+@media (max-width:600px){
+  html,body{overflow-x:hidden}
+  .top{position:static;flex-wrap:wrap;gap:6px 12px;padding:12px 16px}
+  .brand small{display:none}
+  nav{margin-left:0;width:100%;justify-content:space-between}
+  .meta{flex-wrap:wrap;gap:6px 12px}
+  .meta .id{margin-left:0;width:100%}
+  .controls{flex-wrap:wrap;gap:8px;row-gap:12px}
+  .dots{order:5;width:100%;justify-content:center}
+  .stage{gap:28px}
+  .intro{min-height:0;gap:28px;padding-top:12px}
+  .intro h1{font-size:40px}
+  .voices q{font-size:20px}
+  .outro{margin-top:40px}
+  .outro .big{font-size:34px}
+  .outro .rows b{font-size:24px}
+  .ex .list{max-height:50vh}
+}
 </style>
 </head>
 <body>
