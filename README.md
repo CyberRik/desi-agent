@@ -72,7 +72,7 @@ flowchart LR
     S --> T["Qwen3-14B teacher<br/>writes only the customer message<br/>+ final reply, in 5 languages"]
     B --> E["Episodes<br/>(OpenAI-style messages + gold)"]
     T --> E
-    E --> C["CuratorKIT<br/>dedup · language-ID · LLM judge"]
+    E --> C["Curation<br/>our language/script gates · CuratorKIT dedup<br/>· LLM checklist judge"]
     C --> SP["Frozen splits<br/>1937 train · 99 val · 486 test"]
     SP --> D["AgentTune distill<br/>LoRA SFT on Tiny Aya Global"]
     D --> M["Desi Agent<br/>LoRA adapter"]
@@ -85,9 +85,12 @@ flowchart LR
    executes them. The teacher only phrases the customer message and the final reply, so a teacher mistake can
    make a sentence awkward but can't make a label wrong. 12% of training cases (27% of the test, which is balanced
    by task type) deliberately leave out a required detail, where the correct move is to ask.
-2. **Curation.** [CuratorKIT](https://github.com/Lexsi-Labs/CuratorKIT) dedups customer messages within a language
-   (so no test message has a twin in training), checks the script and language, and an LLM judge filters garbled
-   replies.
+2. **Curation.** Our own gates (`data/checks.py`) check script and language (no Hindi drifting into Banglish), that
+   the reply talks *to* the customer, and that block/dispute references are quoted.
+   [CuratorKIT](https://github.com/Lexsi-Labs/CuratorKIT) cleans the text, scans for secrets and deduplicates
+   (exact on the customer message within a language, so no test message has a twin in training, plus MinHash).
+   An LLM checklist judge then drops replies that skip a fact or echo the customer (87 removed). It does not
+   reliably catch garbled code-mixed words; see the write-up's limits.
 3. **Distillation.** [AgentTune](https://github.com/Lexsi-Labs/AgentTune) `Project.distill` with a LoRA (r=16 on all
    attention and MLP projections), loss only on the assistant's tokens. Every training row is rendered by the same
    `fmt.py` the evaluation parses, so train and eval see identical text.
@@ -102,9 +105,13 @@ flowchart LR
 - **Not memorised.** Success is flat whether a test message closely resembles a training message or not (97.5 /
   99.2 / 97.5 / 96.7% by similarity quartile). In 0 of 486 replies does the model quote bank numbers it didn't
   retrieve in that conversation (base: 20).
-- **Still in-distribution.** Test messages come from the same generator as training. Out-of-distribution checks,
-  test messages reworded by a different model and a mock bank with shifted values, are being added. They'll
-  appear in the Lab as extra columns.
+- **Holds up out of distribution, with a drop.** We had the test messages reworded by a different model family
+  (Aya Expanse 8B) and kept the 380 rewrites a judge confirmed ask for exactly the same thing. There, task success is
+  **91.8% vs 49.7% for the base model** (97.1% on the original wording of the same conversations), and wrong bank
+  actions are 5.5% vs 20.5%. English and Hindi barely move (98.6%, 98.9%). Banglish (77.8%), Bengali (87.1%) and
+  two-step tasks (85.5%) drop most.
+- **Reads the receipt.** With a mock bank that returns shifted balances, amounts and ids, task success stays at
+  97.7% and no reply quotes a value from the original bank.
 - **Known failure.** 4 of the 11 remaining test failures are the same safety-relevant one: asked to block a card
   with no number given, the model sometimes invents `1234` and blocks it. The Lab's tour shows it.
 - **Demo vs metrics.** The local playground runs a 4-bit build. Every number here comes from fp16 evaluation.
@@ -136,9 +143,12 @@ uv pip install -e ".[dev]" && python -m pytest -q          # contracts, data for
 | step | command | where |
 |---|---|---|
 | Generate data (teacher on vLLM) | `bash scripts/data_kaggle_generate.sh full` | Kaggle T4 x2 |
-| Curate + freeze splits | `python -m desi_agent.data.curate --inp data/raw/teacher.jsonl --out data/curated/curated.jsonl`<br>`python -m desi_agent.data.make_splits --inp data/curated/curated.jsonl --out data/` | CPU (+ judge on GPU) |
+| Curate | `python -m desi_agent.data.curate --inp data/raw/teacher.jsonl --out data/curated/curated.jsonl` | CPU |
+| Judge (checklist) | `python -m desi_agent.data.judge --inp data/curated/curated.jsonl --out data/curated/judge_flags.jsonl --mode checklist` (Qwen3-14B-AWQ on vLLM) | Kaggle T4 x2 |
+| Freeze splits | `python -m desi_agent.data.make_splits --inp data/curated/curated.jsonl --out data --judge-flags data/curated/judge_flags.jsonl --exclude data/spotcheck_rejected.txt` | CPU |
 | Train (SFT, LoRA) | `python scripts/train_kaggle.py push --run sft-a -- --epochs 2` | Kaggle T4 x2, ~2.2 h |
 | Evaluate base, teacher, ours | Kaggle script kernel `scripts/eval_kaggle_baseline.py` (`ADAPTER_REPO=ToolW/desi-agent-tinyaya-sft-lora` for ours) | Kaggle T4 x2 |
+| Robustness (OOD + perturbed bank) | Kaggle script kernel `scripts/eval_kaggle_robustness.py`, then `scripts/eval_ood_validate.py` (judge) and `python scripts/eval_ood_summary.py` | Kaggle T4 x2 |
 | Lab / README figures | `python space/lab/push_lab.py` · `python docs/assets/make_readme_assets.py` | CPU |
 
 The splits are in [`data/`](data) (test frozen) and on
@@ -172,7 +182,7 @@ uv pip install --python .venv-demo/bin/python -r space/requirements.txt gradio
 
 [AgentTune](https://github.com/Lexsi-Labs/AgentTune) (distillation), [AuditKIT](https://github.com/Lexsi-Labs/AuditKIT)
 (agent evaluation) and [CuratorKIT](https://github.com/Lexsi-Labs/CuratorKIT) (data curation) by Lexsi Labs, on
-[CohereLabs/tiny-aya-global](https://huggingface.co/CohereLabs/tiny-aya-global). Teacher and judge: Qwen3-14B-AWQ.
+[CohereLabs/tiny-aya-global](https://huggingface.co/CohereLabs/tiny-aya-global). Teacher and judge: Qwen3-14B-AWQ. Test rewriter for the out-of-distribution check: Aya Expanse 8B.
 
 Code: MIT. Tiny Aya is CC-BY-NC-4.0 (accept the license on Hugging Face), and the Lexsi toolkits have their own
 licenses.
