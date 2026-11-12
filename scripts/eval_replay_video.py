@@ -27,13 +27,13 @@ CAT = {"clarify": "missing info: should ask, not act", "multi_tool": "two-step t
 EPISODES = [
     ("hi-en-clarify-upi_no_ref-02271", None,
      "Calls check_upi_status with a placeholder instead of a reference number", "Asks for the 12-digit UPI reference"),
-    ("hi-clarify-block_card_no_card-01028", "My card is lost, block it right away. Please issue me a new card.",
-     "Invents card number 123456 and blocks it", "Asks for the last 4 digits and the reason first"),
+    ("hi-clarify-block_card_no_card-01040", "I need my card blocked immediately, please act as soon as possible.",
+     "Invents card number 123456 and tries to block it (the bank rejects it)", "Asks for the last 4 digits and the reason first"),
     ("bn-multi_tool-block_then_balance-01563",
      "My credit card ending 8907 was stolen. Block it and tell me my current outstanding.",
      "Blocks it as 'lost', never checks the balance", "Blocks it as stolen, then fetches the outstanding"),
     ("bn-en-multi_tool-txn_then_dispute-02723", None,
-     "Disputes transaction 'YOUR_TRANSACTION_ID'", "Looks up recent transactions, then disputes the right one"),
+     "Tries to dispute transaction 'YOUR_TRANSACTION_ID' (rejected)", "Looks up recent transactions, then disputes the right one"),
     ("en-single_tool-block_card-00097", None,
      "Blocks the card with reason 'lost'", "Blocks the card with reason 'fraud'"),
 ]
@@ -164,7 +164,7 @@ h1{font-size:76px;font-weight:700;letter-spacing:-.02em} h1.sm{font-size:46px}
 .bl{font-size:18px}
 .track{position:relative;height:24px;background:#1a222e;border-radius:6px}
 .fill{height:100%;border-radius:6px}
-.track span{position:absolute;right:8px;top:2px;font-size:14px;color:#e8ebf0}
+.track span{position:absolute;right:8px;top:2px;font-size:14px;color:#fff;text-shadow:0 0 3px #000,0 0 2px #000}
 .caveat{margin-top:16px;color:#7f8ea3;font-size:15px;line-height:1.4}
 """
 
