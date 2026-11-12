@@ -28,8 +28,8 @@ distilled this behaviour into CohereLabs/tiny-aya-global (3.35B) with AgentTune.
 Data: a code-driven scenario sampler builds every gold tool call (8 banking tools against a deterministic mock
 bank). A Qwen3-14B teacher only writes the customer message and the final reply in the five languages, so a
 teacher error can make a sentence awkward but never a label wrong. About 12% of training cases deliberately omit
-a required detail, where the correct action is to ask. CuratorKIT deduplicated messages, checked script and
-language, and an LLM judge removed garbled replies. This left 1,937 train, 99 val and 486 frozen, balanced test
+a required detail, where the correct action is to ask. Our own checks filtered script and language drift,
+CuratorKIT cleaned and deduplicated the data, and an LLM checklist judge removed replies that skipped facts. This left 1,937 train, 99 val and 486 frozen, balanced test
 conversations, with no customer message shared between splits.
 
 Training: AgentTune `Project.distill` with LoRA (r=16) on Tiny Aya Global, loss on assistant tokens only, the
@@ -38,14 +38,15 @@ validation loss only. Profiling showed T4s emulate bf16 in software, and switchi
 faster.
 
 Results on the 486 test conversations (fp16, greedy, every call executed against the mock bank): task success
-rises from 45.9% to 97.7%, exact arguments from 45.9% to 97.7%, valid tool calls from 84.0% to 99.6%. Wrong
+rises from 45.9% to 97.7%, valid tool calls from 84.0% to 99.6%. Wrong
 bank actions (blocking, disputing or sending money when it shouldn't) fall from 20.8% to 1.8%. Two-step tasks
 go from 0% to 97.3%, and asking for missing details from 38.6% to 96.2%. Every language lands between 96% and
 99%. The 3B student beats its 14B teacher (67.5%), because its labels come from code rather than from the
 teacher. AuditKIT agrees (tool-call exact match 97.7%).
 
 Robustness, reported plainly: success does not depend on how similar a test message is to training, and
-replies never quote bank values the model did not retrieve. On test messages reworded by a different model
+replies never quote bank values the model did not retrieve, and with a mock bank returning shifted values,
+success stays at 97.7%. On test messages reworded by a different model
 (Aya Expanse 8B, meaning-validated), success drops from 97.1% to 91.8% (base: 46.6% to 49.7%), and most of the
 drop is in Banglish (77.8%). On real, human-written English customer messages (BANKING77), [BANKING77 result
 pending]. The main remaining failure is safety-relevant: asked to block a card with no number, the model
