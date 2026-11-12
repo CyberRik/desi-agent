@@ -7,10 +7,17 @@ tokenizes it with the student's chat template, and trains a LoRA only on assista
 
     from desi_agent.api import train_sft
     train_sft({"split": "seed", "max_steps": 20, "out_dir": "outputs/sft_smoke"})
+
+F3 on Kaggle T4x2: launched with `torchrun --nproc_per_node 2` (DDP, one full LoRA replica per GPU).
+Checkpoints (adapter + optimizer + trainer state) are uploaded to `ckpt_repo` under
+`checkpoints/<run_name>/latest/` every `save_steps`, and `resume=True` continues from there, so a
+run can outlive Kaggle's 12 h session limit by resuming in a new session on either account.
+`max_hours` stops cleanly (save + upload) before the session is killed.
 """
 from __future__ import annotations
 
 import json
+import os
 import random
 import subprocess
 import time
@@ -35,10 +42,97 @@ DEFAULTS: dict = {
     "lr": 2e-4, "batch_size": 1, "grad_accum": 8, "warmup_ratio": 0.05,
     "gradient_checkpointing": True,
     "logging_steps": 5, "eval_steps": 50,
+    "attn_implementation": "sdpa",
+    "group_by_length": True,     # less padding when batch_size > 1
     "out_dir": "outputs/sft",
-    "push_to": None,             # e.g. "ToolW/desi-agent-tinyaya-sft-lora"
+    "push_to": None,             # e.g. "ToolW/desi-agent-tinyaya-sft-lora" (only after a complete run)
+    "run_name": "sft",           # checkpoints/<run_name>/ in ckpt_repo
+    "ckpt_repo": None,           # e.g. "ToolW/desi-agent-training-logs" (HF dataset); None = local only
+    "save_steps": 50,
+    "resume": False,             # continue from checkpoints/<run_name>/latest in ckpt_repo
+    "max_hours": None,           # stop + checkpoint after this many hours of training (Kaggle limit is 12)
     "seed": SEED,
 }
+
+
+def _rank() -> tuple[int, int, bool]:
+    """(local_rank, world_size, is_main) from torchrun env vars; (0, 1, True) without torchrun."""
+    local = int(os.environ.get("LOCAL_RANK", 0))
+    world = int(os.environ.get("WORLD_SIZE", 1))
+    return local, world, int(os.environ.get("RANK", 0)) == 0
+
+
+def _ckpt_path(run_name: str) -> str:
+    return f"checkpoints/{run_name}/latest"
+
+
+def _download_checkpoint(repo: str, run_name: str, dest: Path) -> Path | None:
+    """Fetch checkpoints/<run_name>/latest from the HF dataset `repo`; None if there is none."""
+    from huggingface_hub import snapshot_download
+    from huggingface_hub.utils import RepositoryNotFoundError
+
+    sub = _ckpt_path(run_name)
+    try:
+        local = snapshot_download(repo, repo_type="dataset", allow_patterns=[f"{sub}/*"], local_dir=str(dest))
+    except RepositoryNotFoundError:
+        return None
+    path = Path(local) / sub
+    return path if (path / "trainer_state.json").exists() else None
+
+
+def _callbacks(c: dict):
+    import torch
+    from transformers import TrainerCallback
+
+    class HubCheckpoint(TrainerCallback):
+        """After each save, rank 0 mirrors the newest checkpoint-N folder to ckpt_repo (replacing the old one)."""
+
+        def on_save(self, args, state, control, **kw):
+            if not (c["ckpt_repo"] and state.is_world_process_zero):
+                return
+            from huggingface_hub import HfApi
+            folder = Path(args.output_dir) / f"checkpoint-{state.global_step}"
+            if not folder.exists():
+                return
+            api = HfApi()
+            api.create_repo(c["ckpt_repo"], repo_type="dataset", exist_ok=True, private=False)
+            api.upload_folder(folder_path=str(folder), repo_id=c["ckpt_repo"], repo_type="dataset",
+                              path_in_repo=_ckpt_path(c["run_name"]), delete_patterns=["*"],
+                              commit_message=f"[F] {c['run_name']} checkpoint step {state.global_step}")
+            print(f"[F] checkpoint step {state.global_step} -> {c['ckpt_repo']}/{_ckpt_path(c['run_name'])}", flush=True)
+
+    class TimeBudget(TrainerCallback):
+        """Stop (and save) once max_hours have passed. All ranks agree via all_reduce, so DDP never hangs."""
+
+        def __init__(self):
+            self.t0 = time.time()
+            self.hit = False
+
+        def on_step_end(self, args, state, control, **kw):
+            if not c["max_hours"]:
+                return
+            over = torch.tensor([float(time.time() - self.t0 > c["max_hours"] * 3600)],
+                                device="cuda" if torch.cuda.is_available() else "cpu")
+            if torch.distributed.is_available() and torch.distributed.is_initialized():
+                torch.distributed.all_reduce(over, op=torch.distributed.ReduceOp.MAX)
+            if over.item() > 0:
+                self.hit = True
+                control.should_training_stop = True
+                control.should_save = True
+                if state.is_world_process_zero:
+                    print(f"[F] time budget {c['max_hours']} h reached at step {state.global_step}, stopping", flush=True)
+
+    return [HubCheckpoint(), TimeBudget()]
+
+
+class _ResumingTrainer:
+    """What the factory hands to AgentTune: `distill` calls `.train()`, we add `resume_from_checkpoint`."""
+
+    def __init__(self, trainer, resume_from: str | None):
+        self.trainer, self.resume_from = trainer, resume_from
+
+    def train(self):
+        return self.trainer.train(resume_from_checkpoint=self.resume_from)
 
 
 def _git_sha() -> str | None:
@@ -67,9 +161,10 @@ class Collator:
 class TinyAyaSFTFactory:
     """AgentTune `trainer_factory`: called by `Project.distill(model=..., train_dataset=rows)`."""
 
-    def __init__(self, cfg: dict, val_rows: list[dict] | None = None):
-        self.cfg, self.val_rows = cfg, val_rows
+    def __init__(self, cfg: dict, val_rows: list[dict] | None = None, resume_from: str | None = None):
+        self.cfg, self.val_rows, self.resume_from = cfg, val_rows, resume_from
         self.model = self.tok = self.trainer = None
+        self.callbacks: list = []
         self.data_stats: dict = {}
 
     def _tokenize(self, rows: list[dict]) -> list[dict]:
@@ -88,7 +183,10 @@ class TinyAyaSFTFactory:
         if self.tok.pad_token is None:
             self.tok.pad_token = self.tok.eos_token
 
-        kw: dict = {"device_map": {"": 0} if cuda else None}
+        local_rank, world, is_main = _rank()
+        kw: dict = {"device_map": {"": local_rank} if cuda else None}
+        if c["attn_implementation"]:
+            kw["attn_implementation"] = c["attn_implementation"]
         if c["load_in_4bit"]:
             from transformers import BitsAndBytesConfig
             kw["quantization_config"] = BitsAndBytesConfig(
@@ -114,7 +212,8 @@ class TinyAyaSFTFactory:
         self.data_stats = {"n_train_rows": len(train), "n_val_rows": len(val or []),
                            "max_tokens": max(lens), "mean_tokens": round(sum(lens) / len(lens), 1),
                            "n_truncated": sum(l >= c["max_len"] for l in lens), "lora_targets": targets}
-        print("[F] sft data:", self.data_stats)
+        if is_main:
+            print("[F] sft data:", self.data_stats, "world_size:", world, flush=True)
 
         args = TrainingArguments(
             output_dir=c["out_dir"], num_train_epochs=c["epochs"], max_steps=c["max_steps"],
@@ -122,13 +221,19 @@ class TinyAyaSFTFactory:
             gradient_accumulation_steps=c["grad_accum"], learning_rate=c["lr"], lr_scheduler_type="cosine",
             warmup_steps=c["warmup_ratio"], logging_steps=c["logging_steps"],
             eval_strategy="steps" if val else "no", eval_steps=c["eval_steps"],
-            save_strategy="no", report_to=[], seed=c["seed"], data_seed=c["seed"],
+            save_strategy="steps", save_steps=c["save_steps"], save_total_limit=1, save_only_model=False,
+            train_sampling_strategy="group_by_length" if c["group_by_length"] and c["batch_size"] > 1 else "random",
+            ddp_find_unused_parameters=False if world > 1 else None,
+            report_to=[], seed=c["seed"], data_seed=c["seed"],
             bf16=bf16, fp16=cuda and not bf16, use_cpu=not cuda,
             gradient_checkpointing=False,  # enabled on the model above
             remove_unused_columns=False)
+        self.callbacks = _callbacks(c)
         self.trainer = Trainer(model=self.model, args=args, train_dataset=train, eval_dataset=val,
-                               data_collator=Collator(self.tok.pad_token_id))
-        return self.trainer
+                               data_collator=Collator(self.tok.pad_token_id), callbacks=self.callbacks)
+        if self.resume_from and is_main:
+            print(f"[F] resuming from {self.resume_from}", flush=True)
+        return _ResumingTrainer(self.trainer, self.resume_from)
 
 
 def _load(name: str | None, limit: int | None = None) -> list[dict] | None:
@@ -137,9 +242,10 @@ def _load(name: str | None, limit: int | None = None) -> list[dict] | None:
         return None
     if name == "test":
         raise ValueError("never train on the test split (CLAUDE.md §7)")
+    from huggingface_hub.errors import EntryNotFoundError, RepositoryNotFoundError
     try:
         eps = load_split(name)
-    except FileNotFoundError:
+    except (FileNotFoundError, EntryNotFoundError, RepositoryNotFoundError):
         print(f"[F] split {name!r} not found, skipping")
         return None
     return eps[:limit] if limit else eps
@@ -170,19 +276,36 @@ def train_sft(cfg: dict) -> dict:
             vp.add_trajectory(log)
         val_rows = vp.sft_dataset()
 
-    factory = TinyAyaSFTFactory(c, val_rows)
+    resume_from = None
+    if c["resume"]:
+        if not c["ckpt_repo"]:
+            raise ValueError("resume=True needs ckpt_repo")
+        found = _download_checkpoint(c["ckpt_repo"], c["run_name"], out / "resume")
+        resume_from = str(found) if found else None
+        print(f"[F] resume: {'from ' + resume_from if found else 'no checkpoint yet, starting fresh'}", flush=True)
+
+    factory = TinyAyaSFTFactory(c, val_rows, resume_from)
     t0 = time.time()
     result = proj.distill(c["model_id"], trainer_factory=factory)
     runtime = time.time() - t0
+
+    state = factory.trainer.state
+    stopped_early = any(getattr(cb, "hit", False) for cb in factory.callbacks)
+    if val_rows:
+        eval_metrics = factory.trainer.evaluate()  # collective under DDP: every rank runs it
+    if not _rank()[2]:
+        return {"adapter_path": None, "hf_repo": None, "metrics": {}}  # non-main DDP ranks stop here
 
     adapter_path = out / "adapter"
     factory.model.save_pretrained(adapter_path)
     factory.tok.save_pretrained(adapter_path)
     metrics = {"train_loss": getattr(result, "training_loss", None), "runtime_s": round(runtime, 1),
                **{k: v for k, v in (getattr(result, "metrics", None) or {}).items() if isinstance(v, (int, float))}}
+    metrics.update({"global_step": state.global_step, "max_steps": state.max_steps,
+                    "complete": not stopped_early, "resumed_from": resume_from})
     if val_rows:
-        metrics.update(factory.trainer.evaluate())
-    log_history = factory.trainer.state.log_history
+        metrics.update(eval_metrics)
+    log_history = state.log_history
 
     manifest = {"task": "train_sft", "git_sha": _git_sha(), "model_id": c["model_id"], "seed": c["seed"],
                 "config": c, "data": {"train_split": c["split"], "n_train_episodes": len(train_eps),
@@ -193,8 +316,15 @@ def train_sft(cfg: dict) -> dict:
     (out / "log_history.json").write_text(json.dumps(log_history, indent=2, default=str))
     (adapter_path / "desi_agent_manifest.json").write_text(json.dumps(manifest, indent=2, default=str))
 
+    if c["ckpt_repo"]:
+        from huggingface_hub import HfApi
+        HfApi().upload_folder(folder_path=str(out), repo_id=c["ckpt_repo"], repo_type="dataset",
+                              path_in_repo=f"runs/{c['run_name']}", allow_patterns=["manifest.json", "log_history.json"],
+                              commit_message=f"[F] {c['run_name']} manifest + log history")
     hf_repo = None
-    if c["push_to"]:
+    if c["push_to"] and stopped_early:
+        print(f"[F] run stopped by time budget: not pushing to {c['push_to']}; resume with --set resume=true")
+    elif c["push_to"]:
         from huggingface_hub import HfApi
         api = HfApi()
         api.create_repo(c["push_to"], exist_ok=True, private=False)
