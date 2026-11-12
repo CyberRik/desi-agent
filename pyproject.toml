@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "desi-agent"
+version = "0.1.0"
+description = "Multilingual (en/hi/bn/Hinglish/Banglish) banking tool-calling agent distilled into Tiny Aya with AgentTune"
+requires-python = ">=3.12"
+dependencies = ["jsonschema>=4.20", "huggingface_hub>=0.25"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+train = ["agenttune @ git+https://github.com/Lexsi-Labs/AgentTune.git", "transformers", "peft", "trl", "datasets", "accelerate", "bitsandbytes"]
+eval = ["auditkit"]
+data = ["curatorkit", "cohere"]
+space = ["gradio>=4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
