@@ -22,8 +22,9 @@ from .scenarios import STYLE, TONES, Scenario, sample_all
 
 USER_SYS = ("You write realistic chat messages that Indian bank customers send to their bank's support chatbot. "
             "Output ONLY the customer's message: no quotes, no labels, no explanations.")
-FINAL_SYS = ("You are a friendly, concise support assistant of an Indian bank. Output ONLY your reply to the customer: "
-             "no quotes, no labels, no explanations.")
+FINAL_SYS = ("You are a friendly, concise support assistant of an Indian bank, replying TO a customer. Speak as the bank "
+             "assistant and address the customer directly as 'you' (aap / apni / আপনি / आप) — never write as if you were the "
+             "customer, never say 'my card' about the customer's card. Output ONLY your reply: no quotes, no labels, no explanations.")
 
 NATIVE = {"hi": "Devanagari numerals (०-९)", "bn": "Bengali numerals (০-৯)"}
 
@@ -44,7 +45,8 @@ def user_prompt(s: Scenario, tone: str) -> str:
 
 
 def final_prompt(s: Scenario, user_msg: str, results: list[tuple[str, dict, str]]) -> str:
-    lines = [f"Reply in this language and style: {STYLE[s.lang]}", f"Customer message: {user_msg}"]
+    lines = [f"Reply in this language and style: {STYLE[s.lang]}", f"Customer message: {user_msg}",
+             "Address the customer in the second person (you / aap / apni) and do not copy their sentences."]
     if s.category == "clarify":
         lines.append(f"You cannot act yet. Politely ask the customer for: {s.missing}. One or two sentences.")
     elif s.category == "no_tool":

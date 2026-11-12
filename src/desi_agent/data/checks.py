@@ -60,15 +60,42 @@ BN_EN_MARKERS = {"ami", "aami", "amar", "amake", "apni", "apnar", "apnake", "ach
                  "dekhao", "dekhte", "pathao", "pathate", "jodi", "tahole", "ekhon", "taka", "gelo", "geche", "hoy", "plz"}
 
 
-def romanized_ok(text: str, lang: str) -> bool:
-    """hi-en / bn-en must really be romanized Hindi / Bengali, not plain English."""
+def romanized_ok(text: str, lang: str, allowed_latin: list[str] | None = None) -> bool:
+    """hi-en / bn-en must really be romanized Hindi / Bengali, not plain English.
+    Values quoted from tool results (merchant names etc.) don't count against the ratio."""
     if lang not in ("hi-en", "bn-en"):
         return True
+    if allowed_latin:
+        text = _strip_allowed(text, allowed_latin)
     toks = [t.strip(".,!?:;()'\"").lower() for t in text.split()]
     toks = [t for t in toks if t.isalpha()]
     markers = HI_EN_MARKERS if lang == "hi-en" else BN_EN_MARKERS
     hits = sum(t in markers for t in toks)
     return hits >= 2 and hits / max(1, len(toks)) >= 0.15
+
+
+# The assistant must talk TO the customer (second person), never as the customer.
+SECOND_PERSON = {
+    "en": {"you", "your", "you're", "you've", "yours"},
+    "hi": {"आप", "आपका", "आपके", "आपकी", "आपको", "आपने"},
+    "bn": {"আপনার", "আপনি", "আপনাকে", "আপনারা"},
+    "hi-en": {"aap", "aapka", "aapke", "aapki", "aapko", "aapne", "apka", "apke", "apki", "apko", "aapse"},
+    "bn-en": {"apnar", "apni", "apnake", "apnara", "tomar", "tumi", "tomake"},
+}
+FIRST_PERSON_CUSTOMER = {
+    "en": {"my", "i", "i'm", "me"},
+    "hi": {"मेरा", "मेरी", "मेरे", "मैंने", "मुझे"},
+    "bn": {"আমার", "আমি", "আমাকে"},
+    "hi-en": {"mera", "meri", "mere", "maine", "mujhe"},
+    "bn-en": {"amar", "ami", "aami", "amake"},
+}
+
+
+def addresses_customer(text: str, lang: str) -> bool:
+    """False when the reply talks as the customer ("my card was blocked, I'll get a new one") instead of to them.
+    Impersonal replies ("The EMI is ...") are fine."""
+    toks = {t.strip(".,!?:;()'\"।").lower() for t in text.split()}
+    return bool(toks & SECOND_PERSON[lang]) or not (toks & FIRST_PERSON_CUSTOMER[lang])
 
 
 def repetitive(text: str, n: int = 3, max_repeats: int = 2) -> bool:
@@ -127,10 +154,12 @@ def final_problems(text: str, lang: str, allowed_latin: list[str] | None = None,
         p.append("markup")
     if not script_ok(text, lang, allowed_latin):
         p.append("wrong_script")
-    if not romanized_ok(text, lang):
+    if not romanized_ok(text, lang, allowed_latin):
         p.append("not_romanized_" + lang)
     if repetitive(text):
         p.append("repetitive")
     if user_msg and _overlap(text, user_msg) > 0.8:
         p.append("echoes_user")
+    if not addresses_customer(text, lang):
+        p.append("not_addressing_customer")
     return p

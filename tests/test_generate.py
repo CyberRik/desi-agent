@@ -15,8 +15,8 @@ from validate_data import check  # noqa: E402
 
 FILLER = {"en": "please help", "hi": "कृपया मदद करें", "bn": "দয়া করে সাহায্য করুন",
           "hi-en": "mera kaam jaldi kar do", "bn-en": "amar kaj ta ekhon kore dao"}
-BOT = {"en": "Done, all good", "hi": "हो गया, सब ठीक है", "bn": "হয়ে গেছে, সব ঠিক আছে",
-       "hi-en": "ho gaya hai aur sab theek hai", "bn-en": "hoye geche ar sob thik ache"}
+BOT = {"en": "Done, your request is complete", "hi": "हो गया, आपका काम पूरा है", "bn": "হয়ে গেছে, আপনার কাজ সম্পূর্ণ",
+       "hi-en": "aapka kaam ho gaya hai aur sab theek hai", "bn-en": "apnar kaj hoye geche ar sob thik ache"}
 
 
 class FakeTeacher:
@@ -74,3 +74,12 @@ def test_quality_gates():
     assert "echoes_user" in final_problems("ami EMI calculate korte chai kintu rate nai", "bn-en",
                                            user_msg="ami EMI calculate korte chai kintu rate nai")
     assert "multiline" in user_msg_problems("আমার ব্যালেন্স কত?\nআমার ব্যালেন্স জানান?", "bn", [], [])
+
+
+def test_assistant_persona():
+    from desi_agent.data.checks import addresses_customer
+    assert not addresses_customer("Mera credit card ka outstanding 12840 hai, jaldi karo yaar", "hi-en")
+    assert not addresses_customer("Amar card ta block kora hoiyeche, 6 din por new card pabo", "bn-en")
+    assert addresses_customer("Aapka card ****2509 block kar diya gaya hai", "hi-en")
+    assert addresses_customer("Apnar card ta block kora hoyeche", "bn-en")
+    assert addresses_customer("আপনার সেভিংস একাউন্টের ব্যালেন্স ₹48,250.75", "bn")
