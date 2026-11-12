@@ -1,0 +1,141 @@
+{
+  "ood": {
+    "rewriter": "CohereLabs/aya-expanse-8b",
+    "validator": "Qwen/Qwen3-14B-AWQ (meaning checklist)",
+    "n_valid": 380,
+    "tinyaya-global-base": {
+      "in_distribution_same_episodes": {
+        "n": 380,
+        "task_success": 0.4658,
+        "false_action": 0.2184
+      },
+      "ood": {
+        "n": 380,
+        "task_success": 0.4974,
+        "false_action": 0.2053
+      },
+      "ood_by_lang": {
+        "bn": {
+          "n": 70,
+          "task_success": 0.4714,
+          "false_action": 0.2714
+        },
+        "bn-en": {
+          "n": 63,
+          "task_success": 0.4921,
+          "false_action": 0.2698
+        },
+        "en": {
+          "n": 71,
+          "task_success": 0.4507,
+          "false_action": 0.2113
+        },
+        "hi": {
+          "n": 88,
+          "task_success": 0.4773,
+          "false_action": 0.2273
+        },
+        "hi-en": {
+          "n": 88,
+          "task_success": 0.5795,
+          "false_action": 0.0795
+        }
+      },
+      "ood_by_category": {
+        "clarify": {
+          "n": 115,
+          "task_success": 0.487,
+          "false_action": 0.2348
+        },
+        "multi_tool": {
+          "n": 83,
+          "task_success": 0.012,
+          "false_action": 0.2771
+        },
+        "no_tool": {
+          "n": 68,
+          "task_success": 0.9118,
+          "false_action": 0.0
+        },
+        "single_tool": {
+          "n": 114,
+          "task_success": 0.614,
+          "false_action": 0.2456
+        }
+      }
+    },
+    "tinyaya-sft-a-final": {
+      "in_distribution_same_episodes": {
+        "n": 380,
+        "task_success": 0.9711,
+        "false_action": 0.0237
+      },
+      "ood": {
+        "n": 380,
+        "task_success": 0.9184,
+        "false_action": 0.0553
+      },
+      "ood_by_lang": {
+        "bn": {
+          "n": 70,
+          "task_success": 0.8714,
+          "false_action": 0.0857
+        },
+        "bn-en": {
+          "n": 63,
+          "task_success": 0.7778,
+          "false_action": 0.127
+        },
+        "en": {
+          "n": 71,
+          "task_success": 0.9859,
+          "false_action": 0.0141
+        },
+        "hi": {
+          "n": 88,
+          "task_success": 0.9886,
+          "false_action": 0.0114
+        },
+        "hi-en": {
+          "n": 88,
+          "task_success": 0.9318,
+          "false_action": 0.0568
+        }
+      },
+      "ood_by_category": {
+        "clarify": {
+          "n": 115,
+          "task_success": 0.9478,
+          "false_action": 0.0174
+        },
+        "multi_tool": {
+          "n": 83,
+          "task_success": 0.8554,
+          "false_action": 0.1084
+        },
+        "no_tool": {
+          "n": 68,
+          "task_success": 1.0,
+          "false_action": 0.0
+        },
+        "single_tool": {
+          "n": 114,
+          "task_success": 0.886,
+          "false_action": 0.0877
+        }
+      }
+    }
+  },
+  "perturbed_bank": {
+    "tinyaya-global-base": {
+      "task_success": 0.4609,
+      "false_action": 0.2058,
+      "stale_value_rate": 0.0
+    },
+    "tinyaya-sft-a-final": {
+      "task_success": 0.9774,
+      "false_action": 0.0185,
+      "stale_value_rate": 0.0
+    }
+  }
+}

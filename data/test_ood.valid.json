@@ -1,0 +1,3296 @@
+{
+ "n_ood": 436,
+ "after_numbers": 414,
+ "valid": 380,
+ "judge": "Qwen/Qwen3-14B-AWQ",
+ "judge_errors": 0,
+ "fail_counts": {
+  "same_action": 30,
+  "same_details": 11,
+  "same_missing": 10,
+  "same_reason": 9,
+  "natural": 14
+ },
+ "valid_ids": [
+  "bn-clarify-block_card_no_card-01619-ood",
+  "bn-clarify-block_card_no_card-01620-ood",
+  "bn-clarify-block_card_no_card-01629-ood",
+  "bn-clarify-dispute_no_txn-01649-ood",
+  "bn-clarify-dispute_no_txn-01651-ood",
+  "bn-clarify-dispute_no_txn-01657-ood",
+  "bn-clarify-dispute_no_txn-01658-ood",
+  "bn-clarify-dispute_no_txn-01659-ood",
+  "bn-clarify-dispute_no_txn-01660-ood",
+  "bn-clarify-emi_no_rate-01689-ood",
+  "bn-clarify-emi_no_rate-01697-ood",
+  "bn-clarify-emi_no_rate-01702-ood",
+  "bn-clarify-transfer_no_amount-01631-ood",
+  "bn-clarify-transfer_no_amount-01633-ood",
+  "bn-clarify-transfer_no_amount-01634-ood",
+  "bn-clarify-transfer_no_amount-01642-ood",
+  "bn-clarify-transfer_no_amount-01646-ood",
+  "bn-clarify-transfer_no_amount-01647-ood",
+  "bn-clarify-transfer_no_amount-01648-ood",
+  "bn-clarify-upi_no_ref-01669-ood",
+  "bn-clarify-upi_no_ref-01671-ood",
+  "bn-clarify-upi_no_ref-01673-ood",
+  "bn-clarify-upi_no_ref-01678-ood",
+  "bn-en-clarify-block_card_no_card-02791-ood",
+  "bn-en-clarify-block_card_no_card-02803-ood",
+  "bn-en-clarify-dispute_no_txn-02831-ood",
+  "bn-en-clarify-dispute_no_txn-02837-ood",
+  "bn-en-clarify-emi_no_rate-02863-ood",
+  "bn-en-clarify-emi_no_rate-02866-ood",
+  "bn-en-clarify-emi_no_rate-02867-ood",
+  "bn-en-clarify-emi_no_rate-02872-ood",
+  "bn-en-clarify-emi_no_rate-02875-ood",
+  "bn-en-clarify-emi_no_rate-02878-ood",
+  "bn-en-clarify-transfer_no_amount-02809-ood",
+  "bn-en-clarify-transfer_no_amount-02816-ood",
+  "bn-en-clarify-transfer_no_amount-02820-ood",
+  "bn-en-clarify-upi_no_ref-02851-ood",
+  "bn-en-clarify-upi_no_ref-02852-ood",
+  "bn-en-clarify-upi_no_ref-02853-ood",
+  "bn-en-clarify-upi_no_ref-02856-ood",
+  "bn-en-clarify-upi_no_ref-02861-ood",
+  "bn-en-multi_tool-balance_then_transfer-02769-ood",
+  "bn-en-multi_tool-balance_then_transfer-02778-ood",
+  "bn-en-multi_tool-block_then_balance-02745-ood",
+  "bn-en-multi_tool-block_then_balance-02749-ood",
+  "bn-en-multi_tool-block_then_balance-02751-ood",
+  "bn-en-multi_tool-block_then_balance-02759-ood",
+  "bn-en-multi_tool-block_then_balance-02761-ood",
+  "bn-en-multi_tool-block_then_balance-02763-ood",
+  "bn-en-multi_tool-txn_then_dispute-02716-ood",
+  "bn-en-multi_tool-txn_then_dispute-02723-ood",
+  "bn-en-multi_tool-txn_then_dispute-02726-ood",
+  "bn-en-multi_tool-txn_then_dispute-02730-ood",
+  "bn-en-multi_tool-txn_then_dispute-02731-ood",
+  "bn-en-no_tool-no_tool-02885-ood",
+  "bn-en-no_tool-no_tool-02890-ood",
+  "bn-en-no_tool-no_tool-02892-ood",
+  "bn-en-no_tool-no_tool-02896-ood",
+  "bn-en-no_tool-no_tool-02909-ood",
+  "bn-en-no_tool-no_tool-02910-ood",
+  "bn-en-no_tool-no_tool-02914-ood",
+  "bn-en-no_tool-no_tool-02915-ood",
+  "bn-en-no_tool-no_tool-02917-ood",
+  "bn-en-no_tool-no_tool-02930-ood",
+  "bn-en-no_tool-no_tool-02936-ood",
+  "bn-en-no_tool-no_tool-02940-ood",
+  "bn-en-no_tool-no_tool-02942-ood",
+  "bn-en-single_tool-block_card-02446-ood",
+  "bn-en-single_tool-block_card-02468-ood",
+  "bn-en-single_tool-block_card-02484-ood",
+  "bn-en-single_tool-calculate_loan_emi-02695-ood",
+  "bn-en-single_tool-check_upi_status-02540-ood",
+  "bn-en-single_tool-check_upi_status-02554-ood",
+  "bn-en-single_tool-check_upi_status-02565-ood",
+  "bn-en-single_tool-check_upi_status-02580-ood",
+  "bn-en-single_tool-find_nearest_branch-02627-ood",
+  "bn-en-single_tool-find_nearest_branch-02659-ood",
+  "bn-en-single_tool-find_nearest_branch-02661-ood",
+  "bn-en-single_tool-get_recent_transactions-02411-ood",
+  "bn-en-single_tool-get_recent_transactions-02435-ood",
+  "bn-en-single_tool-raise_dispute-02492-ood",
+  "bn-en-single_tool-raise_dispute-02517-ood",
+  "bn-en-single_tool-raise_dispute-02525-ood",
+  "bn-en-single_tool-raise_dispute-02531-ood",
+  "bn-en-single_tool-transfer_money-02585-ood",
+  "bn-en-single_tool-transfer_money-02600-ood",
+  "bn-multi_tool-balance_then_transfer-01589-ood",
+  "bn-multi_tool-balance_then_transfer-01591-ood",
+  "bn-multi_tool-balance_then_transfer-01597-ood",
+  "bn-multi_tool-balance_then_transfer-01603-ood",
+  "bn-multi_tool-balance_then_transfer-01607-ood",
+  "bn-multi_tool-block_then_balance-01563-ood",
+  "bn-multi_tool-block_then_balance-01575-ood",
+  "bn-multi_tool-block_then_balance-01579-ood",
+  "bn-multi_tool-block_then_balance-01580-ood",
+  "bn-multi_tool-txn_then_dispute-01538-ood",
+  "bn-multi_tool-txn_then_dispute-01540-ood",
+  "bn-multi_tool-txn_then_dispute-01544-ood",
+  "bn-multi_tool-txn_then_dispute-01552-ood",
+  "bn-multi_tool-txn_then_dispute-01559-ood",
+  "bn-no_tool-no_tool-01709-ood",
+  "bn-no_tool-no_tool-01717-ood",
+  "bn-no_tool-no_tool-01732-ood",
+  "bn-no_tool-no_tool-01751-ood",
+  "bn-no_tool-no_tool-01753-ood",
+  "bn-no_tool-no_tool-01759-ood",
+  "bn-no_tool-no_tool-01764-ood",
+  "bn-no_tool-no_tool-01765-ood",
+  "bn-no_tool-no_tool-01766-ood",
+  "bn-single_tool-block_card-01276-ood",
+  "bn-single_tool-block_card-01283-ood",
+  "bn-single_tool-block_card-01296-ood",
+  "bn-single_tool-block_card-01299-ood",
+  "bn-single_tool-block_card-01308-ood",
+  "bn-single_tool-calculate_loan_emi-01498-ood",
+  "bn-single_tool-calculate_loan_emi-01515-ood",
+  "bn-single_tool-calculate_loan_emi-01525-ood",
+  "bn-single_tool-calculate_loan_emi-01531-ood",
+  "bn-single_tool-check_upi_status-01375-ood",
+  "bn-single_tool-check_upi_status-01385-ood",
+  "bn-single_tool-find_nearest_branch-01468-ood",
+  "bn-single_tool-find_nearest_branch-01489-ood",
+  "bn-single_tool-get_account_balance-01195-ood",
+  "bn-single_tool-get_recent_transactions-01231-ood",
+  "bn-single_tool-raise_dispute-01321-ood",
+  "bn-single_tool-raise_dispute-01328-ood",
+  "bn-single_tool-raise_dispute-01334-ood",
+  "bn-single_tool-raise_dispute-01335-ood",
+  "bn-single_tool-raise_dispute-01337-ood",
+  "bn-single_tool-raise_dispute-01353-ood",
+  "bn-single_tool-transfer_money-01413-ood",
+  "bn-single_tool-transfer_money-01430-ood",
+  "bn-single_tool-transfer_money-01444-ood",
+  "en-clarify-block_card_no_card-00441-ood",
+  "en-clarify-block_card_no_card-00443-ood",
+  "en-clarify-block_card_no_card-00446-ood",
+  "en-clarify-block_card_no_card-00447-ood",
+  "en-clarify-block_card_no_card-00448-ood",
+  "en-clarify-block_card_no_card-00451-ood",
+  "en-clarify-dispute_no_txn-00472-ood",
+  "en-clarify-dispute_no_txn-00476-ood",
+  "en-clarify-dispute_no_txn-00481-ood",
+  "en-clarify-dispute_no_txn-00484-ood",
+  "en-clarify-emi_no_rate-00513-ood",
+  "en-clarify-emi_no_rate-00516-ood",
+  "en-clarify-transfer_no_amount-00453-ood",
+  "en-clarify-transfer_no_amount-00460-ood",
+  "en-clarify-transfer_no_amount-00465-ood",
+  "en-clarify-transfer_no_amount-00469-ood",
+  "en-clarify-upi_no_ref-00494-ood",
+  "en-clarify-upi_no_ref-00495-ood",
+  "en-clarify-upi_no_ref-00504-ood",
+  "en-clarify-upi_no_ref-00506-ood",
+  "en-multi_tool-balance_then_transfer-00414-ood",
+  "en-multi_tool-balance_then_transfer-00419-ood",
+  "en-multi_tool-balance_then_transfer-00422-ood",
+  "en-multi_tool-balance_then_transfer-00429-ood",
+  "en-multi_tool-balance_then_transfer-00430-ood",
+  "en-multi_tool-balance_then_transfer-00433-ood",
+  "en-multi_tool-balance_then_transfer-00434-ood",
+  "en-multi_tool-block_then_balance-00385-ood",
+  "en-multi_tool-block_then_balance-00403-ood",
+  "en-multi_tool-block_then_balance-00405-ood",
+  "en-multi_tool-txn_then_dispute-00362-ood",
+  "en-multi_tool-txn_then_dispute-00370-ood",
+  "en-no_tool-no_tool-00525-ood",
+  "en-no_tool-no_tool-00529-ood",
+  "en-no_tool-no_tool-00534-ood",
+  "en-no_tool-no_tool-00536-ood",
+  "en-no_tool-no_tool-00539-ood",
+  "en-no_tool-no_tool-00545-ood",
+  "en-no_tool-no_tool-00547-ood",
+  "en-no_tool-no_tool-00549-ood",
+  "en-no_tool-no_tool-00555-ood",
+  "en-no_tool-no_tool-00561-ood",
+  "en-no_tool-no_tool-00567-ood",
+  "en-no_tool-no_tool-00568-ood",
+  "en-no_tool-no_tool-00569-ood",
+  "en-no_tool-no_tool-00575-ood",
+  "en-no_tool-no_tool-00579-ood",
+  "en-no_tool-no_tool-00580-ood",
+  "en-single_tool-block_card-00132-ood",
+  "en-single_tool-calculate_loan_emi-00322-ood",
+  "en-single_tool-check_upi_status-00185-ood",
+  "en-single_tool-check_upi_status-00209-ood",
+  "en-single_tool-find_nearest_branch-00275-ood",
+  "en-single_tool-find_nearest_branch-00293-ood",
+  "en-single_tool-find_nearest_branch-00297-ood",
+  "en-single_tool-find_nearest_branch-00309-ood",
+  "en-single_tool-get_account_balance-00028-ood",
+  "en-single_tool-get_recent_transactions-00052-ood",
+  "en-single_tool-get_recent_transactions-00054-ood",
+  "en-single_tool-get_recent_transactions-00058-ood",
+  "en-single_tool-raise_dispute-00135-ood",
+  "en-single_tool-raise_dispute-00142-ood",
+  "en-single_tool-raise_dispute-00148-ood",
+  "en-single_tool-raise_dispute-00150-ood",
+  "en-single_tool-raise_dispute-00163-ood",
+  "en-single_tool-raise_dispute-00164-ood",
+  "en-single_tool-raise_dispute-00178-ood",
+  "en-single_tool-transfer_money-00230-ood",
+  "en-single_tool-transfer_money-00234-ood",
+  "en-single_tool-transfer_money-00237-ood",
+  "en-single_tool-transfer_money-00251-ood",
+  "hi-clarify-block_card_no_card-01024-ood",
+  "hi-clarify-block_card_no_card-01028-ood",
+  "hi-clarify-block_card_no_card-01029-ood",
+  "hi-clarify-block_card_no_card-01032-ood",
+  "hi-clarify-block_card_no_card-01033-ood",
+  "hi-clarify-block_card_no_card-01035-ood",
+  "hi-clarify-block_card_no_card-01037-ood",
+  "hi-clarify-block_card_no_card-01040-ood",
+  "hi-clarify-dispute_no_txn-01061-ood",
+  "hi-clarify-dispute_no_txn-01062-ood",
+  "hi-clarify-dispute_no_txn-01065-ood",
+  "hi-clarify-dispute_no_txn-01067-ood",
+  "hi-clarify-dispute_no_txn-01068-ood",
+  "hi-clarify-dispute_no_txn-01073-ood",
+  "hi-clarify-dispute_no_txn-01077-ood",
+  "hi-clarify-emi_no_rate-01097-ood",
+  "hi-clarify-emi_no_rate-01103-ood",
+  "hi-clarify-emi_no_rate-01106-ood",
+  "hi-clarify-emi_no_rate-01110-ood",
+  "hi-clarify-emi_no_rate-01113-ood",
+  "hi-clarify-transfer_no_amount-01046-ood",
+  "hi-clarify-transfer_no_amount-01052-ood",
+  "hi-clarify-transfer_no_amount-01053-ood",
+  "hi-clarify-upi_no_ref-01083-ood",
+  "hi-clarify-upi_no_ref-01086-ood",
+  "hi-clarify-upi_no_ref-01088-ood",
+  "hi-clarify-upi_no_ref-01089-ood",
+  "hi-clarify-upi_no_ref-01094-ood",
+  "hi-en-clarify-block_card_no_card-02202-ood",
+  "hi-en-clarify-block_card_no_card-02203-ood",
+  "hi-en-clarify-block_card_no_card-02206-ood",
+  "hi-en-clarify-block_card_no_card-02208-ood",
+  "hi-en-clarify-block_card_no_card-02209-ood",
+  "hi-en-clarify-block_card_no_card-02211-ood",
+  "hi-en-clarify-block_card_no_card-02215-ood",
+  "hi-en-clarify-dispute_no_txn-02240-ood",
+  "hi-en-clarify-dispute_no_txn-02242-ood",
+  "hi-en-clarify-dispute_no_txn-02246-ood",
+  "hi-en-clarify-dispute_no_txn-02249-ood",
+  "hi-en-clarify-dispute_no_txn-02254-ood",
+  "hi-en-clarify-emi_no_rate-02274-ood",
+  "hi-en-clarify-emi_no_rate-02275-ood",
+  "hi-en-clarify-emi_no_rate-02276-ood",
+  "hi-en-clarify-emi_no_rate-02279-ood",
+  "hi-en-clarify-emi_no_rate-02280-ood",
+  "hi-en-clarify-emi_no_rate-02288-ood",
+  "hi-en-clarify-emi_no_rate-02289-ood",
+  "hi-en-clarify-transfer_no_amount-02220-ood",
+  "hi-en-clarify-transfer_no_amount-02229-ood",
+  "hi-en-clarify-transfer_no_amount-02231-ood",
+  "hi-en-clarify-upi_no_ref-02257-ood",
+  "hi-en-clarify-upi_no_ref-02259-ood",
+  "hi-en-clarify-upi_no_ref-02268-ood",
+  "hi-en-clarify-upi_no_ref-02271-ood",
+  "hi-en-multi_tool-balance_then_transfer-02179-ood",
+  "hi-en-multi_tool-balance_then_transfer-02181-ood",
+  "hi-en-multi_tool-balance_then_transfer-02182-ood",
+  "hi-en-multi_tool-balance_then_transfer-02185-ood",
+  "hi-en-multi_tool-balance_then_transfer-02188-ood",
+  "hi-en-multi_tool-balance_then_transfer-02190-ood",
+  "hi-en-multi_tool-balance_then_transfer-02192-ood",
+  "hi-en-multi_tool-balance_then_transfer-02196-ood",
+  "hi-en-multi_tool-balance_then_transfer-02197-ood",
+  "hi-en-multi_tool-balance_then_transfer-02198-ood",
+  "hi-en-multi_tool-balance_then_transfer-02199-ood",
+  "hi-en-multi_tool-block_then_balance-02153-ood",
+  "hi-en-multi_tool-block_then_balance-02157-ood",
+  "hi-en-multi_tool-block_then_balance-02162-ood",
+  "hi-en-multi_tool-block_then_balance-02164-ood",
+  "hi-en-multi_tool-block_then_balance-02166-ood",
+  "hi-en-multi_tool-block_then_balance-02172-ood",
+  "hi-en-multi_tool-block_then_balance-02175-ood",
+  "hi-en-multi_tool-txn_then_dispute-02133-ood",
+  "hi-en-multi_tool-txn_then_dispute-02139-ood",
+  "hi-en-multi_tool-txn_then_dispute-02148-ood",
+  "hi-en-multi_tool-txn_then_dispute-02149-ood",
+  "hi-en-multi_tool-txn_then_dispute-02151-ood",
+  "hi-en-no_tool-no_tool-02296-ood",
+  "hi-en-no_tool-no_tool-02304-ood",
+  "hi-en-no_tool-no_tool-02308-ood",
+  "hi-en-no_tool-no_tool-02321-ood",
+  "hi-en-no_tool-no_tool-02324-ood",
+  "hi-en-no_tool-no_tool-02325-ood",
+  "hi-en-no_tool-no_tool-02327-ood",
+  "hi-en-no_tool-no_tool-02340-ood",
+  "hi-en-no_tool-no_tool-02341-ood",
+  "hi-en-no_tool-no_tool-02342-ood",
+  "hi-en-no_tool-no_tool-02345-ood",
+  "hi-en-no_tool-no_tool-02346-ood",
+  "hi-en-no_tool-no_tool-02351-ood",
+  "hi-en-no_tool-no_tool-02355-ood",
+  "hi-en-single_tool-block_card-01874-ood",
+  "hi-en-single_tool-block_card-01899-ood",
+  "hi-en-single_tool-calculate_loan_emi-02116-ood",
+  "hi-en-single_tool-calculate_loan_emi-02118-ood",
+  "hi-en-single_tool-check_upi_status-01953-ood",
+  "hi-en-single_tool-check_upi_status-01960-ood",
+  "hi-en-single_tool-check_upi_status-01974-ood",
+  "hi-en-single_tool-check_upi_status-01975-ood",
+  "hi-en-single_tool-check_upi_status-01976-ood",
+  "hi-en-single_tool-check_upi_status-01988-ood",
+  "hi-en-single_tool-find_nearest_branch-02045-ood",
+  "hi-en-single_tool-find_nearest_branch-02049-ood",
+  "hi-en-single_tool-find_nearest_branch-02052-ood",
+  "hi-en-single_tool-find_nearest_branch-02059-ood",
+  "hi-en-single_tool-get_account_balance-01768-ood",
+  "hi-en-single_tool-get_account_balance-01778-ood",
+  "hi-en-single_tool-get_account_balance-01784-ood",
+  "hi-en-single_tool-get_account_balance-01795-ood",
+  "hi-en-single_tool-get_recent_transactions-01814-ood",
+  "hi-en-single_tool-raise_dispute-01917-ood",
+  "hi-en-single_tool-transfer_money-02008-ood",
+  "hi-en-single_tool-transfer_money-02011-ood",
+  "hi-en-single_tool-transfer_money-02018-ood",
+  "hi-en-single_tool-transfer_money-02024-ood",
+  "hi-en-single_tool-transfer_money-02036-ood",
+  "hi-multi_tool-balance_then_transfer-00999-ood",
+  "hi-multi_tool-balance_then_transfer-01002-ood",
+  "hi-multi_tool-balance_then_transfer-01006-ood",
+  "hi-multi_tool-balance_then_transfer-01008-ood",
+  "hi-multi_tool-balance_then_transfer-01010-ood",
+  "hi-multi_tool-balance_then_transfer-01017-ood",
+  "hi-multi_tool-balance_then_transfer-01019-ood",
+  "hi-multi_tool-block_then_balance-00976-ood",
+  "hi-multi_tool-block_then_balance-00977-ood",
+  "hi-multi_tool-block_then_balance-00985-ood",
+  "hi-multi_tool-block_then_balance-00992-ood",
+  "hi-multi_tool-block_then_balance-00994-ood",
+  "hi-multi_tool-block_then_balance-00997-ood",
+  "hi-multi_tool-block_then_balance-00998-ood",
+  "hi-multi_tool-txn_then_dispute-00953-ood",
+  "hi-multi_tool-txn_then_dispute-00956-ood",
+  "hi-multi_tool-txn_then_dispute-00960-ood",
+  "hi-multi_tool-txn_then_dispute-00961-ood",
+  "hi-multi_tool-txn_then_dispute-00965-ood",
+  "hi-multi_tool-txn_then_dispute-00968-ood",
+  "hi-multi_tool-txn_then_dispute-00973-ood",
+  "hi-no_tool-no_tool-01114-ood",
+  "hi-no_tool-no_tool-01119-ood",
+  "hi-no_tool-no_tool-01125-ood",
+  "hi-no_tool-no_tool-01126-ood",
+  "hi-no_tool-no_tool-01127-ood",
+  "hi-no_tool-no_tool-01131-ood",
+  "hi-no_tool-no_tool-01143-ood",
+  "hi-no_tool-no_tool-01147-ood",
+  "hi-no_tool-no_tool-01148-ood",
+  "hi-no_tool-no_tool-01150-ood",
+  "hi-no_tool-no_tool-01155-ood",
+  "hi-no_tool-no_tool-01157-ood",
+  "hi-no_tool-no_tool-01158-ood",
+  "hi-no_tool-no_tool-01163-ood",
+  "hi-no_tool-no_tool-01167-ood",
+  "hi-no_tool-no_tool-01171-ood",
+  "hi-single_tool-block_card-00682-ood",
+  "hi-single_tool-block_card-00690-ood",
+  "hi-single_tool-block_card-00699-ood",
+  "hi-single_tool-check_upi_status-00771-ood",
+  "hi-single_tool-check_upi_status-00776-ood",
+  "hi-single_tool-check_upi_status-00780-ood",
+  "hi-single_tool-check_upi_status-00788-ood",
+  "hi-single_tool-check_upi_status-00800-ood",
+  "hi-single_tool-check_upi_status-00807-ood",
+  "hi-single_tool-find_nearest_branch-00879-ood",
+  "hi-single_tool-find_nearest_branch-00888-ood",
+  "hi-single_tool-find_nearest_branch-00893-ood",
+  "hi-single_tool-find_nearest_branch-00896-ood",
+  "hi-single_tool-get_account_balance-00593-ood",
+  "hi-single_tool-get_account_balance-00624-ood",
+  "hi-single_tool-raise_dispute-00729-ood",
+  "hi-single_tool-raise_dispute-00740-ood",
+  "hi-single_tool-raise_dispute-00763-ood",
+  "hi-single_tool-transfer_money-00824-ood",
+  "hi-single_tool-transfer_money-00831-ood",
+  "hi-single_tool-transfer_money-00836-ood",
+  "hi-single_tool-transfer_money-00844-ood",
+  "hi-single_tool-transfer_money-00854-ood"
+ ],
+ "verdicts": {
+  "bn-clarify-emi_no_rate-01686-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": false,
+   "same_missing": false,
+   "natural": true
+  },
+  "bn-clarify-block_card_no_card-01621-ood": {
+   "same_action": false,
+   "same_reason": false,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-block_card_no_card-01629-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-transfer_no_amount-01647-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-transfer_no_amount-01646-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-dispute_no_txn-01659-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-emi_no_rate-01689-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-upi_no_ref-01671-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-transfer_no_amount-01642-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-block_card_no_card-01626-ood": {
+   "same_action": false,
+   "same_reason": false,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-dispute_no_txn-01651-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-dispute_no_txn-01657-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-block_card_no_card-01620-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-dispute_no_txn-01655-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": false
+  },
+  "bn-clarify-upi_no_ref-01678-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-emi_no_rate-01697-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-upi_no_ref-01673-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-transfer_no_amount-01648-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-transfer_no_amount-01639-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": false
+  },
+  "bn-clarify-emi_no_rate-01700-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": false,
+   "same_missing": false,
+   "natural": true
+  },
+  "bn-clarify-block_card_no_card-01619-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-transfer_no_amount-01634-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-dispute_no_txn-01658-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-dispute_no_txn-01660-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-upi_no_ref-01669-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-dispute_no_txn-01649-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-emi_no_rate-01702-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-transfer_no_amount-01631-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-clarify-transfer_no_amount-01633-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-block_then_balance-01563-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-balance_then_transfer-01607-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-balance_then_transfer-01591-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-txn_then_dispute-01559-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-txn_then_dispute-01542-ood": {
+   "same_action": false,
+   "same_reason": false,
+   "same_details": false,
+   "same_missing": false,
+   "natural": false
+  },
+  "bn-multi_tool-balance_then_transfer-01603-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-txn_then_dispute-01538-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-txn_then_dispute-01540-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-block_then_balance-01580-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-txn_then_dispute-01544-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-txn_then_dispute-01552-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-balance_then_transfer-01597-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-balance_then_transfer-01589-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-block_then_balance-01575-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-block_then_balance-01579-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-multi_tool-block_then_balance-01586-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": false
+  },
+  "bn-no_tool-no_tool-01743-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": false,
+   "same_missing": false,
+   "natural": false
+  },
+  "bn-no_tool-no_tool-01728-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": false,
+   "natural": false
+  },
+  "bn-no_tool-no_tool-01765-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01719-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": false
+  },
+  "bn-no_tool-no_tool-01753-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01759-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01745-ood": {
+   "same_action": false,
+   "same_reason": false,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01721-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": false
+  },
+  "bn-no_tool-no_tool-01717-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01750-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01766-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01751-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01761-ood": {
+   "same_action": false,
+   "same_reason": false,
+   "same_details": false,
+   "same_missing": false,
+   "natural": false
+  },
+  "bn-no_tool-no_tool-01764-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01731-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": false
+  },
+  "bn-no_tool-no_tool-01709-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01707-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01732-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-no_tool-no_tool-01723-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": false
+  },
+  "bn-single_tool-transfer_money-01444-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-raise_dispute-01335-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-find_nearest_branch-01468-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-transfer_money-01430-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-block_card-01283-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-get_recent_transactions-01235-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": false,
+   "same_missing": false,
+   "natural": false
+  },
+  "bn-single_tool-raise_dispute-01337-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-get_recent_transactions-01231-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-block_card-01299-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-block_card-01308-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-raise_dispute-01353-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-calculate_loan_emi-01525-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-calculate_loan_emi-01498-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-raise_dispute-01339-ood": {
+   "same_action": false,
+   "same_reason": false,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-block_card-01276-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-calculate_loan_emi-01531-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-calculate_loan_emi-01515-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-get_account_balance-01195-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-raise_dispute-01334-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-block_card-01291-ood": {
+   "same_action": false,
+   "same_reason": false,
+   "same_details": true,
+   "same_missing": true,
+   "natural": false
+  },
+  "bn-single_tool-raise_dispute-01328-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-get_recent_transactions-01234-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": false,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-find_nearest_branch-01489-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-get_recent_transactions-01252-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": false,
+   "same_missing": false,
+   "natural": false
+  },
+  "bn-single_tool-check_upi_status-01385-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-raise_dispute-01321-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-block_card-01296-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-transfer_money-01413-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-single_tool-check_upi_status-01375-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-emi_no_rate-02875-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-upi_no_ref-02856-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-transfer_no_amount-02809-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-upi_no_ref-02853-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-emi_no_rate-02867-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-block_card_no_card-02791-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-emi_no_rate-02878-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-upi_no_ref-02851-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-emi_no_rate-02863-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-emi_no_rate-02872-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-transfer_no_amount-02816-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-block_card_no_card-02803-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-dispute_no_txn-02831-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-transfer_no_amount-02820-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-emi_no_rate-02866-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-upi_no_ref-02852-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-dispute_no_txn-02837-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-clarify-upi_no_ref-02861-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-txn_then_dispute-02723-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-balance_then_transfer-02778-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-block_then_balance-02759-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-balance_then_transfer-02769-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-txn_then_dispute-02730-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-block_then_balance-02751-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-txn_then_dispute-02716-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-block_then_balance-02763-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-txn_then_dispute-02726-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-txn_then_dispute-02731-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-block_then_balance-02749-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-block_then_balance-02745-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-multi_tool-block_then_balance-02761-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02908-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02890-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02910-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02927-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02930-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02940-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02909-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02942-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02901-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02915-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02892-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02899-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02914-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02936-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02885-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02896-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-no_tool-no_tool-02917-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-check_upi_status-02565-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-raise_dispute-02525-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-check_upi_status-02540-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-block_card-02468-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-get_recent_transactions-02411-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-find_nearest_branch-02659-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-find_nearest_branch-02627-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-check_upi_status-02580-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-check_upi_status-02554-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-raise_dispute-02517-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-raise_dispute-02531-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-get_recent_transactions-02435-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-calculate_loan_emi-02695-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-raise_dispute-02492-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-block_card-02484-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-transfer_money-02600-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-block_card-02446-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-find_nearest_branch-02661-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "bn-en-single_tool-transfer_money-02585-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-dispute_no_txn-00481-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-block_card_no_card-00441-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-upi_no_ref-00494-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-emi_no_rate-00513-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-emi_no_rate-00516-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-dispute_no_txn-00484-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-dispute_no_txn-00472-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-upi_no_ref-00504-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-transfer_no_amount-00469-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-upi_no_ref-00506-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-block_card_no_card-00447-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-transfer_no_amount-00460-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-block_card_no_card-00446-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-block_card_no_card-00443-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-upi_no_ref-00495-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-transfer_no_amount-00465-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-transfer_no_amount-00453-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-block_card_no_card-00451-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-block_card_no_card-00448-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-clarify-dispute_no_txn-00476-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-txn_then_dispute-00362-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-balance_then_transfer-00434-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-balance_then_transfer-00422-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-balance_then_transfer-00414-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-block_then_balance-00405-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-block_then_balance-00403-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-balance_then_transfer-00429-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-balance_then_transfer-00419-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-block_then_balance-00385-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-txn_then_dispute-00370-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-balance_then_transfer-00433-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-multi_tool-balance_then_transfer-00430-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00525-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00568-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00579-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00539-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00555-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00561-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00549-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00547-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00534-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00575-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00541-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00567-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00529-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00569-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00580-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00536-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-no_tool-no_tool-00545-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-find_nearest_branch-00293-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-get_recent_transactions-00052-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-transfer_money-00251-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-raise_dispute-00164-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-check_upi_status-00185-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-raise_dispute-00150-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-raise_dispute-00142-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-get_recent_transactions-00054-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-raise_dispute-00163-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-calculate_loan_emi-00322-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-transfer_money-00234-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-transfer_money-00230-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-block_card-00132-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-check_upi_status-00209-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-get_account_balance-00028-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-raise_dispute-00135-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-raise_dispute-00178-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-find_nearest_branch-00297-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-get_recent_transactions-00058-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-find_nearest_branch-00275-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-raise_dispute-00148-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-transfer_money-00237-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "en-single_tool-find_nearest_branch-00309-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-upi_no_ref-01094-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-block_card_no_card-01028-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-dispute_no_txn-01073-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-block_card_no_card-01040-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-dispute_no_txn-01062-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-block_card_no_card-01024-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-transfer_no_amount-01046-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-emi_no_rate-01110-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-upi_no_ref-01083-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-dispute_no_txn-01068-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-emi_no_rate-01097-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-transfer_no_amount-01052-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-dispute_no_txn-01061-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-upi_no_ref-01089-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-block_card_no_card-01029-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-dispute_no_txn-01065-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-block_card_no_card-01033-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-dispute_no_txn-01067-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-dispute_no_txn-01077-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-emi_no_rate-01106-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-block_card_no_card-01037-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-upi_no_ref-01086-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-block_card_no_card-01035-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-block_card_no_card-01032-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-upi_no_ref-01088-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-emi_no_rate-01103-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-transfer_no_amount-01053-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-clarify-emi_no_rate-01113-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-block_then_balance-00977-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-txn_then_dispute-00968-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-balance_then_transfer-01017-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-block_then_balance-00997-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-txn_then_dispute-00953-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-balance_then_transfer-01002-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-txn_then_dispute-00973-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-balance_then_transfer-01008-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-balance_then_transfer-01010-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-block_then_balance-00976-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-block_then_balance-00994-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-block_then_balance-00998-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-txn_then_dispute-00956-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-block_then_balance-00992-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-balance_then_transfer-00999-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-balance_then_transfer-01006-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-block_then_balance-00985-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-txn_then_dispute-00960-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-balance_then_transfer-01019-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-txn_then_dispute-00961-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-multi_tool-txn_then_dispute-00965-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01157-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01147-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01114-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01131-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01143-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01150-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01155-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01148-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01163-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01119-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01125-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01137-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": false,
+   "same_missing": false,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01171-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01158-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01126-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01167-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-no_tool-no_tool-01127-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-raise_dispute-00729-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-check_upi_status-00780-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-transfer_money-00831-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-get_account_balance-00593-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-get_account_balance-00624-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-find_nearest_branch-00893-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-check_upi_status-00788-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-find_nearest_branch-00896-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-block_card-00699-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-raise_dispute-00740-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-find_nearest_branch-00879-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-raise_dispute-00763-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-check_upi_status-00771-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-find_nearest_branch-00888-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-transfer_money-00824-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-check_upi_status-00776-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-transfer_money-00854-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-check_upi_status-00800-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-check_upi_status-00807-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-block_card-00690-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-transfer_money-00836-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-block_card-00682-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-single_tool-transfer_money-00844-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-emi_no_rate-02276-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-upi_no_ref-02271-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-transfer_no_amount-02231-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-upi_no_ref-02268-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-emi_no_rate-02279-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-dispute_no_txn-02240-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-emi_no_rate-02289-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-dispute_no_txn-02242-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-block_card_no_card-02206-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-block_card_no_card-02203-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-emi_no_rate-02275-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-block_card_no_card-02211-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-upi_no_ref-02257-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-block_card_no_card-02208-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-emi_no_rate-02280-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-block_card_no_card-02215-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-upi_no_ref-02259-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-dispute_no_txn-02249-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-transfer_no_amount-02220-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-block_card_no_card-02209-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-dispute_no_txn-02246-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-dispute_no_txn-02254-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-block_card_no_card-02202-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-emi_no_rate-02288-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-emi_no_rate-02274-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-clarify-transfer_no_amount-02229-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02182-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-block_then_balance-02172-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-block_then_balance-02153-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-txn_then_dispute-02133-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-block_then_balance-02162-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-txn_then_dispute-02149-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02197-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02196-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02192-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-txn_then_dispute-02148-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02185-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02181-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02188-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02198-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02199-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-block_then_balance-02157-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02179-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-txn_then_dispute-02139-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-balance_then_transfer-02190-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-txn_then_dispute-02151-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-block_then_balance-02164-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-block_then_balance-02166-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-multi_tool-block_then_balance-02175-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02308-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02325-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02351-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02340-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02342-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02318-ood": {
+   "same_action": false,
+   "same_reason": false,
+   "same_details": false,
+   "same_missing": false,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02334-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02345-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02355-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02304-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02319-ood": {
+   "same_action": false,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02315-ood": {
+   "same_action": false,
+   "same_reason": false,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02296-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02346-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02327-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02324-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02341-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-no_tool-no_tool-02321-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-check_upi_status-01976-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-check_upi_status-01953-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-get_account_balance-01768-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-check_upi_status-01988-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-block_card-01884-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": false,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-calculate_loan_emi-02118-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-block_card-01899-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-check_upi_status-01960-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-get_account_balance-01778-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-find_nearest_branch-02049-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-find_nearest_branch-02059-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-calculate_loan_emi-02116-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-transfer_money-02018-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-find_nearest_branch-02052-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-check_upi_status-01974-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-find_nearest_branch-02045-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-transfer_money-02011-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-get_account_balance-01795-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-check_upi_status-01975-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-transfer_money-02036-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-transfer_money-02008-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-raise_dispute-01917-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-transfer_money-02024-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-block_card-01874-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-get_recent_transactions-01814-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  },
+  "hi-en-single_tool-get_account_balance-01784-ood": {
+   "same_action": true,
+   "same_reason": true,
+   "same_details": true,
+   "same_missing": true,
+   "natural": true
+  }
+ }
+}

@@ -1,0 +1,169 @@
+{
+  "model_tag": "tinyaya-sft-a-final-ood",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "adapter": "ToolW/desi-agent-tinyaya-sft-lora",
+  "split": "test",
+  "n": 436,
+  "git_sha": "3accc962a70241dded08a08ca5ddfe1cfb948250",
+  "seed": 1234,
+  "decoding": {
+    "temperature": 0.0,
+    "max_new_tokens": 256,
+    "stop": [
+      "</tool_call>"
+    ]
+  },
+  "max_steps": 6,
+  "overall": {
+    "schema_valid": 0.9885,
+    "tool_selection_correct": 0.9679,
+    "args_exact": 0.9014,
+    "task_success": 0.9014,
+    "n_calls": 0.7271,
+    "redundant_calls": 0.0161,
+    "false_action": 0.0573,
+    "truncated": 0.0,
+    "n": 436
+  },
+  "by_lang": {
+    "bn": {
+      "schema_valid": 0.9892,
+      "tool_selection_correct": 0.9355,
+      "args_exact": 0.8495,
+      "task_success": 0.8495,
+      "n_calls": 0.6022,
+      "redundant_calls": 0.0,
+      "false_action": 0.0753,
+      "truncated": 0.0,
+      "n": 93
+    },
+    "bn-en": {
+      "schema_valid": 0.9701,
+      "tool_selection_correct": 0.9254,
+      "args_exact": 0.791,
+      "task_success": 0.791,
+      "n_calls": 0.7164,
+      "redundant_calls": 0.0597,
+      "false_action": 0.1194,
+      "truncated": 0.0,
+      "n": 67
+    },
+    "en": {
+      "schema_valid": 0.9885,
+      "tool_selection_correct": 0.9885,
+      "args_exact": 0.908,
+      "task_success": 0.908,
+      "n_calls": 0.7701,
+      "redundant_calls": 0.0115,
+      "false_action": 0.046,
+      "truncated": 0.0,
+      "n": 87
+    },
+    "hi": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 0.9894,
+      "args_exact": 0.9894,
+      "task_success": 0.9894,
+      "n_calls": 0.766,
+      "redundant_calls": 0.0106,
+      "false_action": 0.0106,
+      "truncated": 0.0,
+      "n": 94
+    },
+    "hi-en": {
+      "schema_valid": 0.9895,
+      "tool_selection_correct": 0.9895,
+      "args_exact": 0.9368,
+      "task_success": 0.9368,
+      "n_calls": 0.7789,
+      "redundant_calls": 0.0105,
+      "false_action": 0.0526,
+      "truncated": 0.0,
+      "n": 95
+    }
+  },
+  "by_category": {
+    "clarify": {
+      "schema_valid": 0.9918,
+      "tool_selection_correct": 0.9508,
+      "args_exact": 0.9508,
+      "task_success": 0.9508,
+      "n_calls": 0.0492,
+      "redundant_calls": 0.0492,
+      "false_action": 0.0164,
+      "truncated": 0.0,
+      "n": 122
+    },
+    "multi_tool": {
+      "schema_valid": 0.9674,
+      "tool_selection_correct": 0.9457,
+      "args_exact": 0.7826,
+      "task_success": 0.7826,
+      "n_calls": 1.9565,
+      "redundant_calls": 0.0,
+      "false_action": 0.1304,
+      "truncated": 0.0,
+      "n": 92
+    },
+    "no_tool": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 1.0,
+      "task_success": 1.0,
+      "n_calls": 0.0,
+      "redundant_calls": 0.0,
+      "false_action": 0.0,
+      "truncated": 0.0,
+      "n": 90
+    },
+    "single_tool": {
+      "schema_valid": 0.9924,
+      "tool_selection_correct": 0.9773,
+      "args_exact": 0.8712,
+      "task_success": 0.8712,
+      "n_calls": 0.9924,
+      "redundant_calls": 0.0076,
+      "false_action": 0.0833,
+      "truncated": 0.0,
+      "n": 132
+    }
+  },
+  "mean_latency_s": 15.861,
+  "traces_path": "/kaggle/working/out/results/tinyaya-sft-a-final-ood/test.traces.jsonl",
+  "auditkit": {
+    "path": "/kaggle/working/out/results/tinyaya-sft-a-final-ood/test.auditkit.json",
+    "scorers": [
+      "tool_call_f1",
+      "tool_call_validity",
+      "trajectory_match",
+      "redundant_tool_calls",
+      "agent_loop_detection"
+    ],
+    "means": {
+      "agent_loop_detection": 1.0,
+      "redundant_tool_calls": 0.0,
+      "tool_call_exact": 0.8945,
+      "tool_call_f1": 0.9144,
+      "tool_call_precision": 0.9151,
+      "tool_call_recall": 0.914,
+      "tool_call_validity": 0.9824,
+      "trajectory_in_order": 0.8945,
+      "trajectory_strict": 0.8945
+    },
+    "n_scored": {
+      "tool_call_precision": 436,
+      "tool_call_recall": 436,
+      "tool_call_f1": 436,
+      "tool_call_exact": 436,
+      "trajectory_strict": 436,
+      "trajectory_in_order": 436,
+      "tool_call_validity": 227,
+      "redundant_tool_calls": 227,
+      "agent_loop_detection": 227
+    }
+  },
+  "variant": {
+    "episodes": "/kaggle/working/out/data/test_ood.jsonl",
+    "perturbed_bank": false
+  }
+}

@@ -1,0 +1,50 @@
+{"id": "bn-multi_tool-balance_then_transfer-01588", "problems": ["lost_values", "new_values"]}
+{"id": "bn-multi_tool-balance_then_transfer-01608", "problems": ["lost_values", "new_values"]}
+{"id": "bn-multi_tool-balance_then_transfer-01593", "problems": ["lost_values", "new_values"]}
+{"id": "bn-multi_tool-balance_then_transfer-01601", "problems": ["lost_values", "new_values"]}
+{"id": "bn-multi_tool-block_then_balance-01587", "problems": ["wrong_script"]}
+{"id": "bn-no_tool-no_tool-01737", "problems": ["empty_or_multiline", "wrong_script"]}
+{"id": "bn-single_tool-transfer_money-01441", "problems": ["lost_values", "new_values"]}
+{"id": "bn-en-clarify-block_card_no_card-02804", "problems": ["empty_or_multiline", "wrong_script", "not_romanized"]}
+{"id": "bn-en-clarify-dispute_no_txn-02827", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-clarify-block_card_no_card-02806", "problems": ["not_romanized"]}
+{"id": "bn-en-clarify-block_card_no_card-02796", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-clarify-dispute_no_txn-02844", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-clarify-block_card_no_card-02807", "problems": ["not_romanized"]}
+{"id": "bn-en-clarify-dispute_no_txn-02832", "problems": ["not_romanized"]}
+{"id": "bn-en-clarify-emi_no_rate-02874", "problems": ["not_romanized"]}
+{"id": "bn-en-clarify-block_card_no_card-02793", "problems": ["not_romanized"]}
+{"id": "bn-en-clarify-block_card_no_card-02798", "problems": ["empty_or_multiline"]}
+{"id": "bn-en-multi_tool-balance_then_transfer-02788", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-multi_tool-txn_then_dispute-02718", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-multi_tool-balance_then_transfer-02772", "problems": ["lost_values", "wrong_script", "not_romanized"]}
+{"id": "bn-en-multi_tool-balance_then_transfer-02771", "problems": ["empty_or_multiline", "wrong_script", "not_romanized"]}
+{"id": "bn-en-multi_tool-txn_then_dispute-02733", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-multi_tool-txn_then_dispute-02727", "problems": ["not_romanized"]}
+{"id": "bn-en-multi_tool-txn_then_dispute-02732", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-multi_tool-txn_then_dispute-02738", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-multi_tool-balance_then_transfer-02783", "problems": ["empty_or_multiline"]}
+{"id": "bn-en-multi_tool-balance_then_transfer-02775", "problems": ["empty_or_multiline", "lost_values", "wrong_script", "not_romanized"]}
+{"id": "bn-en-multi_tool-balance_then_transfer-02786", "problems": ["not_romanized"]}
+{"id": "bn-en-multi_tool-txn_then_dispute-02724", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-no_tool-no_tool-02886", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-no_tool-no_tool-02939", "problems": ["empty_or_multiline", "not_romanized"]}
+{"id": "bn-en-single_tool-get_account_balance-02364", "problems": ["not_romanized"]}
+{"id": "bn-en-single_tool-get_account_balance-02395", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-single_tool-find_nearest_branch-02632", "problems": ["empty_or_multiline", "not_romanized"]}
+{"id": "bn-en-single_tool-find_nearest_branch-02628", "problems": ["not_romanized"]}
+{"id": "bn-en-single_tool-get_recent_transactions-02408", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-single_tool-block_card-02480", "problems": ["lost_values", "not_romanized"]}
+{"id": "bn-en-single_tool-get_recent_transactions-02420", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-single_tool-calculate_loan_emi-02677", "problems": ["lost_values", "new_values", "wrong_script", "not_romanized", "broken_chars"]}
+{"id": "bn-en-single_tool-calculate_loan_emi-02685", "problems": ["wrong_script", "not_romanized"]}
+{"id": "bn-en-single_tool-find_nearest_branch-02641", "problems": ["lost_values", "new_values", "wrong_script", "not_romanized"]}
+{"id": "en-multi_tool-balance_then_transfer-00418", "problems": ["lost_values"]}
+{"id": "en-no_tool-no_tool-00570", "problems": ["empty_or_multiline"]}
+{"id": "hi-single_tool-calculate_loan_emi-00921", "problems": ["empty_or_multiline", "new_values", "wrong_script"]}
+{"id": "hi-single_tool-check_upi_status-00804", "problems": ["lost_values", "new_values"]}
+{"id": "hi-en-multi_tool-txn_then_dispute-02145", "problems": ["wrong_script", "not_romanized"]}
+{"id": "hi-en-no_tool-no_tool-02303", "problems": ["wrong_script", "not_romanized"]}
+{"id": "hi-en-single_tool-raise_dispute-01921", "problems": ["wrong_script", "not_romanized"]}
+{"id": "hi-en-single_tool-transfer_money-02001", "problems": ["lost_values", "wrong_script", "not_romanized"]}
+{"id": "hi-en-single_tool-calculate_loan_emi-02105", "problems": ["wrong_script", "not_romanized"]}
