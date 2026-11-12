@@ -1,0 +1,97 @@
+{
+  "model_tag": "tinyaya-global-base-multiturn",
+  "seed": 1234,
+  "n_targets": 300,
+  "switch": {
+    "overall": {
+      "n": 300,
+      "task_success": 0.4567,
+      "lang_match": 0.4067,
+      "both": 0.1867,
+      "false_action": 0.1933
+    },
+    "by_target_lang": {
+      "bn": {
+        "n": 69,
+        "task_success": 0.4348,
+        "lang_match": 0.7971,
+        "both": 0.3188,
+        "false_action": 0.2174
+      },
+      "bn-en": {
+        "n": 67,
+        "task_success": 0.403,
+        "lang_match": 0.0448,
+        "both": 0.0299,
+        "false_action": 0.2388
+      },
+      "en": {
+        "n": 59,
+        "task_success": 0.5254,
+        "lang_match": 0.2373,
+        "both": 0.1356,
+        "false_action": 0.1356
+      },
+      "hi": {
+        "n": 50,
+        "task_success": 0.44,
+        "lang_match": 0.76,
+        "both": 0.32,
+        "false_action": 0.22
+      },
+      "hi-en": {
+        "n": 55,
+        "task_success": 0.4909,
+        "lang_match": 0.2182,
+        "both": 0.1455,
+        "false_action": 0.1455
+      }
+    }
+  },
+  "same": {
+    "overall": {
+      "n": 300,
+      "task_success": 0.4467,
+      "lang_match": 0.77,
+      "both": 0.3233,
+      "false_action": 0.1867
+    },
+    "by_target_lang": {
+      "bn": {
+        "n": 69,
+        "task_success": 0.3333,
+        "lang_match": 0.9275,
+        "both": 0.2754,
+        "false_action": 0.2899
+      },
+      "bn-en": {
+        "n": 67,
+        "task_success": 0.4179,
+        "lang_match": 0.3134,
+        "both": 0.0746,
+        "false_action": 0.1493
+      },
+      "en": {
+        "n": 59,
+        "task_success": 0.5085,
+        "lang_match": 1.0,
+        "both": 0.5085,
+        "false_action": 0.1356
+      },
+      "hi": {
+        "n": 50,
+        "task_success": 0.46,
+        "lang_match": 0.94,
+        "both": 0.46,
+        "false_action": 0.18
+      },
+      "hi-en": {
+        "n": 55,
+        "task_success": 0.5455,
+        "lang_match": 0.7273,
+        "both": 0.3636,
+        "false_action": 0.1636
+      }
+    }
+  }
+}
