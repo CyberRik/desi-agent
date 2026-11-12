@@ -42,6 +42,16 @@ class HFPolicy:
         return self.batch([chat])[0]
 
 
+def native_bf16() -> bool:
+    """True only on GPUs with bf16 hardware (compute capability >= 8, Ampere+).
+
+    `torch.cuda.is_bf16_supported()` is True on a T4 too (emulated), and emulated bf16 matmuls
+    (magma_sgemmEx) made F3 training ~4.5x slower on Kaggle T4s than fp16.
+    """
+    import torch
+    return torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8
+
+
 def load_policy(model_id: str = DEFAULT_MODEL, adapter: str | None = None, *, load_in_4bit: bool = False,
                 dtype: str = "auto", device_map: str | dict | None = "auto", **gen_kw) -> HFPolicy:
     """HF transformers policy. `adapter` = local path or HF repo of a PEFT LoRA (applied on top)."""
@@ -59,9 +69,9 @@ def load_policy(model_id: str = DEFAULT_MODEL, adapter: str | None = None, *, lo
         kw["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.float16)
     else:
-        # T4 has no bf16; fall back to fp16 there.
+        # T4 has no bf16 hardware; fall back to fp16 there.
         if dtype == "auto":
-            kw["dtype"] = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() \
+            kw["dtype"] = torch.bfloat16 if native_bf16() \
                 else (torch.float16 if torch.cuda.is_available() else torch.float32)
         else:
             kw["dtype"] = getattr(torch, dtype)
