@@ -90,14 +90,29 @@ def evaluate(policy, split: str = "test", model_tag: str = "unnamed", *, limit: 
     return results
 
 
-def openai_policy(base_url: str, model: str, api_key: str = "EMPTY", temperature: float = 0.0, max_tokens: int = 256):
-    """Policy backed by any OpenAI-compatible chat endpoint (vLLM, Gemini, Groq, ...). Thread-safe."""
+def openai_policy(base_url: str, model: str, api_key: str = "EMPTY", temperature: float = 0.0, max_tokens: int = 256,
+                  stop_at_tool_call: bool = True, no_thinking: bool = False):
+    """Policy backed by any OpenAI-compatible chat endpoint (vLLM, Gemini, Groq, ...). Thread-safe.
+
+    stop_at_tool_call mirrors train.policy.DEFAULT_GEN (generation stops after `</tool_call>`, the tag is kept so
+    fmt.parse_assistant sees a complete call). no_thinking turns off Qwen3-style reasoning via the chat template."""
     from openai import OpenAI
-    client = OpenAI(base_url=base_url, api_key=api_key)
+    client = OpenAI(base_url=base_url, api_key=api_key, timeout=300)
+    extra: dict = {}
+    if stop_at_tool_call:
+        extra["include_stop_str_in_output"] = True  # vLLM extension; other servers ignore unknown fields or strip it
+    if no_thinking:
+        extra["chat_template_kwargs"] = {"enable_thinking": False}
 
     def policy(chat: list[dict]) -> str:
-        r = client.chat.completions.create(model=model, messages=chat, temperature=temperature, max_tokens=max_tokens)
-        return r.choices[0].message.content or ""
+        r = client.chat.completions.create(model=model, messages=chat, temperature=temperature, max_tokens=max_tokens,
+                                           stop=["</tool_call>"] if stop_at_tool_call else None,
+                                           extra_body=extra or None)
+        text = r.choices[0].message.content or ""
+        if stop_at_tool_call and "<tool_call>" in text and "</tool_call>" not in text \
+                and r.choices[0].finish_reason == "stop":
+            text += "</tool_call>"  # server stripped the stop string
+        return text.strip()
     return policy
 
 
@@ -120,6 +135,10 @@ def main() -> None:
     p.add_argument("--openai-model")
     p.add_argument("--api-key", default="EMPTY")
     p.add_argument("--gold", action="store_true", help="sanity check: replay gold (should score ~1.0)")
+    p.add_argument("--no-thinking", action="store_true", help="disable Qwen3-style thinking (teacher runs)")
+    p.add_argument("--adapter", help="recorded in results (the LoRA name served by vLLM --lora-modules)")
+    p.add_argument("--model-id", help="base model id recorded in results (defaults to --openai-model)")
+    p.add_argument("--out-dir")
     a = p.parse_args()
     if a.gold:
         from ..api import DummyPolicy
@@ -127,8 +146,11 @@ def main() -> None:
         traces = [_one(DummyPolicy(e), e, 6) for e in eps]
         print(json.dumps(aggregate([t["scores"] for t in traces]), indent=2))
         return
-    policy = openai_policy(a.openai_base_url, a.openai_model, a.api_key)
-    res = evaluate(policy, a.split, a.model_tag, limit=a.limit, workers=a.workers, model_id=a.openai_model)
+    policy = openai_policy(a.openai_base_url, a.openai_model, a.api_key, no_thinking=a.no_thinking)
+    res = evaluate(policy, a.split, a.model_tag, limit=a.limit, workers=a.workers,
+                   model_id=a.model_id or a.openai_model, adapter=a.adapter, out_dir=a.out_dir,
+                   decoding={"temperature": 0.0, "max_new_tokens": 256, "stop": ["</tool_call>"],
+                             "no_thinking": a.no_thinking})
     print_table(res)
 
 
