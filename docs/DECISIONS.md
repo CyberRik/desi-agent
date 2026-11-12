@@ -11,3 +11,6 @@ Add a new entry that supersedes it instead.
 - 2026-11-12 [R] Coordination via GitHub Issues through `scripts/collab.py`, not a shared status file. Why: no merge conflicts between two agents.
 - OPEN: teacher model for R2 (candidates: Cohere Command A via trial key, which fits the partner theme; or another strong API model). Decide by Nov 13 morning.
 - OPEN: HF namespace (`HF_NS`) — org recommended so both can push.
+- 2026-11-12 [F] Tiny Aya Global (Cohere2) chat template accepts our `system` role as-is (no folding needed); it also prepends Cohere's own safety preamble, which we keep. Assistant turns render as `<|START_RESPONSE|>…<|END_RESPONSE|><|END_OF_TURN_TOKEN|>`. Why: verified in F1 on HF Jobs T4 (job 6af5767f9737d9a9e093da5b).
+- 2026-11-12 [F] SFT = AgentTune `Project.distill` with our own `trainer_factory` (transformers `Trainer` + PEFT LoRA, loss on assistant tokens only), and AgentTune SFT rows are re-rendered through `fmt.to_chat` before tokenizing. Why: AgentTune's own row format (`json.dumps` tool calls, `tool` role) differs from MODEL_IO.md; training must see the exact text eval parses.
+- 2026-11-12 [F] Policy generation stops at `</tool_call>`. Why: base model otherwise hallucinates its own `<tool_result>`; parse reads only the first call, so scores are unchanged and decoding is faster.
