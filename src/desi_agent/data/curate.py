@@ -85,6 +85,19 @@ def _curatorkit(rows: list[dict], minhash_threshold: float) -> tuple[list[dict],
     passed, rejected = SecretsGate(fields=["instruction", "output"]).run(samples)
     dropped += [(by_id[r.id], "curatorkit:secrets") for r in rejected]
 
+    # Same customer message (exact text) twice in one language: keep the first. Otherwise a message can sit in both
+    # train and test with different replies ("who will win today's cricket match?" came out 6x in Hindi).
+    by_lang: dict[str, list] = collections.defaultdict(list)
+    for s in passed:
+        by_lang[s.metadata["lang"]].append(s)
+    passed = []
+    for _, grp in sorted(by_lang.items()):
+        prompts = [DataSample(id=s.id, source_uri=s.source_uri, task_type="prompt_only", instruction=s.instruction)
+                   for s in grp]
+        keep = {p.id for p in ExactDeduplicator().run(prompts)}
+        dropped += [(by_id[s.id], "curatorkit:same_customer_msg") for s in grp if s.id not in keep]
+        passed += [s for s in grp if s.id in keep]
+
     kept: list = []
     groups: dict[tuple, list] = collections.defaultdict(list)
     for s in passed:  # dedup inside (lang, category): same wording in another language/category is not a dup
