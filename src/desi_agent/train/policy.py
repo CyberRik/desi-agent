@@ -14,7 +14,9 @@ from __future__ import annotations
 from .chat import apply_template
 
 DEFAULT_MODEL = "CohereLabs/tiny-aya-global"
-DEFAULT_GEN = {"max_new_tokens": 256, "do_sample": False}
+# Stop right after a tool call: the model otherwise goes on to hallucinate its own <tool_result>.
+# fmt.parse_assistant only reads the first call, so this changes speed, not scores.
+DEFAULT_GEN = {"max_new_tokens": 256, "do_sample": False, "stop_strings": ["</tool_call>"]}
 
 
 class HFPolicy:
@@ -32,7 +34,7 @@ class HFPolicy:
 
         enc = self._encode(chats)
         with torch.inference_mode():
-            out = self.model.generate(**enc, pad_token_id=self.tok.pad_token_id, **self.gen_kw)
+            out = self.model.generate(**enc, pad_token_id=self.tok.pad_token_id, tokenizer=self.tok, **self.gen_kw)
         new = out[:, enc["input_ids"].shape[1]:]
         return [t.strip() for t in self.tok.batch_decode(new, skip_special_tokens=True)]
 
