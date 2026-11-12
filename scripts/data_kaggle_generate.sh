@@ -7,11 +7,12 @@ MODEL=${TEACHER_MODEL:-Qwen/Qwen3-14B-AWQ}
 OUT=data/raw/teacher.jsonl
 
 pip install -q "vllm>=0.8" openai >/dev/null
-pip install -q -e . >/dev/null
+python -c "import vllm, torch, sys; print('python', sys.version.split()[0], 'vllm', vllm.__version__, 'torch', torch.__version__)"
+pip install -q --ignore-requires-python -e . >/dev/null
 
 if ! curl -sf localhost:8000/health >/dev/null; then
   nohup vllm serve "$MODEL" --tensor-parallel-size 2 --dtype half --max-model-len 4096 \
-        --gpu-memory-utilization 0.92 --max-num-seqs 64 --disable-log-requests > vllm.log 2>&1 &
+        --gpu-memory-utilization 0.92 --max-num-seqs 64 > vllm.log 2>&1 &
   echo "waiting for vLLM ($MODEL)..."
   for i in $(seq 1 120); do curl -sf localhost:8000/health >/dev/null && break; sleep 10; done
   curl -sf localhost:8000/health >/dev/null || { tail -50 vllm.log; exit 1; }
