@@ -12,4 +12,4 @@ Add a new entry that supersedes it instead.
 - OPEN: teacher model for R2 (candidates: Cohere Command A via trial key, which fits the partner theme; or another strong API model). Decide by Nov 13 morning.
 - OPEN: HF namespace (`HF_NS`) — org recommended so both can push.
 - 2026-11-12 [R] Teacher = free, self-hosted: Qwen/Qwen3-14B-AWQ on vLLM, Kaggle T4x2 (thinking disabled). Gemma 3 skipped (fp16 instability on T4). Gold tool calls come from code (`data/scenarios.py`) + mock bank; the teacher only writes the customer message and the final reply, so labels are correct by construction. Supersedes the OPEN teacher item.
-- 2026-11-12 [R] HF namespace = `ToolWallah` org. Supersedes the OPEN HF_NS item.
+- 2026-11-12 [R] HF namespace = `ToolW` org (huggingface.co/ToolW; R = HF `Rik0411`). Supersedes the OPEN HF_NS item.
