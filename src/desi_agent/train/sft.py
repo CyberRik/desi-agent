@@ -327,7 +327,13 @@ def train_sft(cfg: dict) -> dict:
     stopped_early = any(getattr(cb, "hit", False) for cb in factory.callbacks)
     if val_rows:  # collective under DDP: every rank runs it. Reuse the eval logged at the last step if there is one
         last = [e for e in state.log_history if "eval_loss" in e and e.get("step") == state.global_step]
-        eval_metrics = {k: v for k, v in last[-1].items() if k.startswith("eval_")} if last else factory.trainer.evaluate()
+        reuse = [bool(last)]
+        if torch.distributed.is_available() and torch.distributed.is_initialized():
+            torch.distributed.broadcast_object_list(reuse, src=0)  # rank 0 decides: no rank calls evaluate() alone
+        if reuse[0] and last:
+            eval_metrics = {k: v for k, v in last[-1].items() if k.startswith("eval_")}
+        else:
+            eval_metrics = factory.trainer.evaluate()
     if not _rank()[2]:
         return {"adapter_path": None, "hf_repo": None, "metrics": {}}  # non-main DDP ranks stop here
 
