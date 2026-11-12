@@ -23,6 +23,41 @@ def timed(fn, n=3):
     return round((time.time() - t) / n, 3)
 
 
+def profile_trainer(a) -> None:
+    """Run train_sft (seed, single GPU) with a callback that times each step and profiles steps 4-5."""
+    import torch
+    from transformers import TrainerCallback
+    from desi_agent.train import sft
+
+    times: list[float] = []
+
+    class Timer(TrainerCallback):
+        def __init__(self):
+            self.prof = None
+
+        def on_step_begin(self, args, state, control, **kw):
+            torch.cuda.synchronize(); self.t = time.time()
+            if state.global_step == 3:
+                self.prof = torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,
+                                                               torch.profiler.ProfilerActivity.CUDA])
+                self.prof.__enter__()
+
+        def on_step_end(self, args, state, control, **kw):
+            torch.cuda.synchronize(); times.append(round(time.time() - self.t, 3))
+            print(f"[F] step {state.global_step}: {times[-1]} s", flush=True)
+            if self.prof is not None and state.global_step == 5:
+                self.prof.__exit__(None, None, None)
+                print(self.prof.key_averages().table(sort_by="self_cuda_time_total", row_limit=25), flush=True)
+                print(self.prof.key_averages().table(sort_by="self_cpu_time_total", row_limit=15), flush=True)
+                self.prof = None
+
+    orig = sft._callbacks
+    sft._callbacks = lambda c: orig(c) + [Timer()]
+    r = sft.train_sft({"split": "seed", "val_split": None, "max_steps": 7, "grad_accum": 1, "logging_steps": 1,
+                       "save_steps": 1000, "out_dir": a.out})
+    print("[F] profile: per-step seconds (1 row/step):", times, "metrics:", json.dumps(r["metrics"], default=str), flush=True)
+
+
 def main() -> None:
     import torch
     from peft import LoraConfig, get_peft_model
@@ -31,8 +66,11 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="CohereLabs/tiny-aya-global")
     ap.add_argument("--tokens", type=int, default=1450)
+    ap.add_argument("--trainer", action="store_true", help="time our real train_sft path step by step instead")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
+    if a.trainer:
+        return profile_trainer(a)
     res: dict = {"gpu": torch.cuda.get_device_name(0), "tokens": a.tokens}
     tok = AutoTokenizer.from_pretrained(a.model)
     ids = torch.randint(1000, 20000, (1, a.tokens), device="cuda")

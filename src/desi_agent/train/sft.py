@@ -247,6 +247,7 @@ class TinyAyaSFTFactory:
             save_strategy="steps", save_steps=c["save_steps"], save_total_limit=1, save_only_model=False,
             train_sampling_strategy="group_by_length" if c["group_by_length"] and c["batch_size"] > 1 else "random",
             ddp_find_unused_parameters=False if world > 1 else None,
+            prediction_loss_only=True,  # else eval keeps + gathers full 261k-vocab logits (~0.75 GB/row)
             report_to=[], seed=c["seed"], data_seed=c["seed"],
             bf16=bf16, fp16=cuda and not bf16, use_cpu=not cuda,
             gradient_checkpointing=False,  # enabled on the model above
