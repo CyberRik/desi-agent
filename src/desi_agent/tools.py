@@ -49,7 +49,10 @@ def _h(*parts: Any) -> int:
 
 
 def _get_account_balance(account_type: str) -> dict:
-    base = {"savings": 48250.75, "current": 213400.00, "credit_card": -12840.50}[account_type]
+    if account_type == "credit_card":
+        return {"account_type": "credit_card", "outstanding_inr": 12840.50, "available_limit_inr": 87159.50,
+                "due_date": "2026-11-25", "as_of": "2026-11-12"}
+    base = {"savings": 48250.75, "current": 213400.00}[account_type]
     return {"account_type": account_type, "balance_inr": base, "as_of": "2026-11-12"}
 
 
