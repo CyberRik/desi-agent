@@ -6,7 +6,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
+
+if "--trainer" in sys.argv:  # one process on one GPU (Trainer would otherwise wrap the model in DataParallel)
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import time
 from pathlib import Path
 
