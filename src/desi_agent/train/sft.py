@@ -323,8 +323,9 @@ def train_sft(cfg: dict) -> dict:
 
     state = factory.trainer.state
     stopped_early = any(getattr(cb, "hit", False) for cb in factory.callbacks)
-    if val_rows:
-        eval_metrics = factory.trainer.evaluate()  # collective under DDP: every rank runs it
+    if val_rows:  # collective under DDP: every rank runs it. Reuse the eval logged at the last step if there is one
+        last = [e for e in state.log_history if "eval_loss" in e and e.get("step") == state.global_step]
+        eval_metrics = {k: v for k, v in last[-1].items() if k.startswith("eval_")} if last else factory.trainer.evaluate()
     if not _rank()[2]:
         return {"adapter_path": None, "hf_repo": None, "metrics": {}}  # non-main DDP ranks stop here
 
