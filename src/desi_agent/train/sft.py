@@ -264,8 +264,16 @@ def _load(name: str | None, limit: int | None = None) -> list[dict] | None:
     from ..api import load_split
     if not name:
         return None
-    if name == "test":
+    if name == "test" or "test" in Path(name).name:
         raise ValueError("never train on the test split (CLAUDE.md §7)")
+    if name.startswith("hf:"):  # a file inside $DESI_HF_DATASET, e.g. hf:provisional/train.jsonl (timing runs)
+        from huggingface_hub import hf_hub_download
+        path = hf_hub_download(os.environ["DESI_HF_DATASET"], name[3:], repo_type="dataset")
+        eps = [json.loads(l) for l in Path(path).read_text(encoding="utf-8").splitlines() if l.strip()]
+        bad = [e.get("id") for e in eps if e.get("split") not in ("train", "val")]
+        if bad:
+            raise ValueError(f"{len(bad)} rows in {name} are not split train/val, e.g. {bad[:3]}")
+        return eps[:limit] if limit else eps
     from huggingface_hub.errors import EntryNotFoundError, RepositoryNotFoundError
     try:
         eps = load_split(name)

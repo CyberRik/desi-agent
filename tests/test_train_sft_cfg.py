@@ -28,6 +28,8 @@ def test_never_train_on_test():
     import pytest
     with pytest.raises(ValueError):
         sft._load("test")
+    with pytest.raises(ValueError):
+        sft._load("hf:final/test.jsonl")
 
 
 def test_kaggle_kernel_source_compiles():
