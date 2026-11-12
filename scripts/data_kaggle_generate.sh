@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # [R] R2 on Kaggle (GPU T4 x2, Internet ON). Run from a notebook cell:  !bash scripts/data_kaggle_generate.sh [smoke|full]
-# Needs Kaggle secret HF_TOKEN (write access to the ToolWallah org) only for the final upload step.
+# Needs Kaggle secret HF_TOKEN (write access to the ToolW org) only for the final upload step.
 set -euo pipefail
 MODE=${1:-smoke}
 MODEL=${TEACHER_MODEL:-Qwen/Qwen3-14B-AWQ}
@@ -33,9 +33,9 @@ else
     python - <<'EOF'
 from huggingface_hub import HfApi
 api = HfApi()
-api.create_repo("ToolWallah/desi-bank-toolcalls", repo_type="dataset", exist_ok=True)
+api.create_repo("ToolW/desi-bank-toolcalls", repo_type="dataset", exist_ok=True)
 for f in ["teacher.jsonl", "teacher.jsonl.rejected.jsonl", "teacher.jsonl.manifest.json"]:
-    api.upload_file(path_or_fileobj=f"data/raw/{f}", path_in_repo=f"raw/{f}", repo_id="ToolWallah/desi-bank-toolcalls", repo_type="dataset")
+    api.upload_file(path_or_fileobj=f"data/raw/{f}", path_in_repo=f"raw/{f}", repo_id="ToolW/desi-bank-toolcalls", repo_type="dataset")
 print("uploaded raw teacher data")
 EOF
   fi
