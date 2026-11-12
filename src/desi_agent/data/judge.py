@@ -73,6 +73,58 @@ def judge(rows: list[dict], base_url: str = "", model: str = "", concurrency: in
     return {s.id: s.label for s in list(passed) + list(rejected)}
 
 
+FLAGS = ["garbled", "wrong_language", "wrong_fact", "incomplete", "wrong_voice", "customer_nonsense"]
+CHECKLIST_PROMPT = """You review one conversation of an Indian bank's support chatbot.
+
+{context}
+
+BOT FINAL REPLY: {reply}
+
+Answer each question with true or false:
+- garbled: does the reply OR the customer message contain a garbled, invented or clearly misspelled word?
+- wrong_language: is the reply NOT written in the required language/style?
+- wrong_fact: does the reply state a number, date, id or name that is missing from the tool results and the customer message, or contradict them?
+- incomplete: does the reply fail to do the expected bot behaviour (e.g. leaves out a fact the customer asked for, or does not ask for the missing information)?
+- wrong_voice: does the reply talk as if it were the customer instead of to the customer?
+- customer_nonsense: does the customer message not make sense as a real customer message?
+
+Respond with JSON only, for example:
+{{"garbled": false, "wrong_language": false, "wrong_fact": false, "incomplete": false, "wrong_voice": false, "customer_nonsense": false, "note": "max 12 words"}}"""
+
+
+async def _checklist_async(rows, base_url, model, concurrency):
+    import asyncio
+
+    from openai import AsyncOpenAI
+    client = AsyncOpenAI(base_url=base_url, api_key="EMPTY", timeout=120)
+    sem = asyncio.Semaphore(concurrency)
+
+    async def one(r):
+        prompt = CHECKLIST_PROMPT.format(context=context(r), reply=r["messages"][-1]["content"])
+        err = ""
+        async with sem:
+            for _ in range(3):
+                try:
+                    out = await client.chat.completions.create(
+                        model=model, temperature=0.0, max_tokens=150, messages=[{"role": "user", "content": prompt}],
+                        response_format={"type": "json_object"},
+                        extra_body={"chat_template_kwargs": {"enable_thinking": False}})
+                    d = json.loads(out.choices[0].message.content)
+                    flags = [f for f in FLAGS if d.get(f) is True]
+                    return {"id": r["id"], "lang": r["lang"], "category": r["category"], "flags": flags,
+                            "note": str(d.get("note", ""))[:120]}
+                except Exception as e:  # noqa: BLE001
+                    err = repr(e)[:120]
+        return {"id": r["id"], "lang": r["lang"], "category": r["category"], "flags": None, "note": err}
+    return await asyncio.gather(*(one(r) for r in rows))
+
+
+def checklist(rows: list[dict], base_url: str, model: str, concurrency: int = 48) -> list[dict]:
+    """Yes/no quality flags per episode (more reliable than a 0-1 score from a 14B judge)."""
+    import asyncio
+    return asyncio.run(_checklist_async(rows, base_url, model, concurrency))
+
+
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--inp", default="data/curated/curated.jsonl")
@@ -80,8 +132,19 @@ def main() -> None:
     p.add_argument("--base-url", default="http://localhost:8000/v1")
     p.add_argument("--model", default="Qwen/Qwen3-14B-AWQ")
     p.add_argument("--concurrency", type=int, default=48)
+    p.add_argument("--mode", choices=["checklist", "score"], default="checklist")
     a = p.parse_args()
     rows = [json.loads(l) for l in Path(a.inp).read_text(encoding="utf-8").splitlines() if l.strip()]
+    if a.mode == "checklist":
+        res = checklist(rows, a.base_url, a.model, a.concurrency)
+        Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(a.out).write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in res), encoding="utf-8")
+        import collections
+        c = collections.Counter()
+        for x in res:
+            c.update(x["flags"] if x["flags"] is not None else ["ERROR"])
+        print(json.dumps({"n": len(res), "clean": sum(x["flags"] == [] for x in res), "flag_counts": dict(c)}))
+        return
     scores = judge(rows, a.base_url, a.model, a.concurrency)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text("".join(json.dumps({"id": r["id"], "lang": r["lang"], "category": r["category"],
