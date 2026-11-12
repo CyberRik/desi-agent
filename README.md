@@ -54,6 +54,10 @@ Code: MIT. Tiny Aya is CC-BY-NC-4.0 (accept the license on HF). The Lexsi toolki
 
 ## Demo
 
+**[Desi Agent Lab](https://huggingface.co/spaces/ToolW/desi-agent-lab)**: a guided tour (base vs fine-tuned on the same customer messages, tool calls shown as bank receipts), a test explorer over all 486 test conversations and the full results tables. It replays the real evaluation traces and nothing is regenerated. Source: `space/lab/`.
+
+### Try your own prompts (local)
+
 Base Tiny Aya Global and our SFT adapter, side by side: the same message goes to both, and you see each tool call,
 its result and the final answer as they happen. Runs on a laptop CPU (llama.cpp, 4-bit): first reply ~20 s, then
 ~5-20 s per model. It downloads ~2 GB (official `tiny-aya-global-q4_k_m.gguf` + our LoRA as GGUF) on first start.
