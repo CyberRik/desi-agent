@@ -28,40 +28,13 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from desi_agent import fmt  # noqa: E402
-from desi_agent.data.checks import lang_hygiene, romanized_ok, script_ok  # noqa: E402
 from desi_agent.data.splits import load_split  # noqa: E402
+from desi_agent.eval.language import lang_match  # noqa: E402
 from desi_agent.eval.metrics import score_episode  # noqa: E402
 from desi_agent.eval.runner import openai_policy  # noqa: E402
 
 SEED = 1234
 LANGS = ["en", "hi", "bn", "hi-en", "bn-en"]
-
-
-# Words that tell romanized Hindi from romanized Bengali (the shared marker lists overlap on ki/na/ta...).
-HI_ONLY = {"hai", "hain", "kar", "karo", "karna", "karke", "kardo", "kijiye", "dijiye", "bataiye", "batao", "chahiye",
-           "mein", "ka", "ke", "aap", "aapka", "aapke", "aapki", "aapko", "kya", "nahi", "nahin", "bhejne", "bhej", "hoga",
-           "gaya", "gayi", "raha", "rahi", "mujhe", "mera", "meri", "unka", "unki", "liye", "aur", "lekin", "toh", "wala"}
-BN_ONLY = {"apni", "apnar", "apnake", "ami", "amar", "amake", "kothai", "kothay", "deowa", "dewa", "jete", "pare",
-           "parben", "korbo", "korun", "korte", "kore", "koro", "hobe", "ache", "achhe", "theke", "diye", "dite", "bolun",
-           "bolo", "jodi", "ekhon", "kichu", "kono", "taka", "dao", "chai", "hoyeche", "geche", "ar", "kintu", "keno"}
-
-
-def _hits(text: str, words: set[str]) -> int:
-    return sum(t.strip(".,!?:;()'\"").lower() in words for t in text.split())
-
-
-def lang_match(text: str, lang: str) -> bool:
-    if not text.strip():
-        return False
-    ok = script_ok(text, lang) and romanized_ok(text, lang) and not [p for p in lang_hygiene(text, lang) if p != "bad_term"]
-    hi, bn = _hits(text, HI_ONLY), _hits(text, BN_ONLY)
-    if lang == "hi-en":
-        ok = ok and hi > bn
-    elif lang == "bn-en":
-        ok = ok and bn > hi
-    elif lang == "en":  # English must not be romanized Hindi/Bengali
-        ok = ok and hi + bn <= 1
-    return ok
 
 
 def build(n: int, seed: int = SEED) -> list[dict]:

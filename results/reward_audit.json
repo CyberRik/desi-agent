@@ -1,0 +1,61 @@
+{
+  "single_turn_test": {
+    "gold": {
+      "n": 486,
+      "reward": 1.3,
+      "reward_lang": 1.59
+    },
+    "ask_en": {
+      "n": 486,
+      "reward": 0.767,
+      "reward_lang": 0.547
+    },
+    "ask_lang": {
+      "n": 486,
+      "reward": 0.767,
+      "reward_lang": 0.907
+    },
+    "tool_spam": {
+      "n": 486,
+      "reward": 0.255,
+      "reward_lang": 0.256
+    },
+    "echo": {
+      "n": 486,
+      "reward": 0.767,
+      "reward_lang": 0.3
+    }
+  },
+  "multiturn_switch": {
+    "gold": {
+      "n": 300,
+      "reward": 1.3,
+      "reward_lang": 1.588
+    },
+    "gold_wrong_lang": {
+      "n": 300,
+      "reward": 1.3,
+      "reward_lang": 0.822
+    },
+    "ask_en": {
+      "n": 300,
+      "reward": 0.76,
+      "reward_lang": 0.549
+    },
+    "ask_lang": {
+      "n": 300,
+      "reward": 0.76,
+      "reward_lang": 0.898
+    },
+    "tool_spam": {
+      "n": 300,
+      "reward": 0.257,
+      "reward_lang": 0.258
+    },
+    "echo": {
+      "n": 300,
+      "reward": 0.76,
+      "reward_lang": 0.3
+    }
+  }
+}
