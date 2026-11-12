@@ -9,6 +9,10 @@ English, Hindi, Bengali, Hinglish and Banglish. On 486 held-out test conversatio
 sending money when it shouldn't) drops from **20.8% to 1.8%**. The fine-tuned 3B model also beats the 14B model we
 distilled from (67.5%), because its training labels come from code rather than from the teacher.
 
+See it in action in the **[Desi Agent Lab](https://huggingface.co/spaces/ToolW/desi-agent-lab)**: a guided tour of base
+vs fine-tuned on the same customer messages, plus a test explorer over every evaluated conversation
+([85-second tour video](https://huggingface.co/datasets/ToolW/desi-agent-eval-traces/blob/main/video/desi-agent-lab-tour.mp4)).
+
 Everything is public: [models](https://huggingface.co/collections/ToolW/desi-agent-models-6af5e4feb0b72f13ce2efec7),
 [datasets, logs and traces](https://huggingface.co/collections/ToolW/desi-agent-datasets-6af5e4ff1ceddc280ca38434),
 [code](https://github.com/CyberRik/desi-agent).
@@ -93,7 +97,8 @@ re-rendered through `fmt.to_chat`, so the model trains on exactly the text the e
 
 - LoRA r=16, alpha=32, dropout 0.05, on all attention and MLP projections
 - 2 epochs, lr 2e-4 cosine, 5% warmup, effective batch 16 (1 x 8 accumulation x 2 GPUs), max length 2048 (nothing truncated)
-- Kaggle T4 x2, DDP, fp16: **2.2 hours** for 244 steps, 13.0 GB peak memory per GPU
+- Kaggle T4 x2, DDP, fp16: **2.2 hours** for 244 steps, 13.0 GiB peak memory per GPU (gradient checkpointing on;
+  turning it off runs out of memory on a T4)
 
 Validation loss fell steadily: 0.424, 0.329, 0.295, 0.276 and 0.273 at steps 50, 100, 150, 200 and 244. We had fixed in
 advance that the checkpoint is chosen by validation loss, never by test, so the final adapter
@@ -114,7 +119,8 @@ The code is in `src/desi_agent/eval/`, and results plus every trace are in
 Each test episode starts from the customer's message and runs through the shared agent loop (greedy decoding, at
 most 6 steps), with the mock bank executing every call. We serve models with vLLM in fp16. On 20 test
 episodes, vLLM and the plain transformers path gave identical scores on all 20. All models see the same system
-prompt and tools.
+prompt and tools. Every test conversation, for every model, can be browsed in the Lab's test explorer, including
+the 11 the fine-tuned model still gets wrong.
 
 **Metrics** (`contracts/METRICS.md`, all per episode, then averaged):
 
@@ -195,8 +201,9 @@ nice the reply sounds. Reply wording is not scored.
   numbers, but the model has learned some of that noise.
 - **The test review was done by our data agent, not by a native-speaker human.** The review rule and all 8
   rejections are in `data/spotcheck_rejected.txt` and `docs/DECISIONS.md`.
-- **The demo runs a 4-bit model.** The local and Space demos use llama.cpp Q4_K_M plus our LoRA; every number above
-  is from fp16 evaluation.
+- **The interactive demo runs a 4-bit model.** The local demo (`space/app.py`) uses llama.cpp Q4_K_M plus our LoRA,
+  so its replies can differ slightly from the fp16 evaluation. The Desi Agent Lab runs no model: it replays the
+  fp16 evaluation traces themselves.
 
 ## Reproduce it
 
