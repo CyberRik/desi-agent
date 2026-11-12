@@ -36,7 +36,7 @@ task success · tool-selection accuracy · exact-args accuracy · schema-valid r
 | `src/desi_agent/{tools,fmt,api}.py` | shared code: mock bank backend, prompt render/parse + agent loop, lane API |
 | `src/desi_agent/data`, `eval` | data generation, curation, splits, metrics, eval runner |
 | `src/desi_agent/train` | policy loading, AgentTune SFT / GRPO |
-| `space/` | Gradio demo |
+| `space/` | Gradio demo (runs locally on CPU, see [Demo](#demo)) |
 | `docs/PLAN.md` | tasks + owners · `docs/DECISIONS.md` decision log · `docs/HACKATHON.md` rules · `docs/COMPUTE.md` GPU budget |
 | `CLAUDE.md` | working rules for collaborators (human and AI) |
 
@@ -51,3 +51,19 @@ Training and eval reproduction steps are added as the tasks land (see `docs/PLAN
 
 ## License / models
 Code: MIT. Tiny Aya is CC-BY-NC-4.0 (accept the license on HF). The Lexsi toolkits have their own licenses (LSAL).
+
+## Demo
+
+Base Tiny Aya Global and our SFT adapter, side by side: the same message goes to both, and you see each tool call,
+its result and the final answer as they happen. Runs on a laptop CPU (llama.cpp, 4-bit): first reply ~20 s, then
+~5-20 s per model. It downloads ~2 GB (official `tiny-aya-global-q4_k_m.gguf` + our LoRA as GGUF) on first start.
+
+```bash
+uv venv -p 3.12 .venv-demo
+uv pip install --python .venv-demo/bin/python -r space/requirements.txt gradio
+.venv-demo/bin/python space/app.py      # then open http://127.0.0.1:7860
+```
+
+The demo uses the same agent loop (`fmt.run_episode`), prompt renderer and mock bank as evaluation, but a
+**4-bit quantized** model. All reported metrics come from fp16 evaluation, so the demo can differ slightly.
+

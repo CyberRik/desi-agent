@@ -19,9 +19,10 @@
 | `ToolW/desi-bank-toolcalls` | dataset (train/val/test + raw teacher data) | R |
 | `ToolW/desi-agent-eval-traces` | dataset (results + traces for every model tag) | R |
 | `ToolW/desi-agent-training-logs` | dataset (trainer logs, configs, manifests) | F |
-| `ToolW/desi-agent-demo` | space (Gradio) | F |
 
 Collections: `Desi Agent: models` and `Desi Agent: datasets` (S1).
+
+No hosted demo Space: HF requires a PRO/Team plan for Gradio Spaces on free CPU, and we chose not to pay. The demo runs locally (`space/app.py`, see README), and a replay video from the final test traces is linked from the README.
 
 ## Files
 - data: `data/raw/teacher_<lang>.jsonl` (gitignored, pushed to HF), `data/train.jsonl`, `data/val.jsonl`, `data/test.jsonl`
