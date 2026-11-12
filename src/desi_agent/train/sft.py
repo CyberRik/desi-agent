@@ -25,6 +25,7 @@ from pathlib import Path
 
 from .chat import tokenize_sft
 from .convert import episodes_to_eventlogs, row_to_chat
+from .policy import native_bf16
 
 SEED = 1234
 ROOT = Path(__file__).resolve().parents[3]
@@ -201,7 +202,7 @@ class TinyAyaSFTFactory:
         assert int(transformers.__version__.split(".")[0]) >= 5, transformers.__version__
         c = self.cfg
         cuda = torch.cuda.is_available()
-        bf16 = cuda and torch.cuda.is_bf16_supported()
+        bf16 = native_bf16()  # not is_bf16_supported(): that is True on T4 via slow emulation
         self.tok = AutoTokenizer.from_pretrained(model)
         if self.tok.pad_token is None:
             self.tok.pad_token = self.tok.eos_token
