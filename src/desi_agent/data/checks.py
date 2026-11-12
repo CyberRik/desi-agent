@@ -126,6 +126,14 @@ _BENGALI_IN_HIEN = re.compile(r"\b(apnar|apnake|korun|hobe|kore|koro|dao|ache|ac
 BAD_TERMS = {"hi": ["बहस", "बर्बर"], "bn": ["অপরাধ"]}
 
 
+DISPUTE_WORDS = re.compile(r"dispute|विवाद|डिस्प्यूट|ডিসপিউট|আপত্তি", re.I)
+
+
+def unrequested_dispute(text: str, dispute_ok: bool) -> list[str]:
+    """A non-dispute episode must not mention disputes: the gold calls would not match what the text asks for."""
+    return [] if dispute_ok or not DISPUTE_WORDS.search(text) else ["unrequested_dispute"]
+
+
 def lang_hygiene(text: str, lang: str) -> list[str]:
     p = []
     if "�" in text:

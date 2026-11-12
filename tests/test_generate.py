@@ -99,3 +99,15 @@ def test_language_hygiene_and_refs():
     assert refs == ["DSP7775912"]
     assert "missing_ref:DSP7775912" in final_problems("Your dispute has been raised.", "en", [], "", refs)
     assert not [x for x in final_problems("Your dispute DSP7775912 has been raised.", "en", [], "", refs) if x.startswith("missing")]
+
+
+def test_unrequested_dispute():
+    from desi_agent.data.checks import unrequested_dispute
+    from desi_agent.data.generate import is_dispute, user_prompt
+    from desi_agent.data.scenarios import sample_all
+    assert unrequested_dispute("কার্ডটি ব্লক করুন আর ডিসপিউট করুন", dispute_ok=False) == ["unrequested_dispute"]
+    assert unrequested_dispute("please dispute TXN123", dispute_ok=True) == []
+    scen = sample_all(counts={"single_tool": 3, "multi_tool": 3, "clarify": 2, "no_tool": 1})
+    for s in scen:
+        if s.lang == "hi" and not is_dispute(s):
+            assert "विवाद" not in user_prompt(s, "polite")  # glossary only for dispute scenarios

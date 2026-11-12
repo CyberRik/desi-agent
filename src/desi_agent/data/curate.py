@@ -21,7 +21,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .checks import final_problems, required_refs, user_msg_problems
+from .checks import final_problems, required_refs, unrequested_dispute, user_msg_problems
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -59,6 +59,10 @@ def quality_problems(row: dict) -> list[str]:
     p = [f"user:{x}" for x in user_msg_problems(user, row["lang"], [], []) if x != "markup" or "<tool_call>" in user]
     refs = required_refs([m["content"] for m in row["messages"] if m["role"] == "tool"])
     p += [f"final:{x}" for x in final_problems(final, row["lang"], allowed, user, refs)]
+    dispute_ok = "dispute" in row.get("meta", {}).get("pattern", "") or \
+        any(g["name"] == "raise_dispute" for g in row["gold"]["tool_sequence"])
+    p += [f"user:{x}" for x in unrequested_dispute(user, dispute_ok)]
+    p += [f"final:{x}" for x in unrequested_dispute(final, dispute_ok)]
     return p
 
 

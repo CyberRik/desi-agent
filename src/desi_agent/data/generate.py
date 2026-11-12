@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 
 from .. import tools
-from .checks import clean_teacher_text, final_problems, required_refs, user_msg_problems
+from .checks import clean_teacher_text, final_problems, required_refs, unrequested_dispute, user_msg_problems
 from .scenarios import STYLE, TONES, Scenario, sample_all
 
 USER_SYS = ("You write realistic chat messages that Indian bank customers send to their bank's support chatbot. "
@@ -28,10 +28,24 @@ FINAL_SYS = ("You are a friendly, concise support assistant of an Indian bank, r
 # How to say "you" per language. bn-en MUST use Bengali forms: the teacher drifts into Hindi 'aap' otherwise.
 ADDRESS = {"en": "you / your", "hi": "आप / आपका", "bn": "আপনি / আপনার", "hi-en": "aap / aapka (Hindi)",
            "bn-en": "apni / apnar (Bengali). NEVER use Hindi words like aap, aapka, hai, gaya, mein"}
-# Banking terms the teacher mistranslates.
-GLOSSARY = {"hi": "dispute = विवाद (or डिस्प्यूट); never बहस or बर्बरता.",
-            "bn": "dispute = ডিসপিউট (or আপত্তি); never অপরাধ.",
-            "hi-en": "Use only Hindi (not Bengali) words.", "bn-en": "Use only Bengali (not Hindi) words."}
+# Language notes, always added. Kept separate from the dispute glossary: mentioning "dispute" in every prompt made the
+# teacher write "block my card AND dispute it" in non-dispute episodes, i.e. requests the gold calls never perform.
+LANG_NOTE = {"hi-en": "Use only Hindi (not Bengali) words.", "bn-en": "Use only Bengali (not Hindi) words."}
+DISPUTE_TERM = {"hi": "dispute = विवाद (or डिस्प्यूट); never बहस or बर्बरता.",
+                "bn": "dispute = ডিসপিউট (or আপত্তি); never অপরাধ."}
+
+
+def is_dispute(s: Scenario) -> bool:
+    return "dispute" in s.pattern or any(n == "raise_dispute" for n, _ in s.calls)
+
+
+def _notes(s: Scenario) -> list[str]:
+    out = [LANG_NOTE[s.lang]] if s.lang in LANG_NOTE else []
+    if is_dispute(s) and s.lang in DISPUTE_TERM:
+        out.append(DISPUTE_TERM[s.lang])
+    if not is_dispute(s):
+        out.append("This is NOT about a dispute or complaint: do not mention disputes or ask for one.")
+    return out
 REPLY_EXAMPLE = {
     "hi-en": "Aapka card ****1234 block kar diya gaya hai, reference number BLK12345678. Naya card 5 din mein aa jayega.",
     "bn-en": "Apnar card ****1234 block kore deoa hoyeche, reference number BLK12345678. Notun card 5 diner moddhe pouche jabe.",
@@ -51,8 +65,7 @@ def user_prompt(s: Scenario, tone: str) -> str:
                          + ", ".join(s.must_include) + ".")
     if s.category == "clarify":
         lines.append("Do NOT include any card numbers, amounts, UPI ids, reference numbers, rates or durations.")
-    if s.lang in GLOSSARY:
-        lines.append(GLOSSARY[s.lang])
+    lines += _notes(s)
     lines.append("Write ONE message of 1-2 sentences (no alternatives, no line breaks). Vary the wording; don't start with a greeting every time.")
     return "\n".join(lines)
 
@@ -60,8 +73,7 @@ def user_prompt(s: Scenario, tone: str) -> str:
 def final_prompt(s: Scenario, user_msg: str, results: list[tuple[str, dict, str]]) -> str:
     lines = [f"Reply in this language and style: {STYLE[s.lang]}", f"Customer message: {user_msg}",
              f"Address the customer as: {ADDRESS[s.lang]}. Do not copy their sentences."]
-    if s.lang in GLOSSARY:
-        lines.append(GLOSSARY[s.lang])
+    lines += _notes(s)
     if s.lang in REPLY_EXAMPLE:
         lines.append(f"Example of the reply style (different situation): {REPLY_EXAMPLE[s.lang]}")
     if s.category == "clarify":
@@ -143,7 +155,8 @@ async def make_one(teacher: Teacher, idx: int, s: Scenario, rng: random.Random, 
     problems: list[str] = []
     for _ in range(tries):
         user_msg = await teacher(USER_SYS, user_prompt(s, tone), 0.9, 150)
-        problems = user_msg_problems(user_msg, s.lang, s.must_include, s.forbid)
+        problems = (user_msg_problems(user_msg, s.lang, s.must_include, s.forbid)
+                    + unrequested_dispute(user_msg, is_dispute(s)))
         if not problems:
             break
     else:
@@ -153,7 +166,7 @@ async def make_one(teacher: Teacher, idx: int, s: Scenario, rng: random.Random, 
     for attempt in range(final_tries):
         final = await teacher(FINAL_SYS, final_prompt(s, user_msg, results), 0.4 + 0.1 * attempt, 300)
         problems = final_problems(final, s.lang, s.must_include + _latin_values(results), user_msg,
-                                  required_refs([r for _, _, r in results]))
+                                  required_refs([r for _, _, r in results])) + unrequested_dispute(final, is_dispute(s))
         if not problems:
             return build_row(idx, s, user_msg, final, results, teacher.model), None
     return None, {"idx": idx, "stage": "final", "problems": problems, "text": final, "scenario": s.__dict__}
