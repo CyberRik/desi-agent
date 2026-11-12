@@ -33,7 +33,8 @@ def main():
     eps = test[::step][: a.n]  # spread over languages/categories (test is sorted by id)
 
     from desi_agent.train.policy import load_policy
-    hf = load_policy(a.model, device_map={"": 0})
+    # fp16 on both sides (vLLM runs --dtype half). On T4 torch reports bf16 support but emulates it (see PR #38).
+    hf = load_policy(a.model, device_map={"": 0}, dtype="float16")
     vl = openai_policy(f"http://localhost:{a.port}/v1", a.model)
 
     rows, same_text, same_scores = [], 0, 0
