@@ -82,12 +82,13 @@ SECOND_PERSON = {
     "hi-en": {"aap", "aapka", "aapke", "aapki", "aapko", "aapne", "apka", "apke", "apki", "apko", "aapse"},
     "bn-en": {"apnar", "apni", "apnake", "apnara", "tomar", "tumi", "tomake"},
 }
+# Possessives only ("my card", "amar card"): the bot may say "I can help" / "mujhe batayein", but never "my card".
 FIRST_PERSON_CUSTOMER = {
-    "en": {"my", "i", "i'm", "me"},
-    "hi": {"मेरा", "मेरी", "मेरे", "मैंने", "मुझे"},
-    "bn": {"আমার", "আমি", "আমাকে"},
-    "hi-en": {"mera", "meri", "mere", "maine", "mujhe"},
-    "bn-en": {"amar", "ami", "aami", "amake"},
+    "en": {"my"},
+    "hi": {"मेरा", "मेरी", "मेरे"},
+    "bn": {"আমার"},
+    "hi-en": {"mera", "meri", "mere"},
+    "bn-en": {"amar"},
 }
 
 

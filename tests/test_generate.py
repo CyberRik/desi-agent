@@ -83,3 +83,5 @@ def test_assistant_persona():
     assert addresses_customer("Aapka card ****2509 block kar diya gaya hai", "hi-en")
     assert addresses_customer("Apnar card ta block kora hoyeche", "bn-en")
     assert addresses_customer("আপনার সেভিংস একাউন্টের ব্যালেন্স ₹48,250.75", "bn")
+    assert addresses_customer("Hi! I can check balances, block cards and raise disputes.", "en")
+    assert not addresses_customer("My card ending 5198 is blocked and I will get a new one in 7 days.", "en")
