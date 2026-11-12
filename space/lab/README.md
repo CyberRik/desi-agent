@@ -7,7 +7,7 @@ sdk: static
 app_file: index.html
 pinned: true
 license: apache-2.0
-short_description: Base vs fine-tuned Tiny Aya banking agent, from real test traces
+short_description: Base vs fine-tuned Tiny Aya banking agent, real traces
 models:
   - CohereLabs/tiny-aya-global
   - ToolW/desi-agent-tinyaya-sft-lora
