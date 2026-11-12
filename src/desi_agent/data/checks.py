@@ -49,6 +49,39 @@ def script_ok(text: str, lang: str, allowed_latin: list[str] | None = None) -> b
     return c["devanagari"] == 0 and c["bengali"] == 0 and c["latin"] > 0  # en / hi-en / bn-en
 
 
+# Common function words of romanized Hindi / Bengali. Pure English text contains almost none of them.
+HI_EN_MARKERS = {"hai", "hain", "ho", "hoga", "mera", "meri", "mere", "mujhe", "maine", "aap", "aapka", "aapke", "aapki", "karo",
+                 "kar", "karna", "karke", "kardo", "kya", "kyun", "kaise", "nahi", "nahin", "ka", "ki", "ke", "ko", "se", "mein", "me",
+                 "chahiye", "tha", "thi", "gaya", "gayi", "diya", "bhai", "yaar", "jaldi", "abhi", "kitna", "kitne", "batao",
+                 "bataiye", "dikhao", "bhejo", "bhej", "wala", "wali", "aur", "lekin", "toh", "bhi", "raha", "rahi", "hua", "kab", "kahan"}
+BN_EN_MARKERS = {"ami", "aami", "amar", "amake", "apni", "apnar", "apnake", "ache", "ase", "achhe", "koro", "korte", "korun",
+                 "kore", "korechi", "korbo", "kintu", "ki", "na", "nai", "ta", "ti", "theke", "hobe", "hoye", "hoyeche", "chai",
+                 "chaai", "ekta", "dao", "din", "bolun", "bolo", "kothay", "koto", "keno", "kibhabe", "ar", "aar", "tumi", "tomar",
+                 "dekhao", "dekhte", "pathao", "pathate", "jodi", "tahole", "ekhon", "taka", "gelo", "geche", "hoy", "plz"}
+
+
+def romanized_ok(text: str, lang: str) -> bool:
+    """hi-en / bn-en must really be romanized Hindi / Bengali, not plain English."""
+    if lang not in ("hi-en", "bn-en"):
+        return True
+    toks = [t.strip(".,!?:;()'\"").lower() for t in text.split()]
+    toks = [t for t in toks if t.isalpha()]
+    markers = HI_EN_MARKERS if lang == "hi-en" else BN_EN_MARKERS
+    hits = sum(t in markers for t in toks)
+    return hits >= 2 and hits / max(1, len(toks)) >= 0.15
+
+
+def repetitive(text: str, n: int = 3, max_repeats: int = 2) -> bool:
+    toks = text.split()
+    grams = [" ".join(toks[i:i + n]) for i in range(len(toks) - n + 1)]
+    return any(grams.count(g) > max_repeats for g in set(grams))
+
+
+def _overlap(a: str, b: str) -> float:
+    ta, tb = set(a.lower().split()), set(b.lower().split())
+    return len(ta & tb) / max(1, min(len(ta), len(tb)))
+
+
 def clean_teacher_text(text: str) -> str:
     """Strip reasoning blocks, wrapping quotes and labels the teacher sometimes adds."""
     text = re.sub(r"<think>.*?</think>", "", text or "", flags=re.S).strip()
@@ -66,8 +99,14 @@ def user_msg_problems(text: str, lang: str, must_include: list[str], forbid: lis
         p.append("too_long")
     if "<tool_call>" in text or "{" in text:
         p.append("markup")
+    if "\n" in text.strip():
+        p.append("multiline")
     if not script_ok(text, lang, must_include):
         p.append("wrong_script")
+    if not romanized_ok(text, lang):
+        p.append("not_romanized_" + lang)
+    if repetitive(text):
+        p.append("repetitive")
     norm = to_ascii_digits(text).lower()
     for s in must_include:
         if s.lower() not in norm:
@@ -78,7 +117,7 @@ def user_msg_problems(text: str, lang: str, must_include: list[str], forbid: lis
     return p
 
 
-def final_problems(text: str, lang: str, allowed_latin: list[str] | None = None) -> list[str]:
+def final_problems(text: str, lang: str, allowed_latin: list[str] | None = None, user_msg: str = "") -> list[str]:
     p = []
     if not text or len(text) < 2:
         p.append("empty")
@@ -88,4 +127,10 @@ def final_problems(text: str, lang: str, allowed_latin: list[str] | None = None)
         p.append("markup")
     if not script_ok(text, lang, allowed_latin):
         p.append("wrong_script")
+    if not romanized_ok(text, lang):
+        p.append("not_romanized_" + lang)
+    if repetitive(text):
+        p.append("repetitive")
+    if user_msg and _overlap(text, user_msg) > 0.8:
+        p.append("echoes_user")
     return p
