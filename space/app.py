@@ -173,8 +173,10 @@ with gr.Blocks(title="Desi Agent: Tiny Aya banking tool-calling") as demo:
         "# 🏦 Desi Agent: a multilingual banking agent on Tiny Aya Global\n"
         "English · हिन्दी · বাংলা · Hinglish · Banglish. The same message goes to **base Tiny Aya Global** and to our "
         "**AgentTune SFT** version. Watch which tools each one calls, with which arguments, and what it answers.\n\n"
-        "_Tools run against a deterministic **mock** bank (no real accounts, no real money). Runs on a free 2-vCPU "
-        "Space (llama.cpp, 4-bit), so the first reply takes ~20 s and later ones ~5-20 s per model._")
+        "_Tools run against a deterministic **mock** bank (no real accounts, no real money). This demo runs a "
+        "**4-bit quantized** model (Q4_K_M + our LoRA, llama.cpp) on a free 2-vCPU Space, so the first reply takes "
+        "~20 s and later ones ~5-20 s per model. Reported metrics come from fp16 evaluation, so behaviour here "
+        "can differ slightly from the result tables._")
     stat = gr.Markdown(model_status())
     with gr.Row():
         with gr.Column():

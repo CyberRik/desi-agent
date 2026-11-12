@@ -27,4 +27,7 @@ in English, Hindi, Bengali, Hinglish and Banglish. Tools run against a determini
 - Prompt rendering: the same chat-template helper used in training
 - Inference: llama.cpp on CPU, official `tiny-aya-global-q4_k_m.gguf` + our LoRA converted to GGUF
 
+> **Quantized demo.** The Space runs a 4-bit (Q4_K_M) base with an f16 LoRA. All metrics we report come from fp16
+> evaluation (vLLM / HF transformers), so behaviour here can differ slightly from the result tables.
+
 Code, data, training and eval: https://github.com/CyberRik/desi-agent
