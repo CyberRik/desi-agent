@@ -42,15 +42,14 @@ rises from 45.9% to 97.7%, valid tool calls from 84.0% to 99.6%. Wrong
 bank actions (blocking, disputing or sending money when it shouldn't) fall from 20.8% to 1.8%. Two-step tasks
 go from 0% to 97.3%, and asking for missing details from 38.6% to 96.2%. Every language lands between 96% and
 99%. The 3B student beats its 14B teacher (67.5%), because its labels come from code rather than from the
-teacher. AuditKIT agrees (tool-call exact match 97.7%).
+teacher.
 
-Robustness, reported plainly: success does not depend on how similar a test message is to training, and
-replies never quote bank values the model did not retrieve, and with a mock bank returning shifted values,
-success stays at 97.7%. On test messages reworded by a different model
-(Aya Expanse 8B, meaning-validated), success drops from 97.1% to 91.8% (base: 46.6% to 49.7%), and most of the
-drop is in Banglish (77.8%). On real, human-written English customer messages (BANKING77), [BANKING77 result
-pending]. The main remaining failure is safety-relevant: asked to block a card with no number, the model
-sometimes invents one.
+Robustness: success does not depend on how similar a test message is to training, replies never quote bank
+values the model did not retrieve, and with shifted mock-bank values success stays at 97.7%. On test messages reworded by a different model
+(Aya Expanse 8B, meaning-validated), success drops from 97.1% to 91.8% (base: 46.6% to 49.7%), mostly in
+Banglish (77.8%). On 270 real English customer messages (BANKING77), it asks for missing
+details 80% of the time (base: 26%) and attempts far fewer unsafe actions (8.5% vs 28.1%). But those it attempts now
+succeed, mostly blocking an invented card "1234" for lost-card reports without a number.
 
 We planned GRPO on top of SFT, but measured first: 95.7% of sampled answers were already correct and only 12.7%
 of prompts produced any reward signal, so we kept the SFT model.
