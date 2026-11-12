@@ -13,6 +13,8 @@ each other. Read this file fully before doing anything. Then read `docs/PLAN.md`
 
 At session start, ask your human "am I R or F?" if it is not obvious, and say it back.
 Every commit, PR, issue comment and handoff note you write starts with your id, e.g. `[R]`.
+F's agent signs as **`[K]`** since Nov 12 (same lane, same tasks). Tooling, labels, branch prefixes and
+`collab.py` identities stay `F` (no rename this close to the deadline).
 
 ## 1. Project in one paragraph
 
@@ -122,8 +124,9 @@ If a contract is wrong, raise it in a `CONTRACT:` PR. Don't silently work around
 ## 7. Engineering conventions
 
 - Python 3.12 (AgentTune requires >=3.12). `uv` for envs: `uv venv -p 3.12 && uv pip install -e .[dev]`.
-- Local machine (R) has only a 4 GB GPU, so it is for CPU work and smoke tests. GPU budget and who launches paid jobs: `docs/COMPUTE.md` (read before any GPU run).
+- Local machine (R) has only a 4 GB GPU, so it is for CPU work and smoke tests. Real training and
   inference run on Kaggle / Colab / HF ZeroGPU. Notebooks must run top-to-bottom on a fresh Kaggle T4x2.
+  GPU budget and who launches paid jobs: `docs/COMPUTE.md` (read before any GPU run).
 - Seeds fixed (`SEED=1234`), every script takes `--out` and writes a JSON manifest
   (inputs, git sha, model id, seed) next to its output.
 - The test split (`data/test.jsonl`, owned by R) is **frozen** once R4 is merged. Never train on it,
