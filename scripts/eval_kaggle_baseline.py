@@ -67,11 +67,16 @@ def serve(model, port, gpus, tp, extra=""):
 
 
 def stop(p):
+    """Kill the server *and* its engine workers (p is only the shell), then wait until the GPUs are free."""
     p.terminate()
-    try:
-        p.wait(60)
-    except subprocess.TimeoutExpired:
-        p.kill()
+    sh("pkill -f 'vllm serve' || true; pkill -f 'EngineCore' || true", check=False)
+    for _ in range(30):
+        used = subprocess.run("nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits", shell=True,
+                              capture_output=True, text=True).stdout.split()
+        if all(int(u) < 1000 for u in used):
+            return
+        time.sleep(5)
+    sh("pkill -9 -f 'vllm' || true; nvidia-smi", check=False)
     time.sleep(10)
 
 
