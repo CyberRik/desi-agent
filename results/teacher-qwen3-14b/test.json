@@ -1,0 +1,166 @@
+{
+  "model_tag": "teacher-qwen3-14b",
+  "model_id": "Qwen/Qwen3-14B-AWQ",
+  "adapter": null,
+  "split": "test",
+  "n": 486,
+  "git_sha": "6e542766745d98611fc18a0997ed954c400c9739",
+  "seed": 1234,
+  "decoding": {
+    "temperature": 0.0,
+    "max_new_tokens": 256,
+    "stop": [
+      "</tool_call>"
+    ],
+    "no_thinking": true
+  },
+  "max_steps": 6,
+  "overall": {
+    "schema_valid": 0.9774,
+    "tool_selection_correct": 0.7222,
+    "args_exact": 0.6749,
+    "task_success": 0.6749,
+    "n_calls": 0.8004,
+    "redundant_calls": 0.1564,
+    "false_action": 0.1399,
+    "truncated": 0.0,
+    "n": 486
+  },
+  "by_lang": {
+    "bn": {
+      "schema_valid": 0.98,
+      "tool_selection_correct": 0.72,
+      "args_exact": 0.66,
+      "task_success": 0.66,
+      "n_calls": 0.76,
+      "redundant_calls": 0.16,
+      "false_action": 0.16,
+      "truncated": 0.0,
+      "n": 100
+    },
+    "bn-en": {
+      "schema_valid": 0.9901,
+      "tool_selection_correct": 0.604,
+      "args_exact": 0.5545,
+      "task_success": 0.5545,
+      "n_calls": 0.8218,
+      "redundant_calls": 0.2178,
+      "false_action": 0.1584,
+      "truncated": 0.0,
+      "n": 101
+    },
+    "en": {
+      "schema_valid": 0.9888,
+      "tool_selection_correct": 0.8989,
+      "args_exact": 0.8539,
+      "task_success": 0.8539,
+      "n_calls": 0.8202,
+      "redundant_calls": 0.0787,
+      "false_action": 0.0899,
+      "truncated": 0.0,
+      "n": 89
+    },
+    "hi": {
+      "schema_valid": 0.9583,
+      "tool_selection_correct": 0.7708,
+      "args_exact": 0.7083,
+      "task_success": 0.7083,
+      "n_calls": 0.8021,
+      "redundant_calls": 0.125,
+      "false_action": 0.1354,
+      "truncated": 0.0,
+      "n": 96
+    },
+    "hi-en": {
+      "schema_valid": 0.97,
+      "tool_selection_correct": 0.64,
+      "args_exact": 0.62,
+      "task_success": 0.62,
+      "n_calls": 0.8,
+      "redundant_calls": 0.19,
+      "false_action": 0.15,
+      "truncated": 0.0,
+      "n": 100
+    }
+  },
+  "by_category": {
+    "clarify": {
+      "schema_valid": 0.9545,
+      "tool_selection_correct": 0.4318,
+      "args_exact": 0.4318,
+      "task_success": 0.4318,
+      "n_calls": 0.5682,
+      "redundant_calls": 0.5682,
+      "false_action": 0.3409,
+      "truncated": 0.0,
+      "n": 132
+    },
+    "multi_tool": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 0.4865,
+      "args_exact": 0.4324,
+      "task_success": 0.4324,
+      "n_calls": 1.4865,
+      "redundant_calls": 0.0,
+      "false_action": 0.0901,
+      "truncated": 0.0,
+      "n": 111
+    },
+    "no_tool": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 0.9895,
+      "args_exact": 0.9895,
+      "task_success": 0.9895,
+      "n_calls": 0.0105,
+      "redundant_calls": 0.0105,
+      "false_action": 0.0105,
+      "truncated": 0.0,
+      "n": 95
+    },
+    "single_tool": {
+      "schema_valid": 0.9662,
+      "tool_selection_correct": 0.9865,
+      "args_exact": 0.8716,
+      "task_success": 0.8716,
+      "n_calls": 1.0,
+      "redundant_calls": 0.0,
+      "false_action": 0.0811,
+      "truncated": 0.0,
+      "n": 148
+    }
+  },
+  "mean_latency_s": 24.375,
+  "traces_path": "/kaggle/working/out/results/teacher-qwen3-14b/test.traces.jsonl",
+  "auditkit": {
+    "path": "/kaggle/working/out/results/teacher-qwen3-14b/test.auditkit.json",
+    "scorers": [
+      "tool_call_f1",
+      "tool_call_validity",
+      "trajectory_match",
+      "redundant_tool_calls",
+      "agent_loop_detection"
+    ],
+    "means": {
+      "agent_loop_detection": 1.0,
+      "redundant_tool_calls": 0.0,
+      "tool_call_exact": 0.6955,
+      "tool_call_f1": 0.7668,
+      "tool_call_precision": 0.8025,
+      "tool_call_recall": 0.749,
+      "tool_call_validity": 0.9821,
+      "trajectory_in_order": 0.6955,
+      "trajectory_strict": 0.6955
+    },
+    "n_scored": {
+      "tool_call_precision": 486,
+      "tool_call_recall": 486,
+      "tool_call_f1": 486,
+      "tool_call_exact": 486,
+      "trajectory_strict": 486,
+      "trajectory_in_order": 486,
+      "tool_call_validity": 335,
+      "redundant_tool_calls": 335,
+      "agent_loop_detection": 335
+    }
+  }
+}

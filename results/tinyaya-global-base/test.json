@@ -1,0 +1,166 @@
+{
+  "model_tag": "tinyaya-global-base",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "adapter": null,
+  "split": "test",
+  "n": 486,
+  "git_sha": "544e558fc95f682ade0143ecdce4fe0ded2a1542",
+  "seed": 1234,
+  "decoding": {
+    "temperature": 0.0,
+    "max_new_tokens": 256,
+    "stop": [
+      "</tool_call>"
+    ],
+    "no_thinking": false
+  },
+  "max_steps": 6,
+  "overall": {
+    "schema_valid": 0.8395,
+    "tool_selection_correct": 0.57,
+    "args_exact": 0.4588,
+    "task_success": 0.4588,
+    "n_calls": 0.716,
+    "redundant_calls": 0.1893,
+    "false_action": 0.2078,
+    "truncated": 0.0,
+    "n": 486
+  },
+  "by_lang": {
+    "bn": {
+      "schema_valid": 0.84,
+      "tool_selection_correct": 0.59,
+      "args_exact": 0.42,
+      "task_success": 0.42,
+      "n_calls": 0.71,
+      "redundant_calls": 0.2,
+      "false_action": 0.3,
+      "truncated": 0.0,
+      "n": 100
+    },
+    "bn-en": {
+      "schema_valid": 0.8317,
+      "tool_selection_correct": 0.5248,
+      "args_exact": 0.3861,
+      "task_success": 0.3861,
+      "n_calls": 0.7426,
+      "redundant_calls": 0.2178,
+      "false_action": 0.2475,
+      "truncated": 0.0,
+      "n": 101
+    },
+    "en": {
+      "schema_valid": 0.8315,
+      "tool_selection_correct": 0.5056,
+      "args_exact": 0.4045,
+      "task_success": 0.4045,
+      "n_calls": 0.8427,
+      "redundant_calls": 0.2809,
+      "false_action": 0.236,
+      "truncated": 0.0,
+      "n": 89
+    },
+    "hi": {
+      "schema_valid": 0.8229,
+      "tool_selection_correct": 0.6042,
+      "args_exact": 0.5312,
+      "task_success": 0.5312,
+      "n_calls": 0.6354,
+      "redundant_calls": 0.125,
+      "false_action": 0.1562,
+      "truncated": 0.0,
+      "n": 96
+    },
+    "hi-en": {
+      "schema_valid": 0.87,
+      "tool_selection_correct": 0.62,
+      "args_exact": 0.55,
+      "task_success": 0.55,
+      "n_calls": 0.66,
+      "redundant_calls": 0.13,
+      "false_action": 0.1,
+      "truncated": 0.0,
+      "n": 100
+    }
+  },
+  "by_category": {
+    "clarify": {
+      "schema_valid": 0.5,
+      "tool_selection_correct": 0.3864,
+      "args_exact": 0.3864,
+      "task_success": 0.3864,
+      "n_calls": 0.6136,
+      "redundant_calls": 0.6136,
+      "false_action": 0.3258,
+      "truncated": 0.0,
+      "n": 132
+    },
+    "multi_tool": {
+      "schema_valid": 0.955,
+      "tool_selection_correct": 0.0,
+      "args_exact": 0.0,
+      "task_success": 0.0,
+      "n_calls": 1.0,
+      "redundant_calls": 0.0,
+      "false_action": 0.1892,
+      "truncated": 0.0,
+      "n": 111
+    },
+    "no_tool": {
+      "schema_valid": 0.9895,
+      "tool_selection_correct": 0.8842,
+      "args_exact": 0.8842,
+      "task_success": 0.8842,
+      "n_calls": 0.1158,
+      "redundant_calls": 0.1158,
+      "false_action": 0.0,
+      "truncated": 0.0,
+      "n": 95
+    },
+    "single_tool": {
+      "schema_valid": 0.9595,
+      "tool_selection_correct": 0.9595,
+      "args_exact": 0.5946,
+      "task_success": 0.5946,
+      "n_calls": 0.9797,
+      "redundant_calls": 0.0,
+      "false_action": 0.25,
+      "truncated": 0.0,
+      "n": 148
+    }
+  },
+  "mean_latency_s": 19.43,
+  "traces_path": "/kaggle/working/out/results/tinyaya-global-base/test.traces.jsonl",
+  "auditkit": {
+    "path": "/kaggle/working/out/results/tinyaya-global-base/test.auditkit.json",
+    "scorers": [
+      "tool_call_f1",
+      "tool_call_validity",
+      "trajectory_match",
+      "redundant_tool_calls",
+      "agent_loop_detection"
+    ],
+    "means": {
+      "agent_loop_detection": 1.0,
+      "redundant_tool_calls": 0.0,
+      "tool_call_exact": 0.4547,
+      "tool_call_f1": 0.571,
+      "tool_call_precision": 0.6286,
+      "tool_call_recall": 0.5422,
+      "tool_call_validity": 0.9798,
+      "trajectory_in_order": 0.4547,
+      "trajectory_strict": 0.4547
+    },
+    "n_scored": {
+      "tool_call_precision": 486,
+      "tool_call_recall": 486,
+      "tool_call_f1": 486,
+      "tool_call_exact": 486,
+      "trajectory_strict": 486,
+      "trajectory_in_order": 486,
+      "tool_call_validity": 347,
+      "redundant_tool_calls": 347,
+      "agent_loop_detection": 347
+    }
+  }
+}
