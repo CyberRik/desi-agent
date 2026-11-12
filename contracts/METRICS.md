@@ -8,7 +8,7 @@ reward (F), so the eval metric and the training signal are the same function.
 |---|---|
 | `schema_valid` | every emitted tool call parses as JSON **and** validates against `contracts/tools.json` (1/0) |
 | `tool_selection_correct` | predicted tool-name sequence == gold name sequence (1/0) |
-| `args_exact` | names and canonical args all equal gold (numbers compared with 1e-6 tolerance) (1/0) |
+| `args_exact` | names and canonical args all equal gold (1/0). Before comparing, optional args are filled with their defaults on both sides (`txn_type="all"`, `kind="branch"`, `note=""`); numbers compare with 1e-6 relative tolerance; strings compare case-insensitively for enums and UPI ids, exactly otherwise |
 | `task_success` | `args_exact` and a non-empty final answer and not truncated. For `clarify`/`no_tool`: no tool call and a non-empty final answer (1/0) |
 | `n_calls` | number of tool calls made |
 | `redundant_calls` | calls beyond `len(gold.tool_sequence)` (>= 0) |
