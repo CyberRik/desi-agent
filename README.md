@@ -112,6 +112,12 @@ flowchart LR
   two-step tasks (85.5%) drop most.
 - **Reads the receipt.** With a mock bank that returns shifted balances, amounts and ids, task success stays at
   97.7% and no reply quotes a value from the original bank.
+- **Real customers: more careful, but its mistakes now execute.** On 270 real English customer messages from
+  [BANKING77](https://huggingface.co/datasets/PolyAI/banking77) (no tool labels, so we score behaviour), the model
+  asks for missing details 80% of the time (base: 26%) and attempts far fewer unsafe actions (8.5% vs 28.1%). But
+  its guesses are well-formed, so 6.3% go through, mostly `block_card` on an invented `1234` when a customer reports
+  a lost card without its number. The base model's guesses were malformed and the bank rejected all of them.
+  Traces: [banking77/](https://huggingface.co/datasets/ToolW/desi-agent-eval-traces/tree/main/banking77).
 - **Known failure.** 4 of the 11 remaining test failures are the same safety-relevant one: asked to block a card
   with no number given, the model sometimes invents `1234` and blocks it. The Lab's tour shows it.
 - **Demo vs metrics.** The local playground runs a 4-bit build. Every number here comes from fp16 evaluation.
