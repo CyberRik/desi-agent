@@ -1,0 +1,113 @@
+import asyncio
+import random
+import re
+import sys
+from pathlib import Path
+
+from desi_agent import tools
+from desi_agent.data import generate
+from desi_agent.data.checks import script_ok, to_ascii_digits, user_msg_problems
+from desi_agent.data.scenarios import sample_all
+from desi_agent.eval.metrics import score_episode
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from validate_data import check  # noqa: E402
+
+FILLER = {"en": "please help", "hi": "कृपया मदद करें", "bn": "দয়া করে সাহায্য করুন",
+          "hi-en": "mera kaam jaldi kar do", "bn-en": "amar kaj ta ekhon kore dao"}
+BOT = {"en": "Done, your request is complete", "hi": "हो गया, आपका काम पूरा है", "bn": "হয়ে গেছে, আপনার কাজ সম্পূর্ণ",
+       "hi-en": "aapka kaam ho gaya hai aur sab theek hai", "bn-en": "apnar kaj hoye geche ar sob thik ache"}
+
+
+class FakeTeacher:
+    """Echoes back required values in the right script, like a well-behaved teacher would."""
+    model = "fake"
+
+    def __init__(self, lang):
+        self.lang = lang
+
+    async def __call__(self, system, prompt, temperature, max_tokens=200):
+        m = re.search(r"exactly as written: (.*)\.$", prompt, flags=re.M) or re.search(r"values;.*?: (.*)\.$", prompt, flags=re.M)
+        vals = m.group(1) if m else ""
+        if "Customer message:" in prompt:  # final reply
+            refs = " ".join(sorted(set(re.findall(r"\b(?:BLK|DSP)\d+\b", prompt))))
+            return f"{BOT[self.lang]} {refs}".strip()
+        return f"{FILLER[self.lang]} {vals}".strip()
+
+
+def test_all_scenarios_have_valid_gold_calls():
+    scen = sample_all(counts={"single_tool": 3, "multi_tool": 3, "clarify": 1, "no_tool": 1})
+    assert {s.category for s in scen} == {"single_tool", "multi_tool", "clarify", "no_tool"}
+    for s in scen:
+        for name, args in s.calls:
+            ok, err = tools.validate_call(name, args)
+            assert ok, (s.pattern, args, err)
+
+
+def test_pipeline_with_fake_teacher_produces_valid_rows():
+    scen = sample_all(counts={"single_tool": 2, "multi_tool": 2, "clarify": 1, "no_tool": 1})
+    rows = []
+    for i, s in enumerate(scen):
+        if s.native_digits:
+            s.native_digits = False  # the fake teacher only writes ASCII digits
+        row, rej = asyncio.run(generate.make_one(FakeTeacher(s.lang), i, s, random.Random(i)))
+        assert row, rej
+        rows.append(row)
+    for r in rows:
+        assert check(r) == [], (r["id"], check(r))
+        assert score_episode(r["messages"], r["gold"])["task_success"] == 1.0
+
+
+def test_checks():
+    assert to_ascii_digits("४८२१ ৪৮২১") == "4821 4821"
+    assert script_ok("मेरा कार्ड ब्लॉक करो UPI", "hi") and not script_ok("mera card block karo", "hi")
+    assert not script_ok("আমার কার্ড", "hi-en")
+    assert user_msg_problems("mera card block karo", "hi-en", ["4821"], []) == ["missing:4821"]
+    assert user_msg_problems("mera card 4821 block kar do", "hi-en", [], [r"\d{4}"]) == [r"forbidden:\d{4}"]
+
+
+def test_quality_gates():
+    from desi_agent.data.checks import final_problems, repetitive, romanized_ok
+    assert not romanized_ok("My card ending with 0566 is broken, block it immediately!", "bn-en")
+    assert romanized_ok("Amar card ta haria geche, ekhuni block kore dao please", "bn-en")
+    assert romanized_ok("Mera card kho gaya hai yaar, jaldi block kar do", "hi-en")
+    assert repetitive("a b c a b c a b c a b c")
+    assert "echoes_user" in final_problems("ami EMI calculate korte chai kintu rate nai", "bn-en",
+                                           user_msg="ami EMI calculate korte chai kintu rate nai")
+    assert "multiline" in user_msg_problems("আমার ব্যালেন্স কত?\nআমার ব্যালেন্স জানান?", "bn", [], [])
+
+
+def test_assistant_persona():
+    from desi_agent.data.checks import addresses_customer
+    assert not addresses_customer("Mera credit card ka outstanding 12840 hai, jaldi karo yaar", "hi-en")
+    assert not addresses_customer("Amar card ta block kora hoiyeche, 6 din por new card pabo", "bn-en")
+    assert addresses_customer("Aapka card ****2509 block kar diya gaya hai", "hi-en")
+    assert addresses_customer("Apnar card ta block kora hoyeche", "bn-en")
+    assert addresses_customer("আপনার সেভিংস একাউন্টের ব্যালেন্স ₹48,250.75", "bn")
+    assert addresses_customer("Hi! I can check balances, block cards and raise disputes.", "en")
+    assert not addresses_customer("My card ending 5198 is blocked and I will get a new one in 7 days.", "en")
+
+
+def test_language_hygiene_and_refs():
+    from desi_agent.data.checks import final_problems, lang_hygiene, required_refs
+    assert "hindi_in_bn-en" in lang_hygiene("Aapke last 4 transaction dekha gaya, dispute id DSP7150719", "bn-en")
+    assert lang_hygiene("Apnar card ta block kora hoyeche, reference BLK53057343", "bn-en") == []
+    assert "bengali_in_hi-en" in lang_hygiene("Aapka card block kore dao", "hi-en")
+    assert "bad_term" in lang_hygiene("बहस का संदर्भ संख्या DSP7775912 है", "hi")
+    assert "broken_chars" in lang_hygiene("উপি� রেফারেন্স", "bn")
+    refs = required_refs(['{"dispute_id": "DSP7775912", "status": "dispute_raised"}', '{"transactions": [{"transaction_id": "TXN1"}]}'])
+    assert refs == ["DSP7775912"]
+    assert "missing_ref:DSP7775912" in final_problems("Your dispute has been raised.", "en", [], "", refs)
+    assert not [x for x in final_problems("Your dispute DSP7775912 has been raised.", "en", [], "", refs) if x.startswith("missing")]
+
+
+def test_unrequested_dispute():
+    from desi_agent.data.checks import unrequested_dispute
+    from desi_agent.data.generate import is_dispute, user_prompt
+    from desi_agent.data.scenarios import sample_all
+    assert unrequested_dispute("কার্ডটি ব্লক করুন আর ডিসপিউট করুন", dispute_ok=False) == ["unrequested_dispute"]
+    assert unrequested_dispute("please dispute TXN123", dispute_ok=True) == []
+    scen = sample_all(counts={"single_tool": 3, "multi_tool": 3, "clarify": 2, "no_tool": 1})
+    for s in scen:
+        if s.lang == "hi" and not is_dispute(s):
+            assert "विवाद" not in user_prompt(s, "polite")  # glossary only for dispute scenarios
