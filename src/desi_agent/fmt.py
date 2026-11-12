@@ -11,6 +11,7 @@ from . import tools
 _CALL_RE = re.compile(r"<tool_call>\s*(.*?)\s*</tool_call>", re.S)
 
 Policy = Callable[[list[dict]], str]
+INVALID = "__invalid__"  # tool name recorded for an unparseable tool call
 
 
 def system_prompt() -> str:
@@ -38,6 +39,9 @@ def to_chat(messages: list[dict], *, with_system: bool = True) -> list[dict]:
             lines = []
             for c in m["tool_calls"]:
                 args = c["function"]["arguments"]
+                if c["function"]["name"] == INVALID:
+                    lines.append(str(args))  # unparseable call: replay exactly what the model wrote
+                    continue
                 args = json.loads(args) if isinstance(args, str) else args
                 lines.append(render_tool_call(c["function"]["name"], args))
             chat.append({"role": "assistant", "content": "\n".join(lines)})
@@ -93,8 +97,8 @@ def run_episode(policy: Policy, user_messages: list[dict], max_steps: int = 6) -
         if not turn.valid_json:
             # Record the malformed call so metrics can see it, then feed back an error.
             run.messages.append({"role": "assistant", "content": None, "tool_calls": [
-                {"id": call_id, "type": "function", "function": {"name": "__invalid__", "arguments": turn.raw}}]})
-            run.messages.append({"role": "tool", "tool_call_id": call_id, "name": "__invalid__",
+                {"id": call_id, "type": "function", "function": {"name": INVALID, "arguments": turn.raw}}]})
+            run.messages.append({"role": "tool", "tool_call_id": call_id, "name": INVALID,
                                  "content": _dump({"error": "could not parse tool call JSON"})})
             continue
         run.messages.append({"role": "assistant", "content": None, "tool_calls": [
