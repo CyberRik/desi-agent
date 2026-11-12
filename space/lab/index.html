@@ -361,7 +361,7 @@ async function tourEpisode(i) {
     const voices = [["Block my card", "English", ""], ["मेरा कार्ड ब्लॉक कर दो", "Hindi", ""], ["আমার কার্ডটা ব্লক করে দাও", "Bengali", "bn"],
       ["Mera card block kar do", "Hinglish", ""], ["Amar card ta block kore dao", "Banglish", ""]];
     app.innerHTML = `<div class="intro"><div class="enter"><h1>Desi Agent</h1>
-        <p class="lede">One request, five ways customers type it. We taught a 3B model to act on all of them correctly, and to ask when something is missing.</p>
+        <p class="lede">One request, five ways customers type it. We taught a 3B model to act on them, and to ask when something is missing${fin ? `: right in ${pct(fin.task_success)} of ${D.runs[FINAL].meta.n} test conversations` : ""}.</p>
         <p class="fine">Tiny Aya Global, fine-tuned with AgentTune. Each phone replays the real evaluation trace: base model on the left, ours on the right.</p></div>
       <div class="voices">${voices.map(([q, l, c], k) => `<div class="voice enter" style="animation-delay:${0.25 + k * 0.35}s"><small>${l}</small><q class="${c}">${q}</q></div>`).join("")}</div></div>${ctl()}`;
   } else if (play.idx === n - 1) {
