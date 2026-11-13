@@ -60,6 +60,9 @@ main{padding:26px 28px;max-width:1280px;margin:0 auto}
 .msg.cust{align-self:flex-end;background:var(--bubble);color:var(--bubble-ink);border-bottom-right-radius:6px}
 .msg.bot{align-self:flex-start;background:var(--bot);color:var(--ink);border-bottom-left-radius:6px;box-shadow:0 1px 1px rgba(28,31,46,.06)}
 .gloss{align-self:flex-end;max-width:84%;font-size:12.5px;color:var(--ink3);margin-top:-5px;text-align:right}
+.tr{max-width:84%;font-size:12.5px;line-height:1.4;color:var(--ink3);font-style:italic;margin-top:-4px}
+.tr.cust{align-self:flex-end;text-align:right} .tr.bot{align-self:flex-start}
+.trnote{font-size:12.5px;color:var(--desk-mute);margin:-6px auto 12px;max-width:1040px}
 .typing{align-self:flex-start;background:var(--bot);border-radius:18px;padding:11px 14px;display:flex;gap:4px;box-shadow:0 1px 1px rgba(28,31,46,.06)}
 .typing i{width:6px;height:6px;border-radius:50%;background:var(--ink3);animation:blink 1s infinite}
 .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
@@ -217,7 +220,30 @@ async function discover() {
   }
   await Promise.all(D.order.map(async k => { const r = D.runs[k]; r.meta = await j(RAW(`results/${r.tag}/${r.split}.json`)); }));
   try { D.tour = normTour(await j(RAW("results/tour.json"))); } catch { D.tour = null; }
+  try { D.tr = (await j(RAW("translations/translations.json"))).items || {}; } catch { D.tr = {}; }
 }
+/* English machine translations for judges who don't read Hindi/Bengali/Hinglish/Banglish ([R], results/translations.json,
+   keyed by sha1 of the exact text). Missing key = English or untranslated: show nothing. */
+function sha1hex(str) {
+  const b = new TextEncoder().encode(str), l = b.length, n = ((l + 8 >> 6) + 1) * 16, w = new Uint32Array(n);
+  for (let i = 0; i < l; i++) w[i >> 2] |= b[i] << (24 - (i % 4) * 8);
+  w[l >> 2] |= 0x80 << (24 - (l % 4) * 8); w[n - 1] = l * 8;
+  let h0 = 0x67452301, h1 = 0xEFCDAB89, h2 = 0x98BADCFE, h3 = 0x10325476, h4 = 0xC3D2E1F0; const x = new Uint32Array(80);
+  for (let i = 0; i < n; i += 16) {
+    for (let t = 0; t < 80; t++) x[t] = t < 16 ? w[i + t] : ((v => (v << 1) | (v >>> 31))(x[t - 3] ^ x[t - 8] ^ x[t - 14] ^ x[t - 16]));
+    let a = h0, bb = h1, c = h2, d = h3, e = h4;
+    for (let t = 0; t < 80; t++) {
+      const f = t < 20 ? (bb & c) | (~bb & d) : t < 40 ? bb ^ c ^ d : t < 60 ? (bb & c) | (bb & d) | (c & d) : bb ^ c ^ d;
+      const k = t < 20 ? 0x5A827999 : t < 40 ? 0x6ED9EBA1 : t < 60 ? 0x8F1BBCDC : 0xCA62C1D6;
+      const tmp = (((a << 5) | (a >>> 27)) + f + e + k + x[t]) >>> 0;
+      e = d; d = c; c = (bb << 30) | (bb >>> 2); bb = a; a = tmp;
+    }
+    h0 = (h0 + a) >>> 0; h1 = (h1 + bb) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
+  }
+  return [h0, h1, h2, h3, h4].map(v => v.toString(16).padStart(8, "0")).join("");
+}
+const trEN = text => (D.tr && text) ? D.tr[sha1hex(text.trim())] : undefined;
+const trHTML = (text, side) => { const t = trEN(text); return t ? `<div class="tr ${side}" title="Machine translation into English">≈ ${esc(t)}</div>` : ""; };
 function normTour(t) {  // R's results/tour.json: {episodes:[{id, gloss_en, kind, base:{tag,caption}, final:{tag,caption}}]}
   const side = (v, dflt) => (v && typeof v === "object") ? {tag: v.tag ?? dflt, caption: v.caption ?? null} : {tag: dflt, caption: v ?? null};
   return {episodes: (t.episodes || []).map(e => {
@@ -336,8 +362,9 @@ function phoneShell(key, cls) {
 }
 const toBottom = chat => { chat.scrollTop = chat.scrollHeight; };
 function renderStatic(chat, trace, gloss) {
-  chat.innerHTML = steps(trace).map((s, i) => s.t === "cust" ? `<div class="msg cust">${esc(s.text)}</div>${i === 0 && gloss ? `<div class="gloss">“${esc(gloss)}”</div>` : ""}`
-    : s.t === "rcpt" ? rcptHTML(s.r, s.raw) : `<div class="msg bot">${md(s.text)}</div>`).join("");
+  chat.innerHTML = steps(trace).map((s, i) => s.t === "cust"
+      ? `<div class="msg cust">${esc(s.text)}</div>${i === 0 && gloss ? `<div class="gloss">“${esc(gloss)}”</div>` : trHTML(s.text, "cust")}`
+    : s.t === "rcpt" ? rcptHTML(s.r, s.raw) : `<div class="msg bot">${md(s.text)}</div>${trHTML(s.text, "bot")}`).join("");
 }
 
 /* ============ tour (orchestrated playback) ============ */
@@ -361,6 +388,8 @@ async function playPane(chat, trace, gloss, tok) {  // customer bubble is alread
       const b = document.createElement("div"); b.className = "msg bot enter"; chat.append(b);
       const words = s.text.split(/(\s+)/); let acc = "";
       for (const w of words) { if (tok !== play.token) return; acc += w; b.innerHTML = md(acc); toBottom(chat); if (w.trim()) await sleep(55 / play.speed); }
+      const tr = trHTML(s.text, "bot");
+      if (tr) { chat.insertAdjacentHTML("beforeend", tr); chat.lastElementChild.classList.add("enter"); toBottom(chat); }
       await sleep(400 / play.speed);
     }
   }
@@ -398,7 +427,7 @@ async function tourEpisode(i) {
     if (!a || !b) { app.innerHTML = `<div class="err">Episode ${esc(ep.id)} not found in the traces.</div>${ctl()}`; }
     else {
       app.innerHTML = `<div class="meta"><span class="lang">${esc(LANG[a.lang] ?? a.lang)}</span><span>${esc(CAT[a.category] ?? a.category)}</span>
-        ${ep.kind === "still_failing" ? `<span class="fail">Still failing after fine-tuning</span>` : ""}<span class="id">${esc(ep.id)}</span></div>
+        ${ep.kind === "still_failing" ? `<span class="fail">Still failing after fine-tuning</span>` : ""}<span class="id">${esc(ep.id)}</span></div>${a.lang !== "en" ? `<p class="trnote">≈ machine translation into English</p>` : ""}
         <div class="stage">${phoneShell(left, "base")}${phoneShell(right, "ft")}</div>${ctl()}`;
       const chats = app.querySelectorAll(".chat"), user = a.messages[0].content;
       const els = [...chats].map(c => { const e = document.createElement("div"); e.className = "msg cust enter"; c.append(e); return e; });
@@ -406,7 +435,8 @@ async function tourEpisode(i) {
       const chars = [...user];
       for (let k = 1; k <= chars.length; k += 2) { if (tok !== play.token) return; els.forEach(e => e.textContent = chars.slice(0, k).join("")); await sleep(22 / play.speed); }
       els.forEach(e => e.textContent = user);
-      await Promise.all([playPane(chats[0], a, ep.gloss, tok), playPane(chats[1], b, ep.gloss, tok)]);
+      const cg = ep.gloss || (trEN(user) ? "≈ " + trEN(user) : null);  // hand-written gloss first, else machine translation
+      await Promise.all([playPane(chats[0], a, cg, tok), playPane(chats[1], b, cg, tok)]);
       if (tok !== play.token) return;
       const verdict = (phone, ok, cap) => phone.insertAdjacentHTML("beforeend", `<div class="verdict ${ok ? "good" : "bad"} enter">${ok ? "✓" : "✗"} ${esc(cap ?? (ok ? "Handled correctly" : "Not handled correctly"))}</div>`);
       const ph = app.querySelectorAll(".device-col");
@@ -482,7 +512,7 @@ async function explore(selId) {
   const sc = s => `<div class="scores">${["task_success", "tool_selection_correct", "args_exact", "schema_valid", "false_action", "redundant_calls"].map(k =>
     `<span class="sc ${(k === "false_action" || k === "redundant_calls") ? (s[k] > 0 ? "bad" : "") : (s[k] < 1 ? "bad" : "")}">${k.replace(/_/g, " ")} ${+s[k].toFixed(2)}</span>`).join("")}</div>`;
   $("detail").innerHTML = `<div class="meta"><span class="tag">${esc(LANG[a.lang] ?? a.lang)}</span><span class="tag">${esc(CAT[a.category] ?? a.category)}</span><span class="muted small" style="margin-left:auto">${esc(a.id)}</span></div>
-    <div class="gold"><b>Expected:</b> ${goldTxt}</div><div class="stage">${phoneShell(EX.left, "base")}${phoneShell(EX.right, "ft")}</div>`;
+    <div class="gold"><b>Expected:</b> ${goldTxt}</div>${a.lang !== "en" ? `<p class="trnote">≈ marks a machine translation into English, for readers who don't know the language.</p>` : ""}<div class="stage">${phoneShell(EX.left, "base")}${phoneShell(EX.right, "ft")}</div>`;
   const chats = $("detail").querySelectorAll(".chat"), phones = $("detail").querySelectorAll(".device-col");
   renderStatic(chats[0], a); renderStatic(chats[1], b);
   phones[0].insertAdjacentHTML("beforeend", sc(a.scores)); phones[1].insertAdjacentHTML("beforeend", sc(b.scores));
