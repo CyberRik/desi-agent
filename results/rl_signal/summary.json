@@ -1,0 +1,11 @@
+{
+  "n_prompts": 300,
+  "k": 8,
+  "temperature": 1.0,
+  "split": "train",
+  "mean_reward": 0.9185,
+  "frac_prompts_with_variance": 0.5467,
+  "mean_within_prompt_std": 0.2145,
+  "lang_match_rate": 0.2913,
+  "frac_prompts_best_beats_mean_by_0.3": 0.32
+}

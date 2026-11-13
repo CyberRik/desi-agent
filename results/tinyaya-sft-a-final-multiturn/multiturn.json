@@ -1,0 +1,97 @@
+{
+  "model_tag": "tinyaya-sft-a-final-multiturn",
+  "seed": 1234,
+  "n_targets": 300,
+  "switch": {
+    "overall": {
+      "n": 300,
+      "task_success": 0.8433,
+      "lang_match": 0.3833,
+      "both": 0.34,
+      "false_action": 0.0733
+    },
+    "by_target_lang": {
+      "bn": {
+        "n": 69,
+        "task_success": 0.8986,
+        "lang_match": 0.6377,
+        "both": 0.5797,
+        "false_action": 0.029
+      },
+      "bn-en": {
+        "n": 67,
+        "task_success": 0.7761,
+        "lang_match": 0.4328,
+        "both": 0.3881,
+        "false_action": 0.1343
+      },
+      "en": {
+        "n": 59,
+        "task_success": 0.8983,
+        "lang_match": 0.0678,
+        "both": 0.0678,
+        "false_action": 0.0339
+      },
+      "hi": {
+        "n": 50,
+        "task_success": 0.88,
+        "lang_match": 0.42,
+        "both": 0.34,
+        "false_action": 0.04
+      },
+      "hi-en": {
+        "n": 55,
+        "task_success": 0.7636,
+        "lang_match": 0.3091,
+        "both": 0.2727,
+        "false_action": 0.1273
+      }
+    }
+  },
+  "same": {
+    "overall": {
+      "n": 300,
+      "task_success": 0.83,
+      "lang_match": 0.9833,
+      "both": 0.8167,
+      "false_action": 0.0733
+    },
+    "by_target_lang": {
+      "bn": {
+        "n": 69,
+        "task_success": 0.8696,
+        "lang_match": 1.0,
+        "both": 0.8696,
+        "false_action": 0.029
+      },
+      "bn-en": {
+        "n": 67,
+        "task_success": 0.7761,
+        "lang_match": 0.9701,
+        "both": 0.7612,
+        "false_action": 0.0896
+      },
+      "en": {
+        "n": 59,
+        "task_success": 0.8136,
+        "lang_match": 1.0,
+        "both": 0.8136,
+        "false_action": 0.0847
+      },
+      "hi": {
+        "n": 50,
+        "task_success": 0.84,
+        "lang_match": 0.94,
+        "both": 0.78,
+        "false_action": 0.1
+      },
+      "hi-en": {
+        "n": 55,
+        "task_success": 0.8545,
+        "lang_match": 1.0,
+        "both": 0.8545,
+        "false_action": 0.0727
+      }
+    }
+  }
+}
