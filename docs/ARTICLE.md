@@ -115,7 +115,8 @@ limits the batch: batch size 2 runs out of memory, mostly because of the 262k-to
 first whether it would have anything to learn. Sampling 8 first turns at temperature 1.0 for 377 training prompts
 in the two areas where SFT still errs (asking for missing details, and the block-card reason), 95.7% of samples
 were already correct and only 12.7% of prompts produced any reward difference. With a 97.7% SFT model and almost
-no learning signal, we stopped there rather than risk degrading it.
+no learning signal, we stopped there rather than risk degrading it. Multi-turn conversations turned out to be a
+different story; see [Reinforcement learning where there is signal](#reinforcement-learning-where-there-is-signal).
 
 ## Evaluation
 
@@ -247,6 +248,51 @@ traces, it blocks **none of the 170 correct state-changing calls** in the test s
 on real customers from **6.3% to 0.4%** (17 messages to 1). The one left is a dispute on a real transaction from the
 customer's statement that they never singled out: grounded, but chosen without asking. A guard like this belongs in
 any deployment, whatever the model.
+
+## Reinforcement learning where there is signal
+
+**A failure no test measured.** Trying the local demo, a native speaker (Ritankar) wrote one message in Banglish and
+the next in Hinglish. The model took the right action but answered the second message in Banglish. Every training
+and test conversation is single-turn, so this was never measured. `scripts/eval_multiturn.py` now measures it:
+300 turn-2 conversations from the test split, each placed after a full conversation in another language (switch)
+or the same language (control). A reply-language detector (`eval/language.py`) agrees with the gold replies'
+language 97-100% of the time. After a switch, the fine-tuned model answered in the customer's new language only
+**38.3%** of the time (98.3% without a switch); into English, 6.8%.
+
+**Reward design, with a hacking audit.** We added an experimental reward, `reward_lang` (`eval/rewards.py`): the
+contract reward, plus a bonus for answering in the customer's latest language, gated on task success, and a penalty
+for answering in another one. Before optimising anything, `scripts/eval_reward_audit.py` scored scripted cheating
+policies. It found two holes in the contract reward itself: echoing the customer's message back counted as full
+success on "ask first" and "no action" episodes (0.77 of a possible 1.30), and so did any non-question reply.
+`reward_lang` closes both: an echo gets no success credit (0.30), and an "ask first" reply must actually ask (a
+question mark or a request word in that language; 361 of 362 gold clarify replies pass, 0 of 2,423 gold replies
+are flagged as echoes).
+
+**Signal first, then RL.** On 300 multi-turn language-switch prompts built only from the training split, we sampled
+8 full conversations per prompt at temperature 1.0 and scored them with `reward_lang` (`scripts/eval_rl_signal.py`).
+54.7% of prompts produced different rewards across samples (the single-turn probe: 12.7%), so there is something to
+learn. With the time left we used rejection-sampling fine-tuning, the simplest RL method that uses this signal: keep
+each prompt's best sample when it is fully correct under `reward_lang` (117 conversations), add them to the
+original training set, and retrain with the unchanged pipeline (`scripts/data_rft_from_probe.py`, run `rft-a`,
+[ToolW/desi-agent-tinyaya-rft-lora](https://huggingface.co/ToolW/desi-agent-tinyaya-rft-lora)). Validation loss:
+0.271 (SFT: 0.273).
+
+| | SFT | **SFT + RL (RFT)** |
+|---|---|---|
+| Frozen test, task success | 97.7% | **98.2%** |
+| Frozen test, wrong or unrequested action | 1.8% | 1.7% |
+| Reworded test (380 validated), task success | 91.8% | **93.7%** (Banglish 77.8% to 84.1%) |
+| Language switch: reply in the customer's new language | 38.3% | **55.0%** |
+| Language switch: right action | 84.3% | **94.0%** |
+| Language switch: right action and right language | 34.0% | **52.7%** |
+| Same language, multi-turn: right action and right language | 81.7% | **87.7%** |
+
+Nothing got worse, and the targeted behaviour improved most. Two caveats. We did not train a control on the same
+multi-turn conversations without reward selection, so part of the gain may come from seeing multi-turn
+conversations at all rather than from the reward. And switching into English is still weak (15%), so this is a
+partial fix. The reported headline model stays the SFT adapter (it is what every other table, the Lab and the demo
+use); the RL adapter is published alongside it. The multi-turn evaluation, reward design, signal probe and RL run
+were Ritankar's (R lane); the training pipeline they reuse is K's.
 
 ## What it costs to run (ROI)
 
