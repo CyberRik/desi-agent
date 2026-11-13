@@ -231,6 +231,23 @@ Bengali and two-step tasks drop most: the model then disputes the wrong transact
 block reason. Part of the Banglish drop may still be rewrite quality, since the judge is not strong at Banglish
 either.
 
+## Real customers, and the failure that matters
+
+On 270 real, human-written English customer messages from BANKING77 (`scripts/eval_real_queries.py`, written and
+run by K), which have no labels for our tools, we scored behaviour. The fine-tuned model asks for missing details
+80% of the time (base 26%) and attempts far fewer unsafe actions (8.5% vs 28.1%). But its guesses are well-formed,
+so 6.3% of messages end with an **executed** unsafe action, mostly blocking an invented card "1234" when a customer
+reports a lost card without its number. The base model's guesses were malformed, and the bank rejected all of them.
+Real customers trigger this far more often than our test set, because they almost never give the number.
+
+**A grounding guard outside the model fixes most of it** (`src/desi_agent/eval/guard.py`, `scripts/eval_guard.py`):
+a block, dispute or transfer may only execute if its identifiers appear in the conversation (card digits, UPI id and
+amount in the customer's words; a transaction id there or in an earlier tool result). Replayed on the existing
+traces, it blocks **none of the 170 correct state-changing calls** in the test set, and cuts executed unsafe actions
+on real customers from **6.3% to 0.4%** (17 messages to 1). The one left is a dispute on a real transaction from the
+customer's statement that they never singled out: grounded, but chosen without asking. A guard like this belongs in
+any deployment, whatever the model.
+
 ## What it costs to run (ROI)
 
 Measured on our evaluation runs (`scripts/eval_roi.py`, `results/roi.json`): on **one T4** with 32 conversations in
