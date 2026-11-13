@@ -1,0 +1,28 @@
+{
+  "test": {
+    "tinyaya-global-base": {
+      "correct_calls": 37,
+      "correct_blocked": 0,
+      "wrong_calls": 101,
+      "wrong_blocked": 49
+    },
+    "tinyaya-sft-a-final": {
+      "correct_calls": 170,
+      "correct_blocked": 0,
+      "wrong_calls": 9,
+      "wrong_blocked": 4
+    }
+  },
+  "banking77": {
+    "tinyaya-global-base": {
+      "n": 270,
+      "executed_state_change": 0.0,
+      "executed_with_guard": 0.0
+    },
+    "tinyaya-sft-a-final": {
+      "n": 270,
+      "executed_state_change": 0.063,
+      "executed_with_guard": 0.0037
+    }
+  }
+}
