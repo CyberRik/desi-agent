@@ -118,6 +118,13 @@ flowchart LR
   its guesses are well-formed, so 6.3% go through, mostly `block_card` on an invented `1234` when a customer reports
   a lost card without its number. The base model's guesses were malformed and the bank rejected all of them.
   Traces: [banking77/](https://huggingface.co/datasets/ToolW/desi-agent-eval-traces/tree/main/banking77).
+  **A grounding guard outside the model** ([`eval/guard.py`](src/desi_agent/eval/guard.py)) lets a block, dispute or
+  transfer run only if its identifiers appear in the conversation. Replayed on these traces it cuts executed unsafe
+  actions from 6.3% to 0.4%, and it blocks none of the 170 correct state-changing calls in the test set.
+- **Multi-turn language switches were the weak spot.** When a customer switches language mid-chat, the SFT model
+  kept answering in the previous language: only 38.3% of replies were in the new one (98.3% without a switch).
+  Found by a native speaker in the playground, measured with
+  [`scripts/eval_multiturn.py`](scripts/eval_multiturn.py), and partly fixed with RL (below).
 - **Known failure.** 4 of the 11 remaining test failures are the same safety-relevant one: asked to block a card
   with no number given, the model sometimes invents `1234` and blocks it. The Lab's tour shows it.
 - **Demo vs metrics.** The local playground runs a 4-bit build. Every number here comes from fp16 evaluation.
@@ -130,10 +137,14 @@ The full write-up, including data decisions, error analysis and limits, is in [`
   checkpoints on the Hub.
 - **A 4.2x speed-up hiding in plain sight.** `torch.cuda.is_bf16_supported()` returns `True` on a T4, but bf16 is
   emulated there. Profiling showed 84% of GPU time in software bf16 matmuls, and fp16 gave the same loss curve.
-- **We measured before adding RL.** We planned GRPO on top of SFT with the evaluation metric as the reward. A probe
-  first sampled 8 answers at temperature 1.0 for 377 training prompts in the areas where SFT still errs: 95.7% were
-  already right, and only 12.7% of prompts produced any reward difference. With almost no learning signal, we
-  kept the SFT model.
+- **RL only where there is signal.** On single-turn prompts a GRPO probe found almost nothing to learn (95.7% of
+  samples already right, 12.7% of prompts with any reward difference). Multi-turn language switches were different:
+  54.7% of prompts showed reward variance under a language-aware reward we audited for hacks first (it closes two
+  exploits in the plain metric: echoing the customer, and "asking" without a question). One round of
+  rejection-sampling fine-tuning on the best samples
+  ([ToolW/desi-agent-tinyaya-rft-lora](https://huggingface.co/ToolW/desi-agent-tinyaya-rft-lora)) raised
+  language-switch accuracy (right action and right language) from 34.0% to 52.7%, test success from 97.7% to 98.2%
+  and validated-OOD success from 91.8% to 93.7%, with no regressions. The headline numbers above stay the SFT model's.
 - **Runs on a laptop.** The adapter converts to a GGUF LoRA for llama.cpp. The base Q4_K_M model plus our LoRA
   answers in about 3 to 13 s per turn on 2 CPU cores.
 
