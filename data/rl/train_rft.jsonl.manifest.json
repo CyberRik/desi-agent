@@ -1,0 +1,10 @@
+{
+  "prompts": 300,
+  "with_full_reward_sample": 123,
+  "too_long": 6,
+  "rft_added": 117,
+  "train_original": 1937,
+  "total": 2054,
+  "git_sha": "9342160cd14853f8b5943bfbde4d597aae8a5fdb",
+  "samples": "results/rl_signal/samples.jsonl"
+}
