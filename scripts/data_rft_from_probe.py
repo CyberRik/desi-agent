@@ -47,9 +47,16 @@ def main():
         if len(tok(text, add_special_tokens=False)["input_ids"]) > a.max_tokens:
             stats["too_long"] += 1
             continue
+        # DATA_FORMAT describes the whole conversation: gold = every call in order (prefix gold + turn 2), category
+        # derived from it. Turn 2's own gold/category are kept in meta (that is what reward_lang scored).
+        calls = [{"name": c["function"]["name"], "arguments": json.loads(c["function"]["arguments"])}
+                 for m in msgs for c in (m.get("tool_calls") or [])]
+        cat = r["category"] if not calls else ("single_tool" if len(calls) == 1 else "multi_tool")
         rft.append({"id": "rft-" + r["id"].replace(":", "-").replace(">", "-"), "lang": r["lang"],
-                    "category": r["category"], "split": "train", "source": "rft:tinyaya-sft-a-final@reward_lang",
-                    "messages": msgs, "gold": r["gold"], "meta": {"lang1": r["lang1"], "reward": best["reward"]}})
+                    "category": cat, "split": "train", "source": "rft:tinyaya-sft-a-final@reward_lang",
+                    "messages": msgs, "gold": {"tool_sequence": calls, "must_ask_clarification": cat == "clarify"},
+                    "meta": {"lang1": r["lang1"], "reward": best["reward"], "turn2_category": r["category"],
+                             "turn2_gold": r["gold"]}})
     base = [e for e in load_split("train") if e["split"] == "train"]
     out = Path(a.out)
     out.parent.mkdir(parents=True, exist_ok=True)

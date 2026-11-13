@@ -5,6 +5,6 @@
   "rft_added": 117,
   "train_original": 1937,
   "total": 2054,
-  "git_sha": "9342160cd14853f8b5943bfbde4d597aae8a5fdb",
+  "git_sha": "429f9956f1b75a44490b70043198885c2f3e9046",
   "samples": "results/rl_signal/samples.jsonl"
 }
