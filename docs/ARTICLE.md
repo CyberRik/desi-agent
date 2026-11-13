@@ -231,6 +231,36 @@ Bengali and two-step tasks drop most: the model then disputes the wrong transact
 block reason. Part of the Banglish drop may still be rewrite quality, since the judge is not strong at Banglish
 either.
 
+## What it costs to run (ROI)
+
+Measured on our evaluation runs (`scripts/eval_roi.py`, `results/roi.json`): on **one T4** with 32 conversations in
+flight, the fine-tuned model handles about **5,000 conversations per hour**. An average conversation takes 1.77 model
+calls, about 2,640 prompt tokens (2,260 of them the fixed, cacheable tool prompt) and about 70 output tokens.
+Training cost 2.2 hours on a free Kaggle T4 x2 (about $1.50 at the $0.35/hour on-demand T4 price).
+
+Monthly cost, with prompt caching for the API models and 150 output tokens per conversation assumed for them.
+Self-hosting is priced at $0.50/hour per T4 (the $0.35 Google Cloud on-demand GPU price plus a small VM) and
+provisioned around the clock for twice the average load:
+
+| Conversations per day | **Desi Agent (self-hosted)** | Claude Haiku 5.5 | Claude Sonnet 5.5 | Claude Opus 5.5 |
+|---|---|---|---|---|
+| 10,000 (pilot) | **$360** (1 T4) | $41 | $744 | $1,489 |
+| 100,000 (mid-size bank) | **$720** (2 T4) | $406 | $7,443 | $14,887 |
+| 1,000,000 (large bank) | **$6,120** (17 T4) | $4,061 | $74,433 | $148,867 |
+
+Read plainly:
+
+- Against frontier API models the self-hosted 3B agent is **about 10x cheaper than Sonnet and 20x cheaper than
+  Opus** at realistic volume.
+- Against the smallest current API model (Haiku 5.5) it is **not** cheaper. The case there is not cost: a bank's
+  customer messages and account data never leave its own infrastructure (relevant under Indian data-localisation
+  rules), there is no per-token bill, and the model and its behaviour are fixed and auditable.
+- We have not measured any Claude model's accuracy on this task, so the table compares cost only. Our measured
+  quality comparison is against the Qwen3-14B teacher (67.5% task success vs 97.7%).
+- API prices are list prices for prompts under 100K tokens (Anthropic pricing table, November 2026); the T4 price is
+  Google Cloud's US on-demand rate. Spot or committed-use GPUs ($0.16-0.22/hour) would cut the self-hosted column by
+  more than half.
+
 ## Limits, stated plainly
 
 - **The headline test set is in-distribution.** It comes from the same scenario templates and the same teacher as

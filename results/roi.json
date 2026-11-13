@@ -1,0 +1,74 @@
+{
+  "measured": {
+    "model_calls_per_conversation": 1.77,
+    "mean_latency_s_at_32_concurrent": 22.87,
+    "conversations_per_hour_per_T4": 5038,
+    "prompt_tokens_per_conversation": 2641,
+    "cacheable_tokens_per_conversation": 2264
+  },
+  "assumptions": {
+    "api_prices_per_1M_tokens": {
+      "Claude Haiku 5.5": {
+        "in": 0.1,
+        "out": 0.5,
+        "cache_read": 0.01
+      },
+      "Claude Sonnet 5.5": {
+        "in": 2.0,
+        "out": 10.0,
+        "cache_read": 0.1
+      },
+      "Claude Opus 5.5": {
+        "in": 4.0,
+        "out": 20.0,
+        "cache_read": 0.2
+      }
+    },
+    "t4_on_demand_per_hour": 0.35,
+    "t4_all_in_per_hour": 0.5,
+    "api_output_tokens_per_conversation": 150,
+    "self_hosting_capacity": "provisioned 24x7 in whole T4s for 2x average load (no autoscaling)",
+    "training_cost": "2.2 h on free Kaggle T4 x2 (~$1.5 at $0.35/T4-h)"
+  },
+  "usd_per_1M_conversations": {
+    "Claude Haiku 5.5": {
+      "no_cache": 339.15,
+      "with_cache": 135.38
+    },
+    "Claude Sonnet 5.5": {
+      "no_cache": 6782.93,
+      "with_cache": 2481.11
+    },
+    "Claude Opus 5.5": {
+      "no_cache": 13565.85,
+      "with_cache": 4962.23
+    },
+    "Desi Agent (Tiny Aya 3.35B + LoRA, self-hosted T4)": {
+      "no_cache": 99.25,
+      "with_cache": 99.25
+    }
+  },
+  "usd_per_month": {
+    "pilot (10k conversations/day)": {
+      "Claude Haiku 5.5": 41,
+      "Claude Sonnet 5.5": 744,
+      "Claude Opus 5.5": 1489,
+      "Desi Agent (Tiny Aya 3.35B + LoRA, self-hosted T4)": 360,
+      "_t4_gpus_needed_24x7": 1
+    },
+    "mid-size bank (100k/day)": {
+      "Claude Haiku 5.5": 406,
+      "Claude Sonnet 5.5": 7443,
+      "Claude Opus 5.5": 14887,
+      "Desi Agent (Tiny Aya 3.35B + LoRA, self-hosted T4)": 720,
+      "_t4_gpus_needed_24x7": 2.0
+    },
+    "large bank (1M/day)": {
+      "Claude Haiku 5.5": 4061,
+      "Claude Sonnet 5.5": 74433,
+      "Claude Opus 5.5": 148867,
+      "Desi Agent (Tiny Aya 3.35B + LoRA, self-hosted T4)": 6120,
+      "_t4_gpus_needed_24x7": 17.0
+    }
+  }
+}
