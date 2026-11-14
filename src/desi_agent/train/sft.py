@@ -372,7 +372,7 @@ def train_sft(cfg: dict) -> dict:
         api = HfApi()
         api.create_repo(c["push_to"], exist_ok=True, private=False)
         api.upload_folder(folder_path=str(adapter_path), repo_id=c["push_to"],
-                          commit_message=f"[F] SFT adapter ({_git_sha()})")
+                          commit_message=f"[F] {c['run_name']} adapter ({_git_sha()})")
         hf_repo = c["push_to"]
     print("[F] sft done:", json.dumps(metrics, default=str))
     return {"adapter_path": str(adapter_path), "hf_repo": hf_repo, "metrics": metrics}
