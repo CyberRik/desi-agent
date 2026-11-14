@@ -34,14 +34,12 @@ conversations, with no customer message shared between splits.
 
 Training: AgentTune `Project.distill` with LoRA (r=16) on Tiny Aya Global, loss on assistant tokens only, the
 same prompt renderer as evaluation. It took 2.2 hours on a free Kaggle T4 x2. The checkpoint was chosen on
-validation loss only. Profiling showed T4s emulate bf16 in software, and switching to fp16 made training 4.2x
-faster.
+validation loss only.
 
 Results on the 486 test conversations (fp16, greedy, every call executed against the mock bank): task success
 rises from 45.9% to 97.7%, valid tool calls from 84.0% to 99.6%. Wrong
 bank actions (blocking, disputing or sending money when it shouldn't) fall from 20.8% to 1.8%. Two-step tasks
-go from 0% to 97.3%, and asking for missing details from 38.6% to 96.2%. Every language lands between 96% and
-99%. The 3B student beats its 14B teacher (67.5%), because its labels come from code rather than from the
+go from 0% to 97.3%, and asking for missing details from 38.6% to 96.2%. The 3B student beats its 14B teacher (67.5%), because its labels come from code rather than from the
 teacher.
 
 Robustness: success does not depend on how similar a test message is to training, replies never quote bank
@@ -49,10 +47,12 @@ values the model did not retrieve, and with shifted mock-bank values success sta
 (Aya Expanse 8B, meaning-validated), success drops from 97.1% to 91.8% (base: 46.6% to 49.7%), mostly in
 Banglish (77.8%). On 270 real English customer messages (BANKING77), it asks for missing
 details 80% of the time (base: 26%) and attempts far fewer unsafe actions (8.5% vs 28.1%). But those it attempts now
-succeed, mostly blocking an invented card "1234" for lost-card reports without a number.
+succeed, mostly blocking an invented card "1234" for lost-card reports without a number. A grounding guard
+outside the model cuts these from 6.3% to 0.4% without blocking any correct test action.
 
-We planned GRPO on top of SFT, but measured first: 95.7% of sampled answers were already correct and only 12.7%
-of prompts produced any reward signal, so we kept the SFT model.
+RL where it has signal: single-turn prompts gave almost none, but multi-turn language switches did. Rejection
+sampling with a hack-audited, language-aware reward raised switch accuracy from 34% to 53% and test success to
+98.2%.
 
 Everything is public: adapter, data, training logs, every evaluation trace, and the Desi Agent Lab, an
 interactive tour and test explorer that replays the scored traces.
