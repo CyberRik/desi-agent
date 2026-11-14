@@ -4,6 +4,11 @@ Uses Chrome's DevTools screencast (lossless PNG frames with real timestamps) ins
 browser recording, renders the 1280x720 layout at 1.5x pixel density (1920x1080), and encodes with ffmpeg.
 Stops when the tour reaches its last step and has held it.
 
+Encoding builds the constant-30 fps timeline itself (each output frame = the latest screencast frame captured at
+or before that instant) and pipes PNGs to ffmpeg, so the video length is fixed by the frame count. The earlier
+concat-demuxer version relied on per-image `duration` lines, which some ffmpeg builds (seen on Windows) stretched
+from 85 s to 7 min of frozen frames. After encoding, the output duration is checked against the captured span.
+
     python scripts/eval_record_lab.py --out video/desi-agent-lab-tour.mp4
 """
 from __future__ import annotations
@@ -25,13 +30,16 @@ def main() -> None:
     p.add_argument("--out", default="video/desi-agent-lab-tour.mp4")
     p.add_argument("--max-seconds", type=float, default=240)
     p.add_argument("--tail", type=float, default=4.0, help="seconds to keep after the last step settles")
+    p.add_argument("--fps", type=int, default=30)
+    p.add_argument("--chrome", help="path to a Chrome/Chromium binary (default: installed Chrome via channel='chrome')")
     a = p.parse_args()
 
     tmp = Path(tempfile.mkdtemp())
     frames: list[tuple[float, Path]] = []
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(channel="chrome", headless=True)
+        browser = (pw.chromium.launch(executable_path=a.chrome, headless=True) if a.chrome
+                   else pw.chromium.launch(channel="chrome", headless=True))
         ctx = browser.new_context(viewport={"width": 1280, "height": 720}, device_scale_factor=1.5)
         page = ctx.new_page()
         cdp = ctx.new_cdp_session(page)
@@ -63,20 +71,38 @@ def main() -> None:
         page.wait_for_timeout(300)
         browser.close()
 
-    # concat demuxer with real per-frame durations -> constant 30 fps output
-    lst = tmp / "frames.txt"
-    with lst.open("w") as f:
-        for i, (ts, path) in enumerate(frames):
-            dur = (frames[i + 1][0] - ts) if i + 1 < len(frames) else 0.5
-            f.write(f"file '{path.as_posix()}'\nduration {max(dur, 0.001):.4f}\n")
-        f.write(f"file '{frames[-1][1].as_posix()}'\n")
+    # constant-fps timeline built here: output frame k shows the latest screencast frame captured at or before
+    # t0 + k/fps. Independent of how a given ffmpeg build treats concat `duration` lines.
+    frames.sort(key=lambda f: f[0])
+    t_first = frames[0][0]
+    span = frames[-1][0] - t_first + 0.5
+    n_out = max(1, round(span * a.fps))
     out = Path(a.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst),
-                    "-vf", "fps=30,scale=1920:1080:flags=lanczos,format=yuv420p", "-c:v", "libx264", "-preset", "slow",
-                    "-crf", "16", "-movflags", "+faststart", str(out)], check=True)
+    encs = subprocess.run(["ffmpeg", "-hide_banner", "-encoders"], capture_output=True, text=True).stdout
+    codec = (["-c:v", "libx264", "-preset", "slow", "-crf", "16"] if "libx264" in encs
+             else ["-c:v", "libopenh264", "-b:v", "10M"])
+    ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", str(a.fps), "-i", "-",
+                           "-vf", "scale=1920:1080:flags=lanczos,format=yuv420p", *codec, "-r", str(a.fps),
+                           "-movflags", "+faststart", str(out)], stdin=subprocess.PIPE)
+    j, cache = 0, (None, b"")
+    for k in range(n_out):
+        t = t_first + k / a.fps
+        while j + 1 < len(frames) and frames[j + 1][0] <= t:
+            j += 1
+        if cache[0] != j:
+            cache = (j, frames[j][1].read_bytes())
+        ff.stdin.write(cache[1])
+    ff.stdin.close()
+    if ff.wait():
+        raise SystemExit("ffmpeg failed")
+    out_s = float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                                           "-of", "csv=p=0", str(out)], text=True).strip())
+    if abs(out_s - span) > 1.5:
+        raise SystemExit(f"encoded video is {out_s:.1f} s but the capture spans {span:.1f} s; not publishing")
     secs = frames[-1][0] - frames[0][0]
-    man = {"out": str(out), "url": a.url, "frames": len(frames), "seconds": round(secs, 1), "steps": n_steps,
+    man = {"out": str(out), "url": a.url, "frames": len(frames), "seconds": round(secs, 1),
+           "video_seconds": round(out_s, 1), "fps": a.fps, "encoder": codec[1], "steps": n_steps,
            "last_step_index": last_idx}
     Path(f"{out}.manifest.json").write_text(json.dumps(man, indent=2), encoding="utf-8")
     print(json.dumps(man))
