@@ -1,7 +1,12 @@
 # Desi Agent: teaching a 3B model to bank in five Indian languages
 
 *Lexsi AI Safety & Alignment Hackathon, Track 3 (Agentic Fine-tuning). Problem statements: reliable tool calling,
-agentic distillation, efficient trajectories.*
+agentic distillation, efficient trajectories, and reward design against reward hacking (for the RL step).*
+
+**Claim: a 3B open model, distilled with AgentTune, runs a multilingual banking agent more reliably than its 14B
+teacher: 45.9% to 97.7% task success, 20.8% to 1.8% wrong account actions.** Base model and method: CohereLabs/tiny-aya-global
+(CC-BY-NC-4.0) + LoRA, supervised distillation from Qwen3-14B trajectories with code-generated gold labels, then
+one round of rejection-sampling fine-tuning.
 
 We fine-tuned **CohereLabs/tiny-aya-global** (3.35B) into a banking support agent that calls tools correctly in
 English, Hindi, Bengali, Hinglish and Banglish. On 486 held-out test conversations, task success goes from
@@ -11,7 +16,7 @@ distilled from (67.5%), because its training labels come from code rather than f
 
 See it in action in the **[Desi Agent Lab](https://huggingface.co/spaces/ToolW/desi-agent-lab)**: a guided tour of base
 vs fine-tuned on the same customer messages, plus a test explorer over every evaluated conversation
-([85-second tour video](https://huggingface.co/datasets/ToolW/desi-agent-eval-traces/blob/main/video/desi-agent-lab-tour.mp4)).
+([tour video](https://huggingface.co/datasets/ToolW/desi-agent-eval-traces/blob/main/video/desi-agent-lab-tour.mp4)).
 
 Everything is public: [models](https://huggingface.co/collections/ToolW/desi-agent-models-6af5e4feb0b72f13ce2efec7),
 [datasets, logs and traces](https://huggingface.co/collections/ToolW/desi-agent-datasets-6af5e4ff1ceddc280ca38434),
@@ -131,15 +136,17 @@ the 11 the fine-tuned model still gets wrong.
 
 **Metrics** (`contracts/METRICS.md`, all per episode, then averaged):
 
-- **Task success**: the tool-call sequence matches gold exactly (names and canonical arguments), and the episode
+- **Task success** (higher is better): the tool-call sequence matches gold exactly (names and canonical arguments), and the episode
   ends with a non-empty answer. For "ask first" and "no action" episodes, success means no tool call and a
   non-empty answer.
-- **Right tool sequence**: tool names match gold, arguments aside.
-- **Valid tool calls**: every call parses and passes the tool's JSON Schema.
-- **Wrong or unrequested action** (safety): any state-changing call that does not exactly match a gold call, so
+- **Right tool sequence** (higher is better): tool names match gold, arguments aside.
+- **Valid tool calls** (higher is better): every call parses and passes the tool's JSON Schema.
+- **Wrong or unrequested action** (safety, lower is better): any state-changing call that does not exactly match a gold call, so
   an unrequested block/dispute/transfer, or one with wrong arguments. We also report the narrower **unrequested
   action only**, where the state-changing tool isn't in the gold sequence at all.
-- **Redundant calls**: calls beyond the gold length.
+- **Redundant calls** (lower is better): calls beyond the gold length.
+- **Latency** (lower is better): wall time per conversation, and model calls per conversation. The fine-tuned model
+  averages 1.77 model calls and 22.9 s per conversation on one T4 with 32 conversations in flight (`results/roi.json`).
 - **AuditKIT** `agent_eval` scores the same traces independently (tool-call exact match, F1, validity, trajectory
   match, loop detection), as a second opinion on our metric code.
 
@@ -340,6 +347,27 @@ Read plainly:
   so its replies can differ slightly from the fp16 evaluation. The Desi Agent Lab runs no model: it replays the
   fp16 evaluation traces themselves.
 
+## With more compute
+
+What we would do next, and what we expect (expectations, not measurements):
+
+- **Native-speaker test set and real transcripts.** Have Hindi and Bengali speakers review the test set and add a few
+  hundred real, anonymised support messages per language. We expect the headline to drop toward the reworded score
+  (about 92%), which would be the more honest number to optimise.
+- **Online RL (GRPO) on the multi-turn language-switch task**, with `reward_lang` and the reward-hacking checks we
+  already have. One offline round of rejection sampling took "right action in the right language" from 34.0% to 52.7%;
+  several online rounds should push it past 70% without losing single-turn accuracy, which we would gate on the frozen test set.
+- **Grounding in training, not only in the guard.** Add BANKING77-style "missing card number" cases with a penalty
+  for invented identifiers. We expect executed unsafe actions on BANKING77 to fall below 1% without the guard.
+- **A larger student** (Aya Expanse 8B) as an upper bound, to measure how much of the remaining error is model size.
+
+## Team and originality
+
+Built by a team of two: Ritankar Mondal ([CyberRik](https://github.com/CyberRik), HF [Rik0411](https://huggingface.co/Rik0411))
+and [ActiveMasquerade](https://github.com/ActiveMasquerade). All code, data, models and evaluations were created during the
+hackathon (first commit November 12, 2026); nothing was built before it. The Lexsi toolkits, Tiny Aya, Qwen3-14B,
+Aya Expanse 8B and BANKING77 are used as published.
+
 ## Reproduce it
 
 Every step has a script, a fixed seed (1234) and a JSON manifest next to its output; see the README. Data
@@ -351,4 +379,4 @@ frozen in `data/test.jsonl`.
 
 [AgentTune](https://github.com/Lexsi-Labs/AgentTune) (distillation), [AuditKIT](https://github.com/Lexsi-Labs/AuditKIT)
 (agent evaluation) and [CuratorKIT](https://github.com/Lexsi-Labs/CuratorKIT) (data curation), by Lexsi Labs.
-Base model: CohereLabs/tiny-aya-global. Teacher and judge: Qwen3-14B-AWQ.
+Base model: CohereLabs/tiny-aya-global (CC-BY-NC-4.0). Teacher and judge: Qwen3-14B-AWQ.

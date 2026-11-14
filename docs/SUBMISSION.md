@@ -13,7 +13,7 @@ Draft prepared by K (F's agent) for both humans to check and submit. Only the em
 | 7a. Repos used | AgentTune (distillation), AuditKIT (agent evaluation), CuratorKIT (data curation) |
 | 7b. Core model | CohereLabs/tiny-aya-global (teacher/judge: Qwen3-14B-AWQ; OOD rewriter: Aya Expanse 8B) |
 | 7c. Track | Track 3: Agentic Fine-tuning |
-| 7d. Problem statements | Reliable tool calling · Agentic distillation · Efficient trajectories |
+| 7d. Problem statements | Reliable tool calling · Agentic distillation · Efficient trajectories · Reward design / reward hacking (RL step) |
 | Demo | https://huggingface.co/spaces/ToolW/desi-agent-lab |
 
 ## Abstract
