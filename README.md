@@ -144,7 +144,8 @@ The full write-up, including data decisions, error analysis and limits, is in [`
   rejection-sampling fine-tuning on the best samples
   ([ToolW/desi-agent-tinyaya-rft-lora](https://huggingface.co/ToolW/desi-agent-tinyaya-rft-lora)) raised
   language-switch accuracy (right action and right language) from 34.0% to 52.7%, test success from 97.7% to 98.2%
-  and validated-OOD success from 91.8% to 93.7%, with no regressions. The headline numbers above stay the SFT model's.
+  and validated-OOD success from 91.8% to 93.7%, with no overall regression (single-action tasks dip from 98.0% to
+  96.0%). The headline numbers above stay the SFT model's.
 - **Runs on a laptop.** The adapter converts to a GGUF LoRA for llama.cpp. The base Q4_K_M model plus our LoRA
   answers in about 3 to 13 s per turn on 2 CPU cores.
 
