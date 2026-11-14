@@ -2,7 +2,7 @@
 
     pip install playwright && playwright install chromium     # once
     python docs/assets/make_readme_assets.py                  # -> docs/assets/*.png (+ tour.gif with --video)
-    python docs/assets/make_readme_assets.py --video path/to/desi-agent-lab-tour.mp4 --clip 25.9:39.5
+    python docs/assets/make_readme_assets.py --video path/to/desi-agent-lab-tour.mp4 --clip 25.9:37.7
 
 Banner and charts are HTML rendered by headless Chromium at 2x (real Devanagari / Bengali shaping).
 Charts read results/<tag>/test.json for base, final SFT and the teacher. Set CHROME=/path/to/chrome to reuse
@@ -175,7 +175,7 @@ def gif(video: str, clip: str) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--video", help="tour mp4 to cut the README GIF from")
-    ap.add_argument("--clip", default="25.9:39.5", help="start:end seconds of the GIF")
+    ap.add_argument("--clip", default="25.9:37.7", help="start:end seconds of the GIF")
     a = ap.parse_args()
     b, f, t = res(BASE), res(FINAL), res(TEACHER)
     render({"banner.png": (banner_html(b, f, t), 1280, 400),
