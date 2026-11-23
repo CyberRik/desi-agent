@@ -6,22 +6,22 @@
 \centering
 \small
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{lll}
+\begin{tabular}{llll}
 \toprule
- & SFT & RFT r1 \\
+ & SFT & RFT r1 & RFT r2 \\
 \midrule
-Training rows & 1,937 & 2,054 \\
-Steps (2 epochs) & 244 & 258 \\
-Hardware & T4$\times$2 & T4$\times$2 \\
-Precision & fp16 & fp16 \\
-Time & 2.2 h & 2.3 h \\
-Final val.\ loss & 0.273 & 0.271 \\
-Peak memory/GPU & 13.0 GiB & 13.0 GiB \\
+Training rows & 1,937 & 2,054 & 3,410 \\
+Steps (2 epochs) & 244 & 258 & 428 \\
+Hardware & T4$\times$2 & T4$\times$2 & L40S \\
+Precision & fp16 & fp16 & bf16 \\
+Time & 2.2 h & 2.3 h & 0.8 h \\
+Final val.\ loss & 0.273 & 0.271 & 0.292 \\
+Peak memory/GPU & 13.0 GiB & 13.0 GiB & 12.9 GiB \\
 \bottomrule
 \end{tabular}
 \caption{Training runs. Shared: CohereLabs/tiny-aya-global (3.35B), LoRA r=16, $\alpha$=32, dropout 0.05 on all
 attention and MLP projections; lr $2\times10^{-4}$, cosine, 5\% warmup; effective batch 16 (1 $\times$ 8 accumulation
-$\times$ 2 GPUs); max length 2048, nothing truncated; gradient checkpointing.}
+$\times$ 2 GPUs; on one L40S, 1 $\times$ 16); max length 2048, nothing truncated; gradient checkpointing.}
 \label{tab:train-runs}
 \end{table}
 
@@ -37,4 +37,18 @@ reward variance, with 1 prompt failing on all 8, so GRPO was not run on single-t
 language-switch prompts (2.3 minutes on one L40S with vLLM): 60.6\% of prompts had reward variance and 63.9\% had at
 least one fully correct sample. Switching into English stayed the hardest case (30 of 122 prompts with a correct
 sample, against 61 of 74 into Bengali). After the length filter, 289 samples were kept, giving 3,410 training rows with
-1,067 grounding examples. % [K] add the rft2 column to Table~\ref{tab:train-runs} when the run finishes.
+1,067 grounding examples. RFT r2's validation loss is higher than r1's (0.292 vs.\ 0.271) because the validation
+set is the round-1 distribution and a third of the new rows are grounding examples; every scored test improved
+(Section~\ref{sec:rl}), so we do not read validation loss across different training mixes.
+
+\paragraph{Multi-turn GRPO.} From RFT r2, online GRPO \citep{shao2024deepseekmath} on the same training
+language-switch prompts. Each step samples 8 full turn-2 conversations for each of 16 prompts at $T{=}1$ through the
+evaluation's agent loop and mock bank, scores them with \tool{reward\_lang}, normalises rewards within each group of 8
+(groups with no variance are skipped) and takes one AdamW step (lr $10^{-5}$, LoRA weights only) on
+$-A\cdot$ mean log-probability of the model's own turn-2 tokens; the prefix conversation and tool results are masked.
+Updates are fully on-policy, so the PPO ratio is 1, and there is no KL term. 25 steps cover 400 of the 482 prompts
+once: 63 minutes on one A100 (bf16, about \$2.60). About half of the groups had reward variance at every step. Per-step
+training reward was flat within noise (1.315 for steps 0--7, 1.293 for 17--24), because every step sees new prompts;
+the fixed evaluation sets measure the change (Section~\ref{sec:rl}). Every sampled conversation is published with
+its reward parts for auditing: no echoing, reply length unchanged (129 to 131 characters), and three single-step
+spikes of wrong actions (12--15\%) that did not persist and do not appear in evaluation.
