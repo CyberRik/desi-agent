@@ -11,6 +11,10 @@ so the best ones can be used for rejection-sampling fine-tuning if the signal is
 
     python scripts/eval_rl_signal.py --openai-base-url http://localhost:8001/v1 --openai-model sft --n 300 --k 8 \
         --out results/rl_signal
+    # round 2: prompts from data/round2 (language switch + single-turn grounding), policy = the RFT adapter
+    python scripts/eval_rl_signal.py --openai-base-url http://localhost:8001/v1 --openai-model rft --k 8 \
+        --prompts data/round2/langswitch_train.jsonl,data/round2/grounding_train.jsonl --out results/rl_signal_round2
+    (on an HF Job: scripts/eval_rl_signal_hfjob.py)
 """
 from __future__ import annotations
 
@@ -50,6 +54,40 @@ def build_train_switch(n: int, seed: int = SEED) -> list[dict]:
     return out
 
 
+FULL = 1.6  # reward_lang maximum: success + schema_valid + language bonus, no penalties
+
+
+def load_prompts(paths: str) -> list[dict]:
+    """Round-2 prompts (scripts/data_round2.py). Language-switch rows already carry prefix/turn2/gold; grounding rows
+    are single-turn (prefix = [], turn 2 = the customer message). Train split only."""
+    out = []
+    for path in paths.split(","):
+        for line in Path(path).read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            assert r["split"] == "train", f"{r['id']}: probe prompts must come from the train split"
+            if "prefix" in r:
+                out.append({"id": r["id"], "set": "langswitch", "lang1": r["lang1"], "lang": r["lang"],
+                            "category": r["category"], "prefix": r["prefix"], "turn2": r["turn2"], "gold": r["gold"],
+                            "target": r["target"], "meta": {"condition": r["condition"], "target_set": r["target_set"]}})
+            else:
+                out.append({"id": r["id"], "set": "grounding", "lang1": r["lang"], "lang": r["lang"],
+                            "category": r["category"], "prefix": [], "turn2": r["messages"][0], "gold": r["gold"],
+                            "target": r["id"], "meta": r.get("meta", {})})
+    return out
+
+
+def group_stats(rows: list[dict], key) -> dict:
+    g = collections.defaultdict(list)
+    for r in rows:
+        g[key(r)].append([s["reward"] for s in r["samples"]])
+    return {k: {"n": len(v), "mean_reward": round(statistics.mean(x for rs in v for x in rs), 4),
+                "frac_with_variance": round(sum(statistics.pstdev(rs) > 1e-9 for rs in v) / len(v), 4),
+                "frac_with_full_reward_sample": round(sum(max(rs) >= FULL - 1e-6 for rs in v) / len(v), 4)}
+            for k, v in sorted(g.items())}
+
+
 def rollout(policy, ep):
     run = fmt.run_episode(policy, [dict(m) for m in ep["prefix"]] + [dict(ep["turn2"])])
     turn2 = run.messages[len(ep["prefix"]):]
@@ -65,17 +103,29 @@ def main():
     p.add_argument("--k", type=int, default=8)
     p.add_argument("--temperature", type=float, default=1.0)
     p.add_argument("--workers", type=int, default=48)
+    p.add_argument("--prompts", default=None, help="comma-separated round-2 prompt files (default: build round 1's)")
     p.add_argument("--out", default="results/rl_signal")
     a = p.parse_args()
-    eps = build_train_switch(a.n)
+    eps = load_prompts(a.prompts) if a.prompts else build_train_switch(a.n)
     policy = openai_policy(a.openai_base_url, a.openai_model, temperature=a.temperature)
     jobs = [(e, j) for e in eps for j in range(a.k)]
+    done = [0]
+
+    def one(x):
+        try:
+            o = rollout(policy, x[0])
+        except Exception as e:  # noqa: BLE001  (one failed request must not lose the whole run)
+            o = {"messages": [], "reward": 0.0, "lang_match": 0.0, "error": repr(e)[:300]}
+        done[0] += 1
+        if done[0] % 500 == 0:
+            print(f"[R] {done[0]}/{len(jobs)} rollouts", flush=True)
+        return o
     with ThreadPoolExecutor(a.workers) as ex:
-        outs = list(ex.map(lambda x: rollout(policy, x[0]), jobs))
+        outs = list(ex.map(one, jobs))
     groups = collections.defaultdict(list)
     for (e, _), o in zip(jobs, outs):
         groups[e["id"]].append(o)
-    rows = [{"id": e["id"], "lang": e["lang"], "lang1": e["lang1"], "category": e["category"], "target": e["target"],
+    rows = [{"id": e["id"], **({"set": e["set"], "meta": e["meta"]} if "set" in e else {}), "lang": e["lang"], "lang1": e["lang1"], "category": e["category"], "target": e["target"],
              "prefix": e["prefix"], "gold": e["gold"], "samples": groups[e["id"]]} for e in eps]
     rs = [[s["reward"] for s in r["samples"]] for r in rows]
     summary = {"n_prompts": len(rows), "k": a.k, "temperature": a.temperature, "split": "train",
@@ -84,6 +134,16 @@ def main():
                "mean_within_prompt_std": round(statistics.mean(statistics.pstdev(g) for g in rs), 4),
                "lang_match_rate": round(statistics.mean(s["lang_match"] for r in rows for s in r["samples"]), 4),
                "frac_prompts_best_beats_mean_by_0.3": round(sum(max(g) - statistics.mean(g) >= 0.3 for g in rs) / len(rs), 4)}
+    if a.prompts:
+        summary |= {"model": a.openai_model, "prompts": a.prompts, "n_errors": sum("error" in o for o in outs),
+                    "frac_prompts_with_full_reward_sample": round(sum(max(g) >= FULL - 1e-6 for g in rs) / len(rs), 4),
+                    "by_set": group_stats(rows, lambda r: r["set"]),
+                    "by_set_lang": group_stats(rows, lambda r: f"{r['set']}|{r['lang']}"),
+                    "by_set_category": group_stats(rows, lambda r: f"{r['set']}|{r['category']}"),
+                    "grounding_by_variant": group_stats([r for r in rows if r["set"] == "grounding"],
+                                                        lambda r: r["meta"].get("variant")),
+                    "langswitch_by_condition": group_stats([r for r in rows if r["set"] == "langswitch"],
+                                                           lambda r: r["meta"].get("condition"))}
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     (out / "samples.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
