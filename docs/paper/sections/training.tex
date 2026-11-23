@@ -1,0 +1,10 @@
+% STUB written by R from docs/ARTICLE.md so the paper compiles. K owns this file: replace freely.
+\section{Training}
+\label{sec:training}
+
+Episodes are converted to AgentTune event logs and trained with \tool{Project.distill} using our own trainer: a
+transformers \tool{Trainer} with LoRA \citep{hu2022lora} (r=16, $\alpha$=32, all attention and MLP projections), loss
+on assistant tokens only. Every training row is re-rendered with the same formatter the evaluation parses. We train 2
+epochs (lr $2\times10^{-4}$, cosine, effective batch 16) on a free Kaggle T4$\times$2 in fp16: 2.2 hours. On T4s, bf16
+is reported as supported but is emulated; fp16 was 4.2$\times$ faster with the same loss curve. The checkpoint was fixed
+in advance to be chosen by validation loss, never by test.

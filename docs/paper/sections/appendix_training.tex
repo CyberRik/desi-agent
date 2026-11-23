@@ -1,0 +1,32 @@
+% STUB written by R from docs/ARTICLE.md so the paper compiles. K owns this file: replace freely.
+\section{Training details}
+\label{app:training}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+Base model & CohereLabs/tiny-aya-global (3.35B) \\
+Method & AgentTune distill, LoRA SFT \\
+LoRA & r=16, $\alpha$=32, dropout 0.05 \\
+Targets & all attention + MLP projections \\
+Epochs / steps & 2 / 244 \\
+LR & $2\times10^{-4}$, cosine, 5\% warmup \\
+Batch & 1 $\times$ 8 accum. $\times$ 2 GPUs = 16 \\
+Max length & 2048 (nothing truncated) \\
+Precision & fp16 \\
+Hardware & Kaggle T4$\times$2, DDP, 2.2 h \\
+Peak memory & 13.0 GiB per GPU (grad. checkpointing) \\
+\bottomrule
+\end{tabular}
+\caption{SFT configuration.}
+\end{table}
+
+Validation loss at steps 50/100/150/200/244: 0.424, 0.329, 0.295, 0.276, 0.273. 86\% of each training row is the fixed
+system prompt (about 1,280 of 1,490 tokens), so rows have nearly equal length; batch size 2 runs out of memory on a T4,
+mostly due to the 262k-token vocabulary.
+
+\paragraph{GRPO probe (no-go).} With the SFT adapter, 8 first turns were sampled at $T{=}1$ for 377 training prompts in
+the SFT error areas (230 ask-first, 147 block-card). 95.7\% of samples succeeded and only 12.7\% of prompts showed any
+reward variance, with 1 prompt failing on all 8, so GRPO was not run on single-turn data.
