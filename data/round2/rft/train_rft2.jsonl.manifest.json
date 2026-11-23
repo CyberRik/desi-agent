@@ -1,0 +1,63 @@
+{
+  "prompts": 1549,
+  "with_full_reward_sample": 1221,
+  "too_long": 21,
+  "grounding_no_slot_named": 9,
+  "rft_added": 1191,
+  "base": "data/rl/train_rft.jsonl",
+  "base_rows": 2054,
+  "total": 3245,
+  "git_sha": "cc4261a7580023f9e0af1397ba93e7e35e03cd5b",
+  "samples": "results/rl_signal_round2/samples.jsonl",
+  "id_prefix": "rft2-",
+  "source": "rft2:tinyaya-rft-a@reward_lang",
+  "kept_by_set": {
+    "grounding": 907,
+    "langswitch": 284
+  },
+  "kept_by_lang": {
+    "bn": 210,
+    "bn-en": 191,
+    "en": 383,
+    "hi": 213,
+    "hi-en": 194
+  },
+  "kept_by_turn2_category": {
+    "clarify": 480,
+    "multi_tool": 14,
+    "no_tool": 46,
+    "single_tool": 651
+  },
+  "kept_by_set_lang_category": {
+    "grounding|bn|clarify": 65,
+    "grounding|bn|single_tool": 75,
+    "grounding|bn-en|clarify": 62,
+    "grounding|bn-en|single_tool": 72,
+    "grounding|en|clarify": 155,
+    "grounding|en|no_tool": 15,
+    "grounding|en|single_tool": 167,
+    "grounding|hi|clarify": 65,
+    "grounding|hi|single_tool": 85,
+    "grounding|hi-en|clarify": 69,
+    "grounding|hi-en|single_tool": 77,
+    "langswitch|bn|clarify": 11,
+    "langswitch|bn|multi_tool": 6,
+    "langswitch|bn|no_tool": 6,
+    "langswitch|bn|single_tool": 47,
+    "langswitch|bn-en|clarify": 10,
+    "langswitch|bn-en|multi_tool": 3,
+    "langswitch|bn-en|no_tool": 4,
+    "langswitch|bn-en|single_tool": 40,
+    "langswitch|en|clarify": 14,
+    "langswitch|en|multi_tool": 1,
+    "langswitch|en|no_tool": 8,
+    "langswitch|en|single_tool": 23,
+    "langswitch|hi|clarify": 13,
+    "langswitch|hi|multi_tool": 4,
+    "langswitch|hi|no_tool": 6,
+    "langswitch|hi|single_tool": 40,
+    "langswitch|hi-en|clarify": 16,
+    "langswitch|hi-en|no_tool": 7,
+    "langswitch|hi-en|single_tool": 25
+  }
+}
