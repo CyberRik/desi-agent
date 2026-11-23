@@ -75,13 +75,13 @@ def dirname(tag: str, suite: str) -> str:
 
 # ----------------------------------------------------------------------------------------------- launcher (local)
 def git_sha_on_github(sha: str | None) -> str:
-    sha = sha or subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    full = subprocess.run(["git", "rev-parse", sha or "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     import urllib.request
-    try:
-        with urllib.request.urlopen(f"https://api.github.com/repos/{GITHUB}/commits/{sha}", timeout=30) as r:
-            full = json.load(r)["sha"]
+    try:  # the exact tarball the job downloads (codeload has no API rate limit)
+        urllib.request.urlopen(urllib.request.Request(f"https://codeload.github.com/{GITHUB}/tar.gz/{full}",
+                                                      method="HEAD"), timeout=60)
     except Exception as e:  # noqa: BLE001
-        sys.exit(f"[R] commit {sha} not found on github.com/{GITHUB} ({e}). Push it first.")
+        sys.exit(f"[R] commit {full or sha} not downloadable from github.com/{GITHUB} ({e}). Push it first.")
     dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT, capture_output=True,
                            text=True).stdout.strip()
     if dirty:
