@@ -480,7 +480,7 @@ def main():
              "grounding_val.jsonl": [r for r in g_rows if r["split"] == "val"],
              "langswitch_train.jsonl": s_train, "langswitch_val.jsonl": s_val}
     for name, rows in files.items():
-        (out / name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+        (out / name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8", newline="\n")
 
     def cnt(rows, *keys):
         c = collections.Counter("|".join(str(k(r)) for k in keys) for r in rows)
@@ -509,7 +509,7 @@ def main():
         "scoring": "grounding: api.reward(pred_messages, row['gold']) or rewards.reward_lang(pred, gold, row['lang']); "
                    "langswitch: reward_lang(pred[len(row['prefix']):], row['gold'], row['lang'])",
     }
-    (out / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8")
+    (out / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8", newline="\n")
     print(json.dumps({"files": manifest["files"], "gate_drops": g_stats["gate_drops"],
                       "switch_gold_failures": dict(s_bad),
                       "leakage": {k: v for k, v in leak.items() if k != "rows_with_overlap"},

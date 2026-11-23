@@ -351,7 +351,7 @@ def main():
     bank = {"en": EN, "hi": convert(HI, sanscript.DEVANAGARI), "bn": convert(BN, sanscript.BENGALI), "hi-en": HI_EN,
             "bn-en": BN_EN}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(a.out).write_text(json.dumps(bank, ensure_ascii=False, indent=1), encoding="utf-8")
+    Path(a.out).write_text(json.dumps(bank, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
     print(f"[R] wrote {a.out}")
 
 

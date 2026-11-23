@@ -1,12 +1,12 @@
 {
   "script": "scripts/data_round2.py",
-  "git_sha": "8641f137241136710197a3e671a432c2532b69b4",
+  "git_sha": "08a5415a86ba17f1ef2555270e69cce2e64270bd",
   "seed": 1234,
   "model_id": null,
   "inputs": {
     "data/train.jsonl": "2459a0b7691d6da9",
     "data/val.jsonl": "27084fa781f8de67",
-    "data/round2/phrases.json": "05862f19e0ec87ad",
+    "data/round2/phrases.json": "0b81f81a6a965b56",
     "banking77": "mteb/banking77 train.jsonl (test.jsonl only for dedup)"
   },
   "files": {
