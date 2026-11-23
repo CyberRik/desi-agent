@@ -1,0 +1,169 @@
+{
+  "n_prompts": 1549,
+  "k": 8,
+  "temperature": 1.0,
+  "split": "train",
+  "mean_reward": 1.1278,
+  "frac_prompts_with_variance": 0.5171,
+  "mean_within_prompt_std": 0.2215,
+  "lang_match_rate": 0.8048,
+  "frac_prompts_best_beats_mean_by_0.3": 0.2247,
+  "model": "rft",
+  "prompts": "data/round2/langswitch_train.jsonl,data/round2/grounding_train.jsonl",
+  "n_errors": 0,
+  "frac_prompts_with_full_reward_sample": 0.7883,
+  "by_set": {
+    "grounding": {
+      "n": 1067,
+      "mean_reward": 1.1583,
+      "frac_with_variance": 0.4873,
+      "frac_with_full_reward_sample": 0.8585
+    },
+    "langswitch": {
+      "n": 482,
+      "mean_reward": 1.0603,
+      "frac_with_variance": 0.583,
+      "frac_with_full_reward_sample": 0.6328
+    }
+  },
+  "by_set_lang": {
+    "grounding|bn": {
+      "n": 166,
+      "mean_reward": 1.0643,
+      "frac_with_variance": 0.7831,
+      "frac_with_full_reward_sample": 0.8434
+    },
+    "grounding|bn-en": {
+      "n": 169,
+      "mean_reward": 1.0195,
+      "frac_with_variance": 0.6391,
+      "frac_with_full_reward_sample": 0.7929
+    },
+    "grounding|en": {
+      "n": 397,
+      "mean_reward": 1.1575,
+      "frac_with_variance": 0.3375,
+      "frac_with_full_reward_sample": 0.8715
+    },
+    "grounding|hi": {
+      "n": 174,
+      "mean_reward": 1.2588,
+      "frac_with_variance": 0.4195,
+      "frac_with_full_reward_sample": 0.8621
+    },
+    "grounding|hi-en": {
+      "n": 161,
+      "mean_reward": 1.2943,
+      "frac_with_variance": 0.4658,
+      "frac_with_full_reward_sample": 0.9068
+    },
+    "langswitch|bn": {
+      "n": 88,
+      "mean_reward": 1.1591,
+      "frac_with_variance": 0.7727,
+      "frac_with_full_reward_sample": 0.8636
+    },
+    "langswitch|bn-en": {
+      "n": 81,
+      "mean_reward": 1.1131,
+      "frac_with_variance": 0.6543,
+      "frac_with_full_reward_sample": 0.7407
+    },
+    "langswitch|en": {
+      "n": 145,
+      "mean_reward": 0.8765,
+      "frac_with_variance": 0.3862,
+      "frac_with_full_reward_sample": 0.3448
+    },
+    "langswitch|hi": {
+      "n": 81,
+      "mean_reward": 1.1826,
+      "frac_with_variance": 0.716,
+      "frac_with_full_reward_sample": 0.8148
+    },
+    "langswitch|hi-en": {
+      "n": 87,
+      "mean_reward": 1.104,
+      "frac_with_variance": 0.5287,
+      "frac_with_full_reward_sample": 0.6092
+    }
+  },
+  "by_set_category": {
+    "grounding|clarify": {
+      "n": 544,
+      "mean_reward": 0.9873,
+      "frac_with_variance": 0.5533,
+      "frac_with_full_reward_sample": 0.7812
+    },
+    "grounding|no_tool": {
+      "n": 15,
+      "mean_reward": 1.445,
+      "frac_with_variance": 0.2667,
+      "frac_with_full_reward_sample": 1.0
+    },
+    "grounding|single_tool": {
+      "n": 508,
+      "mean_reward": 1.3329,
+      "frac_with_variance": 0.4232,
+      "frac_with_full_reward_sample": 0.937
+    },
+    "langswitch|clarify": {
+      "n": 107,
+      "mean_reward": 0.7473,
+      "frac_with_variance": 0.785,
+      "frac_with_full_reward_sample": 0.6168
+    },
+    "langswitch|multi_tool": {
+      "n": 34,
+      "mean_reward": 0.9092,
+      "frac_with_variance": 0.7353,
+      "frac_with_full_reward_sample": 0.5882
+    },
+    "langswitch|no_tool": {
+      "n": 40,
+      "mean_reward": 1.3506,
+      "frac_with_variance": 0.475,
+      "frac_with_full_reward_sample": 0.775
+    },
+    "langswitch|single_tool": {
+      "n": 301,
+      "mean_reward": 1.1501,
+      "frac_with_variance": 0.5083,
+      "frac_with_full_reward_sample": 0.6246
+    }
+  },
+  "grounding_by_variant": {
+    "control": {
+      "n": 508,
+      "mean_reward": 1.3329,
+      "frac_with_variance": 0.4232,
+      "frac_with_full_reward_sample": 0.937
+    },
+    "missing": {
+      "n": 544,
+      "mean_reward": 0.9873,
+      "frac_with_variance": 0.5533,
+      "frac_with_full_reward_sample": 0.7812
+    },
+    "no_tool": {
+      "n": 15,
+      "mean_reward": 1.445,
+      "frac_with_variance": 0.2667,
+      "frac_with_full_reward_sample": 1.0
+    }
+  },
+  "langswitch_by_condition": {
+    "same": {
+      "n": 85,
+      "mean_reward": 1.3063,
+      "frac_with_variance": 0.4706,
+      "frac_with_full_reward_sample": 0.9412
+    },
+    "switch": {
+      "n": 397,
+      "mean_reward": 1.0077,
+      "frac_with_variance": 0.6071,
+      "frac_with_full_reward_sample": 0.5668
+    }
+  }
+}
