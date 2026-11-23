@@ -38,6 +38,18 @@ fine-tuning raise right-action-in-the-right-language from 34.0\% to 52.7\% with 
 evaluation traces are public.
 \end{abstract}
 
+\noindent\fbox{\parbox{\dimexpr\columnwidth-2\fboxsep-2\fboxrule}{\small
+\textbf{At a glance (for judges).}
+\textbf{Claim:} a 3B open model, distilled with AgentTune, runs a multilingual banking agent more reliably than its
+14B teacher.
+\textbf{Headline:} task success 45.9\%~$\rightarrow$~97.7\%; wrong account actions 20.8\%~$\rightarrow$~1.8\%.
+\textbf{Base model + method:} CohereLabs/tiny-aya-global + LoRA SFT distillation from code-labelled Qwen3-14B
+trajectories, then rejection-sampling fine-tuning.
+\textbf{Track:} 3, Agentic Fine-tuning. \textbf{Problem statements:} reliable tool calling; agentic distillation;
+efficient trajectories; reward design against reward hacking (RL step).
+\textbf{Kits:} AgentTune, CuratorKIT, AuditKIT.
+\textbf{Team:} Ritankar Mondal (GitHub \texttt{CyberRik}, HF \texttt{Rik0411}), Kanishk Sagar (GitHub \texttt{ActiveMasquerade}).}}
+
 \section{Introduction}
 
 Tool-calling agents are usually trained and evaluated in English \citep{schick2023toolformer,patil2023gorilla,qin2024toolllm}.
@@ -100,6 +112,20 @@ each language and category (2,617 episodes kept). CuratorKIT's 0--1 reward gate 
 splits. The test set is balanced over 5 languages $\times$ 4 task types and was frozen before training; it was never
 used for training or model selection. It was reviewed by our data agent rather than by native speakers (8 episodes
 removed; see Limitations).
+
+\section{How the Lexsi kits connect}
+\label{sec:kits}
+
+\textbf{CuratorKIT} sits between generation and splitting: \tool{TextCleaner}, \tool{SecretsGate}, exact
+deduplication and MinHash (0.85) near-duplicate removal; its \tool{RewardGate} was tried with a 0--1 LLM score and
+replaced by our checklist judge when the scores proved uncalibrated (\S\ref{sec:data}).
+\textbf{AgentTune} turns the curated episodes into full-tier event logs and trains them with \tool{Project.distill},
+through our own trainer factory so that rows are rendered by the same formatter the evaluation parses (\S\ref{sec:training}).
+\textbf{AuditKIT} ingests the evaluation traces directly (\tool{episode\_from\_openai\_messages}) and scores them with
+\tool{agent\_eval} (tool-call exact match, F1, validity, trajectory match, loop detection) as an independent check on
+our own metric code. Episodes are stored once, as OpenAI-style messages plus gold labels, and every kit reads that
+format, so the pipeline is: scenario code $\rightarrow$ teacher $\rightarrow$ CuratorKIT $\rightarrow$ frozen splits
+$\rightarrow$ AgentTune $\rightarrow$ shared agent loop $\rightarrow$ our metrics + AuditKIT.
 
 \input{sections/training}
 
@@ -261,6 +287,17 @@ conversations a day cost about \$720 a month, roughly 10$\times$ less than a fro
 There, the argument is that customer data stays inside the bank, and the model is fixed and auditable. This is a
 cost comparison only; we did not measure API models' accuracy on this task.
 
+\section{With more credits}
+
+Planned work and expected effect (forecasts, not measurements):
+\textbf{(1) Native-speaker test set and real transcripts}: a few hundred reviewed, anonymised messages per language;
+we expect the headline to fall toward the reworded score ($\approx$92\%), the more honest target.
+\textbf{(2) Online RL on the language switch} with \tool{reward\_lang} and the hacking checks: several rounds should
+take right-action-in-the-right-language past 70\% (from 52.7\%), gated on the frozen test.
+\textbf{(3) Grounding in training}: missing-identifier cases with a penalty for invented ids; we expect executed unsafe
+actions on BANKING77 below 1\% without the guard (from 6.3\%).
+\textbf{(4) A larger Cohere student} (Aya Expanse 8B) as an upper bound on how much remaining error is model size.
+
 \section{Conclusion}
 
 Distilling a teacher's language while taking decisions from code produced a 3B agent that is more reliable than its
@@ -340,16 +377,104 @@ Claude Opus 5.5 & \$1,489 & \$14,887 & \$148,867 \\
 \end{tabular}
 \caption{Monthly serving cost. API: list prices (Nov.\ 2026) with prompt caching, 150 output tokens per
 conversation. Self-hosted: \$0.50 per T4-hour, provisioned for 2$\times$ average load.}
+\label{tab:cost}
 \end{table}
 
 \input{sections/appendix_training}
 
-\section{Reproducibility}
+\section{Models, data and licenses}
+\label{app:licenses}
 
-Code: \url{https://github.com/CyberRik/desi-agent}. Every step has a script, a fixed seed (1234) and a JSON manifest.
-Models, data, training logs and all scored evaluation traces are public on Hugging Face under the \texttt{ToolW}
-organisation (adapters \texttt{desi-agent-tinyaya-sft-lora} and \texttt{-rft-lora}; dataset
-\texttt{desi-bank-toolcalls}; traces \texttt{desi-agent-eval-traces}). The Desi Agent Lab
-(\url{https://huggingface.co/spaces/ToolW/desi-agent-lab}) replays every evaluated conversation.
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lll}
+\toprule
+Item & Role & License \\
+\midrule
+Tiny Aya Global (3.35B) & student, fp16 & CC-BY-NC-4.0 \\
+Qwen3-14B-AWQ & teacher, judge & Apache-2.0 \\
+Aya Expanse 8B & rewriter (OOD) & CC-BY-NC-4.0 \\
+Our LoRA adapters & released & CC-BY-NC-4.0 \\
+BANKING77 (test) & real-query eval & CC-BY-4.0 \\
+desi-bank-toolcalls & our data & CC-BY-4.0 \\
+Our code & released & MIT \\
+\bottomrule
+\end{tabular}
+\caption{Models and datasets. Adapters inherit the base model's non-commercial license.}
+\end{table}
+
+\paragraph{Data sources and splits.} All training and test conversations are synthetic: scenario code plus
+teacher-written text (Table~\ref{tab:splits}). BANKING77 test messages are used only for evaluation; the Stage~2
+grounding set uses BANKING77 \emph{train} messages. \textbf{Leak checks}: no shared episode ids or customer messages
+across splits (exact match); deduplication with MinHash (0.85) inside each language and category before splitting;
+and a later audit with character 4-gram Jaccard $\geq$ 0.8 and digit-masked exact match against the test, reworded and
+BANKING77 test sets (\S\ref{sec:robust}; the Stage~2 sets have zero overlap).
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & en & hi & bn & hi-en & bn-en & Total \\
+\midrule
+Train & 331 & 411 & 416 & 395 & 384 & 1,937 \\
+Test & 89 & 96 & 100 & 100 & 101 & 486 \\
+\bottomrule
+\end{tabular}
+\caption{Episodes per language (validation: 99).}
+\label{tab:splits}
+\end{table}
+
+\paragraph{Checking the automatic judges.} The reply-language detector agrees with the gold replies' language on
+97--100\% of episodes per language. The checklist judge was checked by reading all 46 flagged test episodes and a
+60-episode random sample; it is precise but misses garbled code-mixed words (Limitations).
+
+\section{Compute and cost}
+
+Round 1 ran entirely on free Kaggle T4$\times$2 sessions: teacher generation (vLLM), SFT (2.2\,h; RFT 2.3\,h) and all
+evaluations. Stage~2 used Hugging Face Jobs paid from the shortlist credits: evaluation on one T4 ($\approx$40\,min,
+$\approx$\$0.30 per model for all five suites) and round-2 sampling and training on one L40S. Serving at full load on
+one T4 (5,000 conversations/h at \$0.50/h) costs about \textbf{\$0.10 per 1,000 conversations}; at the API list prices
+of Table~\ref{tab:cost} (100k/day tier) the same 1,000 conversations cost about \$0.14 (Haiku 5.5), \$2.48 (Sonnet 5.5) and
+\$4.96 (Opus 5.5).
+
+\section{What did not work}
+
+Two of three teacher generation runs were discarded after reading them (\S\ref{sec:data}). CuratorKIT's 0--1 reward
+gate with a 14B judge was uncalibrated. GRPO on single-turn data had almost no reward variance and was not run
+(Appendix~\ref{app:training}). The first Stage~2 training job failed at dependency install after sampling.
+
+\section{Artifacts and reproduction}
+
+\textbf{Code}: \url{https://github.com/CyberRik/desi-agent} (\texttt{contracts/} frozen interfaces;
+\texttt{src/desi\_agent/} mock bank, formatter and agent loop; \texttt{data/}, \texttt{eval/}, \texttt{train/}
+pipelines; \texttt{scripts/} one script per step; \texttt{results/} metrics for every model). Every step has a
+script, a fixed seed (1234) and a JSON manifest; data generation, training and evaluation run on a free Kaggle
+T4$\times$2 (\texttt{scripts/data\_kaggle\_generate.sh}, \texttt{train\_kaggle.py}, \texttt{eval\_kaggle\_baseline.py})
+or as one HF Job (\texttt{eval\_hf\_job.py}, \texttt{train\_round2\_job.py}). Python 3.12.
+\textbf{Hugging Face} (\texttt{ToolW}, public, un-gated): models collection (adapters \texttt{desi-agent-tinyaya-sft-lora},
+\texttt{-rft-lora}, \texttt{-rft2-lora}); datasets collection (\texttt{desi-bank-toolcalls},
+\texttt{desi-agent-training-logs}, \texttt{desi-agent-eval-traces} with every scored trace).
+\textbf{Demo}: the Desi Agent Lab (\url{https://huggingface.co/spaces/ToolW/desi-agent-lab}) replays every evaluated
+conversation; a local playground runs the adapter on llama.cpp.
+
+\section{Team, contributions and declarations}
+
+\textbf{Ritankar Mondal} (GitHub \texttt{CyberRik}, HF \texttt{Rik0411}): data generation and curation, splits,
+evaluation harness and metrics, robustness checks, multi-turn test, reward design and hacking audit, RL signal probe
+and RFT data, grounding guard, ROI, write-up.
+\textbf{Kanishk Sagar} (GitHub \texttt{ActiveMasquerade}): AgentTune training pipeline (SFT, RFT, Stage~2 job),
+environment and chat-template checks, GRPO probe, BANKING77 real-query evaluation, Desi Agent Lab and demo.
+\textbf{Declaration}: all code, data, models and evaluations were created during the hackathon (first commit
+12 November 2026); nothing was built before it. The Lexsi kits, Tiny Aya, Qwen3-14B, Aya Expanse 8B and BANKING77 are
+used as published.
+\textbf{LLM usage}: each team member worked with a Claude Code agent; most code and the first drafts of the
+write-up were produced by these agents under the team's direction and review. Qwen3-14B and Aya Expanse 8B served
+only as teacher, judge and rewriter.
+\textbf{Changelog}: v1, Round~1 write-up (14 Nov); v2, this paper (Stage~2), adding the near-duplicate audit and the
+Stage~2 round.
 
 \end{document}
