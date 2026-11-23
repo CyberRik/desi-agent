@@ -210,6 +210,10 @@ def inside(a) -> None:
         raise RuntimeError(f"upload of {name} failed")
 
     sh("nvidia-smi --query-gpu=name,memory.total --format=csv", check=False)
+    if a.train_from:  # the data was already built by an earlier job: train on exactly that file
+        train_split = f"hf:round2/{a.train_from}/train.jsonl"
+        print(f"[F] reusing {LOGS}/{train_split[3:]}, no sampling", flush=True)
+        return train(a, train_split, upload, t0)
     repo, _, rev = a.policy.partition("@")
     path = snapshot_download(repo, revision=rev or None)
     rows = jl(ROOT / "data/round2/langswitch_train.jsonl")[: a.limit or None]
@@ -237,14 +241,19 @@ def inside(a) -> None:
     upload(out / "train.manifest.json", "train.manifest.json")
     if a.no_train:
         return
+    train(a, f"hf:{remote}/train.jsonl", upload, t0)
 
+
+def train(a, train_split: str, upload, t0: float) -> None:
     # Training in its own Python 3.12 venv, exactly as the Kaggle runs (train_kaggle.py), so vLLM's pins don't leak in.
+    # AgentTune installs from git and the vLLM image has no git binary
+    sh("command -v git || (apt-get update -qq && apt-get install -y -qq git >/dev/null)")
     sh("python3 -m pip install -q --root-user-action=ignore uv")
     sh("env -u UV_SYSTEM_PYTHON -u UV_PYTHON uv venv -q -p 3.12 --python-preference managed /tmp/venv")
     sh("uv pip install --python /tmp/venv/bin/python -q --index-strategy unsafe-best-match "
        "--extra-index-url https://download.pytorch.org/whl/cu126 torch==2.11.0 -e '.[train]'", cwd=ROOT)
     env = dict(os.environ, DESI_HF_DATASET=LOGS, TOKENIZERS_PARALLELISM="false")
-    cmd = ["/tmp/venv/bin/python", "scripts/train_sft.py", "--split", f"hf:{remote}/train.jsonl",
+    cmd = ["/tmp/venv/bin/python", "scripts/train_sft.py", "--split", train_split,
            "--out", f"outputs/{a.run}", "--push-to", a.push_to, "--set", f"run_name={a.run}",
            "--set", f"ckpt_repo={LOGS}", "--set", f"max_hours={a.max_hours}"]
     t2 = time.time()
@@ -253,7 +262,7 @@ def inside(a) -> None:
         p = ROOT / "outputs" / a.run / f
         if p.exists():
             upload(p, f"train_{f}")
-    print(f"[F] done: sample {summary['sample_minutes']} min, train {(time.time() - t2) / 60:.0f} min, "
+    print(f"[F] done: train {(time.time() - t2) / 60:.0f} min, "
           f"total {(time.time() - t0) / 60:.0f} min -> {a.push_to}", flush=True)
 
 
@@ -282,7 +291,10 @@ def launch(a) -> None:
     api = HfApi(token=token)
     if api.repo_exists(a.push_to):
         sys.exit(f"[F] {a.push_to} already exists; pick a new --push-to (never overwrite an adapter)")
-    if any(f.startswith(f"round2/{a.run}/") for f in api.list_repo_files(LOGS, repo_type="dataset")):
+    files = api.list_repo_files(LOGS, repo_type="dataset")
+    if a.train_from and f"round2/{a.train_from}/train.jsonl" not in files:
+        sys.exit(f"[F] round2/{a.train_from}/train.jsonl not on {LOGS}")
+    if not a.train_from and any(f.startswith(f"round2/{a.run}/") for f in files):
         sys.exit(f"[F] round2/{a.run}/ already exists on {LOGS}; pick a new --run")
     repo, _, rev = a.policy.partition("@")
     policy = f"{repo}@{api.model_info(repo, revision=rev or None).sha}"  # pin the exact sampling policy
@@ -297,7 +309,7 @@ def launch(a) -> None:
     inner = ["python3", "scripts/train_round2_job.py", "--inside", "--run", a.run, "--policy", policy,
              "--push-to", a.push_to, "--k", str(a.k), "--temperature", str(a.temperature), "--workers",
              str(a.workers), "--max-hours", str(a.max_hours)] + (["--limit", str(a.limit)] if a.limit else []) \
-        + (["--no-train"] if a.no_train else [])
+        + (["--no-train"] if a.no_train else []) + (["--train-from", a.train_from] if a.train_from else [])
     script = " && ".join([
         "set -e", "mkdir -p /w", "cd /w",
         f"python3 -c \"import urllib.request,tarfile,io; tarfile.open(fileobj=io.BytesIO(urllib.request.urlopen("
@@ -343,6 +355,7 @@ def main() -> None:
     p.add_argument("--limit", type=int, default=0, help="only the first N prompts (smoke runs)")
     p.add_argument("--max-hours", type=float, default=3.0, help="train_sft stops + checkpoints after this")
     p.add_argument("--no-train", action="store_true", help="stop after sampling + building the data")
+    p.add_argument("--train-from", help="skip sampling: train on round2/<run>/train.jsonl from an earlier job")
     p.add_argument("--flavor", default="l40sx1")
     p.add_argument("--timeout", default="4h")
     p.add_argument("--git-sha")
