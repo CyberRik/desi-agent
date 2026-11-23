@@ -184,7 +184,7 @@ h2{font-size:18px;margin:6px 0 10px;color:#fff}
 <body>
 <div class="top">
   <div class="brand">Desi Agent Lab<small>Tiny Aya · banking tool-calling · en · hi · bn · Hinglish · Banglish</small></div>
-  <nav><a href="#/tour" data-v="tour">Tour</a><a href="#/explore" data-v="explore">Test explorer</a><a href="#/results" data-v="results">Results</a></nav>
+  <nav><a href="#/tour" data-v="tour">Tour</a><a href="#/explore" data-v="explore">Test explorer</a><a href="#/results" data-v="results">Results</a><a href="#/stage2" data-v="stage2">Stage 2</a></nav>
 </div>
 <main id="app"><p class="muted">Loading evaluation traces…</p></main>
 
@@ -198,27 +198,36 @@ const KNOWN = {  // display names + order; unknown tags (e.g. OOD runs) are appe
   "tinyaya-global-base": {name: "Base Tiny Aya", short: "Base", av: "B"},
   "tinyaya-sft-a-epoch1": {name: "Fine-tuned · epoch 1", short: "Epoch 1", av: "E1"},
   "tinyaya-sft-a-final": {name: "Fine-tuned (ours)", short: "Fine-tuned", av: "FT"},
+  "tinyaya-rft-a": {name: "Fine-tuned + RL, round 1", short: "RL r1", av: "R1"},
+  "s2-rft2": {name: "Fine-tuned + RL, round 2", short: "RL r2", av: "R2"},
+  "s2-check-sft-a": {name: "Fine-tuned · HF Jobs re-run", short: "FT re-run", av: "FT'"},
   "teacher-qwen3-14b": {name: "Teacher · Qwen3-14B", short: "Teacher", av: "T"},
 };
 const BASE = "tinyaya-global-base", FINAL = "tinyaya-sft-a-final";
 const LANG = {en: "English", hi: "Hindi", bn: "Bengali", "hi-en": "Hinglish", "bn-en": "Banglish"};
 const CAT = {single_tool: "Single action", multi_tool: "Two-step task", clarify: "Missing info: should ask", no_tool: "No action needed"};
 const STATE_CHANGING = new Set(["block_card", "raise_dispute", "transfer_money"]);
-const D = {runs: {}, order: [], tour: null};  // runs[key] = {tag, split, meta, traces: Map|null}
+const D = {runs: {}, order: [], tour: null, s2: []};  // runs[key] = {root, tag, split, meta, traces: Map|null}
 
 async function j(url) { const r = await fetch(url); if (!r.ok) throw new Error(`${r.status} ${url}`); return r.json(); }
 async function discover() {
-  const dirs = (await j(TREE("results"))).filter(e => e.type === "directory").map(e => e.path.split("/").pop());
+  const subdirs = async p => { try { return (await j(TREE(p))).filter(e => e.type === "directory").map(e => e.path.split("/").pop()); } catch { return []; } };
+  // Stage 2 runs (R's eval_hf_job.py): stage2/<run>/<tag>[-ood|-multiturn|...]/, same files as results/<tag>/
+  const s2 = await subdirs("stage2"), roots = {};
+  for (const tag of await subdirs("results")) roots[tag] = "results";
+  for (const run of s2) for (const tag of await subdirs(`stage2/${run}`)) roots[tag] ??= `stage2/${run}`;
+  D.root = roots; D.s2 = s2.filter(run => roots[run] === `stage2/${run}`);
+  const dirs = Object.keys(roots);
   const tags = [...Object.keys(KNOWN).filter(t => dirs.includes(t)), ...dirs.filter(t => !KNOWN[t]).sort()];
   for (const tag of tags) {
-    const files = (await j(TREE(`results/${tag}`))).map(e => e.path.split("/").pop());
+    const root = roots[tag], files = (await j(TREE(`${root}/${tag}`))).map(e => e.path.split("/").pop());
     for (const f of files.filter(f => f.endsWith(".json") && !f.includes(".auditkit") && files.includes(f.replace(/\.json$/, ".traces.jsonl")))) {
       const split = f.replace(/\.json$/, ""), key = split === "test" ? tag : `${tag}/${split}`;
-      D.runs[key] = {tag, split, key, meta: null, traces: null};
+      D.runs[key] = {root, tag, split, key, meta: null, traces: null};
       D.order.push(key);
     }
   }
-  await Promise.all(D.order.map(async k => { const r = D.runs[k]; r.meta = await j(RAW(`results/${r.tag}/${r.split}.json`)); }));
+  await Promise.all(D.order.map(async k => { const r = D.runs[k]; r.meta = await j(RAW(`${r.root}/${r.tag}/${r.split}.json`)); }));
   try { D.tour = normTour(await j(RAW("results/tour.json"))); } catch { D.tour = null; }
   try { D.tr = (await j(RAW("translations/translations.json"))).items || {}; } catch { D.tr = {}; }
 }
@@ -254,7 +263,7 @@ function normTour(t) {  // R's results/tour.json: {episodes:[{id, gloss_en, kind
 async function traces(key) {
   const r = D.runs[key];
   if (!r.traces) {
-    const txt = await (await fetch(RAW(`results/${r.tag}/${r.split}.traces.jsonl`))).text();
+    const txt = await (await fetch(RAW(`${r.root}/${r.tag}/${r.split}.traces.jsonl`))).text();
     r.traces = new Map(txt.split("\n").filter(Boolean).map(l => { const o = JSON.parse(l); return [o.id, o]; }));
   }
   return r.traces;
@@ -548,13 +557,65 @@ async function results() {
     <p class="note">Data: <a href="https://huggingface.co/datasets/${REPO}">${REPO}</a> · code: <a href="https://github.com/CyberRik/desi-agent">github.com/CyberRik/desi-agent</a></p></div>`;
 }
 
+/* ============ stage 2 ============ */
+/* One row per model, the same columns as R's scripts/eval_compare.py. Round-1 models read results/<tag>*, Stage 2 runs
+   read stage2/<run>/<tag>*. stage2_legacy.json (written by push_lab.py) carries the judge-validated OOD ids and the
+   round-1 BANKING77 numbers, which live in the GitHub repo rather than on the Hub. */
+async function stage2() {
+  const tj = async p => { try { return await j(p); } catch { return null; } };
+  const legacy = (await tj("stage2_legacy.json")) || {}, rob = (await tj(RAW("results/robustness.json"))) || {};
+  const valid = new Set(legacy.ood_valid_ids || []);
+  const tags = [BASE, FINAL, "tinyaya-rft-a", ...D.s2].filter((t, i, a) => D.root[t] && a.indexOf(t) === i);
+  const row = async tag => {
+    const at = sfx => `${D.root[tag + sfx] ?? D.root[tag]}/${tag}${sfx}`, r = {tag};
+    const t = await tj(RAW(`${at("")}/test.json`));
+    if (t) { r.test = t.overall.task_success; r.wrong = t.overall.false_action; }
+    const v = await tj(RAW(`${at("-ood")}/validated.json`));
+    r.ood = v?.ood?.task_success ?? rob.ood?.[tag]?.ood?.task_success ?? null;
+    if (r.ood == null && valid.size) {
+      try { const txt = await (await fetch(RAW(`${at("-ood")}/test.traces.jsonl`))).text();
+        const rows = txt.split("\n").filter(Boolean).map(l => JSON.parse(l)).filter(e => valid.has(e.id));
+        if (rows.length) r.ood = rows.reduce((a, e) => a + e.scores.task_success, 0) / rows.length; } catch {}
+    }
+    const pt = await tj(RAW(`${at("-perturbed")}/test.json`)); r.pert = pt?.overall?.task_success ?? null;
+    const m = await tj(RAW(`${at("-multiturn")}/multiturn.json`));
+    r.mt = m?.switch?.overall?.both ?? null; r.mt_en = m?.switch?.by_target_lang?.en?.both ?? null;
+    r.mt_same = m?.same?.overall?.both ?? null;
+    const b = await tj(RAW(`${at("-banking77")}/manifest.json`));
+    r.b77 = b?.[tag]?.unsafe_executed ?? legacy.banking77_unsafe_executed?.[tag] ?? null;
+    return r;
+  };
+  const rows = await Promise.all(tags.map(row));
+  const cols = [["test", "Frozen test: task success", "max"], ["wrong", "Frozen test: unwanted bank action", "min"],
+    ["ood", "Reworded test (380 validated): task success", "max"], ["pert", "Changed bank data: task success", "max"],
+    ["mt", "Language switch: right action + right language", "max"], ["mt_en", "…switching into English", "max"],
+    ["mt_same", "Same language, multi-turn: right action + language", "max"],
+    ["b77", "Real BANKING77 messages: bank action executed without the details", "min"]];
+  const pct = v => v == null ? "–" : (v * 100).toFixed(1) + "%";
+  const best = (vals, v, dir) => { const f = vals.filter(x => x != null); if (v == null || f.length < 2 || Math.max(...f) === Math.min(...f)) return "";
+    return v === (dir === "max" ? Math.max(...f) : Math.min(...f)) ? "best" : ""; };
+  const name = t => esc(KNOWN[t]?.name ?? t);
+  const body = cols.map(([k, n, dir]) => { const vs = rows.map(r => r[k] ?? null);
+    return `<tr><td>${esc(n)} <span class="muted small">${dir === "max" ? "↑" : "↓"}</span></td>${vs.map(v => `<td class="${best(vs, v, dir)}">${pct(v)}</td>`).join("")}</tr>`; }).join("");
+  const r1 = rows.find(r => r.tag === "tinyaya-rft-a"), r2 = rows.find(r => r.tag === "s2-rft2");
+  const lead = r2 && r2.test != null
+    ? `Round 2 of RL keeps frozen-test task success at <b>${pct(r2.test)}</b> (round 1: ${pct(r1?.test)}) and moves the language-switch case from ${pct(r1?.mt)} to <b>${pct(r2.mt)}</b>.`
+    : `Round 2 of RL is being evaluated; its column appears here as soon as the results are on the Hub.`;
+  document.getElementById("app").innerHTML = `<div class="res"><h1>Stage 2: a second round of RL</h1>
+    <p class="lead">${lead}</p>
+    <h2>Every model, every test</h2><table><tr><th></th>${tags.map(t => `<th>${name(t)}</th>`).join("")}</tr>${body}</table>
+    <p class="note">What round 2 trained on: the round-1 RL set, plus the round-1 RL model's own best answers (8 tries each, scored by the language-aware reward) on 482 new language-switch conversations, plus 1,067 "missing card or transaction id, so ask first" examples. All built from training data only, never test. Each conversation that switches language, and each test above, is in the <a href="#/explore">Test explorer</a> where the run has traces.</p>
+    <p class="note">Same evaluation settings as round 1 (fp16, greedy, max 6 steps, deterministic mock bank). Columns marked ↓ are better when lower. "–" means that test has not been run for that model yet.
+    Data: <a href="https://huggingface.co/datasets/${REPO}/tree/main/stage2">${REPO}/stage2</a> · training data and logs: <a href="https://huggingface.co/datasets/ToolW/desi-agent-training-logs/tree/main/round2">ToolW/desi-agent-training-logs/round2</a></p></div>`;
+}
+
 /* ============ router ============ */
 const view = () => (location.hash.split("/")[1] || "tour");
 async function route() {
   const v = view(), id = decodeURIComponent(location.hash.split("/")[2] || "");
   document.querySelectorAll("nav a").forEach(a => a.classList.toggle("on", a.dataset.v === v));
   play.token++;
-  try { if (v === "explore") await explore(id || null); else if (v === "results") await results(); else tourEpisode(0); }
+  try { if (v === "explore") await explore(id || null); else if (v === "results") await results(); else if (v === "stage2") await stage2(); else tourEpisode(0); }
   catch (e) { document.getElementById("app").innerHTML = `<div class="err">Could not load: ${esc(e.message)}</div>`; }
 }
 (async () => {
