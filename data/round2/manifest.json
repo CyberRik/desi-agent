@@ -1,0 +1,151 @@
+{
+  "script": "scripts/data_round2.py",
+  "git_sha": "08a5415a86ba17f1ef2555270e69cce2e64270bd",
+  "seed": 1234,
+  "model_id": null,
+  "inputs": {
+    "data/train.jsonl": "2459a0b7691d6da9",
+    "data/val.jsonl": "27084fa781f8de67",
+    "data/round2/phrases.json": "0b81f81a6a965b56",
+    "banking77": "mteb/banking77 train.jsonl (test.jsonl only for dedup)"
+  },
+  "files": {
+    "grounding_train.jsonl": 1067,
+    "grounding_val.jsonl": 81,
+    "langswitch_train.jsonl": 482,
+    "langswitch_val.jsonl": 62
+  },
+  "grounding": {
+    "by_split_lang_variant": {
+      "train|bn-en|control": 82,
+      "train|bn-en|missing": 87,
+      "train|bn|control": 81,
+      "train|bn|missing": 85,
+      "train|en|control": 183,
+      "train|en|missing": 199,
+      "train|en|no_tool": 15,
+      "train|hi-en|control": 77,
+      "train|hi-en|missing": 84,
+      "train|hi|control": 85,
+      "train|hi|missing": 89,
+      "val|bn-en|control": 8,
+      "val|bn-en|missing": 9,
+      "val|bn|control": 4,
+      "val|bn|missing": 5,
+      "val|en|control": 18,
+      "val|en|missing": 18,
+      "val|hi-en|control": 5,
+      "val|hi-en|missing": 5,
+      "val|hi|control": 4,
+      "val|hi|missing": 5
+    },
+    "by_group_variant": {
+      "block|control": 173,
+      "block|missing": 216,
+      "dispute|control": 167,
+      "dispute|missing": 166,
+      "no_tool|no_tool": 15,
+      "transfer_no_amount|control": 54,
+      "transfer_no_amount|missing": 54,
+      "transfer_no_upi|control": 56,
+      "transfer_no_upi|missing": 56,
+      "upi|control": 97,
+      "upi|missing": 94
+    },
+    "by_origin": {
+      "banking77-train": 381,
+      "template": 767
+    },
+    "b77_train_rows": 10003,
+    "b77_dropped_in_test": 1,
+    "gate_drops": {
+      "user:repetitive": 2,
+      "pair_dropped": 11,
+      "duplicate_message": 71,
+      "reply:echoes_user": 5,
+      "user:not_romanized_hi-en": 4,
+      "user:not_romanized_bn-en": 2
+    }
+  },
+  "langswitch": {
+    "by_split_condition_lang": {
+      "train|same|bn": 14,
+      "train|same|bn-en": 15,
+      "train|same|en": 23,
+      "train|same|hi": 13,
+      "train|same|hi-en": 20,
+      "train|switch|bn": 74,
+      "train|switch|bn-en": 66,
+      "train|switch|en": 122,
+      "train|switch|hi": 68,
+      "train|switch|hi-en": 67,
+      "val|same|bn-en": 2,
+      "val|same|en": 3,
+      "val|same|hi": 1,
+      "val|switch|bn": 6,
+      "val|switch|bn-en": 9,
+      "val|switch|en": 26,
+      "val|switch|hi": 4,
+      "val|switch|hi-en": 11
+    },
+    "by_target_set_category": {
+      "base|clarify": 48,
+      "base|multi_tool": 40,
+      "base|no_tool": 39,
+      "base|single_tool": 258,
+      "grounding|clarify": 77,
+      "grounding|no_tool": 2,
+      "grounding|single_tool": 80
+    },
+    "round1_targets_excluded": 300,
+    "gold_check_failures": {
+      "gold_tail_not_full_reward": 14
+    }
+  },
+  "leakage": {
+    "n_test_messages": 4002,
+    "grounding": {
+      "checked": 1153,
+      "jaccard>=0.8": 5
+    },
+    "langswitch": {
+      "checked": 1168,
+      "normalized": 8,
+      "jaccard>=0.8": 18
+    },
+    "rows_with_overlap": [
+      "r2g-en-block-neg-0020",
+      "r2g-en-dispute-neg-0118",
+      "r2g-en-upi-neg-0165",
+      "r2g-en-upi-neg-0169",
+      "r2g-en-upi-neg-0177",
+      "same:bn-clarify-block_card_no_card-01627>bn-single_tool-raise_dispute-01332",
+      "same:bn-en-clarify-block_card_no_card-02799>bn-en-single_tool-get_account_balance-02378",
+      "same:bn-en-single_tool-check_upi_status-02544>bn-en-single_tool-transfer_money-02589",
+      "same:bn-en-single_tool-check_upi_status-02544>r2g-bn-en-block-ctl-0011",
+      "same:en-single_tool-find_nearest_branch-00270>r2g-en-dispute-neg-0149",
+      "same:hi-clarify-transfer_no_amount-01058>hi-single_tool-get_account_balance-00621",
+      "same:hi-en-single_tool-check_upi_status-01968>hi-en-single_tool-block_card-01857",
+      "same:hi-multi_tool-balance_then_transfer-01018>hi-clarify-transfer_no_amount-01045",
+      "switch:bn-clarify-transfer_no_amount-01645>r2g-hi-dispute-neg-0028",
+      "switch:bn-en-single_tool-block_card-02485>en-single_tool-find_nearest_branch-00283",
+      "switch:bn-en-single_tool-find_nearest_branch-02660>en-single_tool-find_nearest_branch-00310",
+      "switch:bn-en-single_tool-get_recent_transactions-02406>en-single_tool-find_nearest_branch-00299",
+      "switch:bn-en-single_tool-raise_dispute-02521>en-clarify-transfer_no_amount-00456",
+      "switch:bn-multi_tool-balance_then_transfer-01609>en-single_tool-find_nearest_branch-00300",
+      "switch:bn-single_tool-calculate_loan_emi-01524>en-multi_tool-txn_then_dispute-00373",
+      "switch:bn-single_tool-raise_dispute-01343>r2g-en-block-ctl-0044",
+      "switch:en-no_tool-no_tool-00558>bn-en-single_tool-get_account_balance-02367",
+      "switch:en-single_tool-find_nearest_branch-00300>bn-en-single_tool-check_upi_status-02538",
+      "switch:hi-clarify-emi_no_rate-01105>en-single_tool-get_recent_transactions-00056",
+      "switch:hi-en-multi_tool-balance_then_transfer-02178>en-multi_tool-block_then_balance-00387",
+      "switch:hi-en-multi_tool-txn_then_dispute-02127>hi-single_tool-check_upi_status-00810",
+      "switch:hi-en-single_tool-check_upi_status-01968>en-single_tool-find_nearest_branch-00277",
+      "switch:hi-en-single_tool-get_account_balance-01798>en-single_tool-get_recent_transactions-00081",
+      "switch:hi-en-single_tool-transfer_money-01999>en-single_tool-find_nearest_branch-00274",
+      "switch:hi-no_tool-no_tool-01146>en-single_tool-get_account_balance-00041",
+      "switch:hi-single_tool-calculate_loan_emi-00939>r2g-en-block-neg-0020"
+    ]
+  },
+  "scoring": "grounding: api.reward(pred_messages, row['gold']) or rewards.reward_lang(pred, gold, row['lang']); langswitch: reward_lang(pred[len(row['prefix']):], row['gold'], row['lang'])"
+}
