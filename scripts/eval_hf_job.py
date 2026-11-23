@@ -128,12 +128,16 @@ def launch(a) -> None:
 
 
 def wait(api, job_id: str) -> dict:
-    last = None
+    last, t0, warned = None, time.time(), False
     while True:
         j = api.inspect_job(job_id=job_id)
         if j.status.stage != last:
             print(f"[R] {time.strftime('%H:%M:%S')} job {job_id}: {j.status.stage} {j.status.message or ''}", flush=True)
             last = j.status.stage
+        if j.status.stage == "SCHEDULING" and time.time() - t0 > 900 and not warned:
+            warned = True
+            print("[R] still waiting for hardware after 15 min (scheduling is not billed). Other flavor: cancel with "
+                  f"`hf jobs cancel {job_id}` and relaunch with --flavor l40sx1 / a10g-large / l4x1", flush=True)
         if j.status.stage in ("COMPLETED", "ERROR", "CANCELED", "DELETED"):
             break
         time.sleep(30)
