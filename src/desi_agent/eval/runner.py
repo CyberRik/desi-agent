@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import time
 from collections import defaultdict
@@ -25,6 +26,8 @@ SEED = 1234
 
 
 def _git_sha() -> str | None:
+    if os.environ.get("DESI_GIT_SHA"):  # set by scripts/eval_hf_job.py (repo fetched as a tarball, no .git)
+        return os.environ["DESI_GIT_SHA"]
     try:
         return subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip() or None
     except OSError:
