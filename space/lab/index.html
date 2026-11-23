@@ -200,6 +200,7 @@ const KNOWN = {  // display names + order; unknown tags (e.g. OOD runs) are appe
   "tinyaya-sft-a-final": {name: "Fine-tuned (ours)", short: "Fine-tuned", av: "FT"},
   "tinyaya-rft-a": {name: "Fine-tuned + RL, round 1", short: "RL r1", av: "R1"},
   "s2-rft2": {name: "Fine-tuned + RL, round 2", short: "RL r2", av: "R2"},
+  "tinyaya-rft2": {name: "Fine-tuned + RL, round 2", short: "RL r2", av: "R2"},
   "s2-check-sft-a": {name: "Fine-tuned · HF Jobs re-run", short: "FT re-run", av: "FT'"},
   "teacher-qwen3-14b": {name: "Teacher · Qwen3-14B", short: "Teacher", av: "T"},
 };
@@ -597,7 +598,7 @@ async function stage2() {
   const name = t => esc(KNOWN[t]?.name ?? t);
   const body = cols.map(([k, n, dir]) => { const vs = rows.map(r => r[k] ?? null);
     return `<tr><td>${esc(n)} <span class="muted small">${dir === "max" ? "↑" : "↓"}</span></td>${vs.map(v => `<td class="${best(vs, v, dir)}">${pct(v)}</td>`).join("")}</tr>`; }).join("");
-  const r1 = rows.find(r => r.tag === "tinyaya-rft-a"), r2 = rows.find(r => r.tag === "s2-rft2");
+  const r1 = rows.find(r => r.tag === "tinyaya-rft-a"), r2 = rows.find(r => r.tag === "tinyaya-rft2" || r.tag === "s2-rft2");
   const lead = r2 && r2.test != null
     ? `Round 2 of RL keeps frozen-test task success at <b>${pct(r2.test)}</b> (round 1: ${pct(r1?.test)}) and moves the language-switch case from ${pct(r1?.mt)} to <b>${pct(r2.mt)}</b>.`
     : `Round 2 of RL is being evaluated; its column appears here as soon as the results are on the Hub.`;
