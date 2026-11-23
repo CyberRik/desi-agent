@@ -255,7 +255,9 @@ def train(a, train_split: str, upload, t0: float) -> None:
     env = dict(os.environ, DESI_HF_DATASET=LOGS, TOKENIZERS_PARALLELISM="false")
     cmd = ["/tmp/venv/bin/python", "scripts/train_sft.py", "--split", train_split,
            "--out", f"outputs/{a.run}", "--push-to", a.push_to, "--set", f"run_name={a.run}",
-           "--set", f"ckpt_repo={LOGS}", "--set", f"max_hours={a.max_hours}"]
+           "--set", f"ckpt_repo={LOGS}", "--set", f"max_hours={a.max_hours}",
+           # rft-a ran on Kaggle T4x2 (DDP): 1 x 8 accum x 2 GPUs = 16. One GPU here, so accumulate 16 to keep it.
+           "--set", "grad_accum=16"]
     t2 = time.time()
     sh(cmd, cwd=ROOT, env=env)
     for f in ("manifest.json", "log_history.json"):
