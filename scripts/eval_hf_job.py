@@ -106,7 +106,7 @@ def launch(a) -> None:
     suites = [s for s in SUITES if s in suites]  # test first: validated OOD pairs with the test traces
     inner = ["python3", "scripts/eval_hf_job.py", "--inside", "--tag", a.tag, "--suites", ",".join(suites),
              "--adapter", f"{repo}@{adapter_sha}" if repo else "none", "--flavor", a.flavor,
-             "--multiturn-n", str(a.multiturn_n), "--per-intent", str(a.per_intent)]
+             "--multiturn-n", str(a.multiturn_n), "--per-intent", str(a.per_intent), "--b77-backend", a.b77_backend]
     script = " && ".join([
         "set -e", "mkdir -p /w", "cd /w",
         f"python3 -c \"import urllib.request,tarfile,io; tarfile.open(fileobj=io.BytesIO(urllib.request.urlopen("
@@ -147,8 +147,11 @@ def wait(api, job_id: str) -> dict:
 def job_cost(j) -> dict:
     flavor = str(getattr(j.flavor, "value", j.flavor))
     info = {"job_id": j.id, "stage": j.status.stage, "flavor": flavor}
-    if j.started_at and j.finished_at:
-        h = (j.finished_at - j.started_at).total_seconds() / 3600
+    secs = getattr(j.durations, "running_secs", None) if j.durations else None
+    if secs is None and j.started_at and j.finished_at:
+        secs = (j.finished_at - j.started_at).total_seconds()
+    if secs:
+        h = secs / 3600
         info |= {"runtime_min": round(h * 60, 1), "est_cost_usd": round(h * PRICE_PER_H.get(flavor, 0), 2)}
     print(f"[R] {info}", flush=True)
     return info
@@ -258,26 +261,39 @@ def ood_validated(ood_traces: Path, test_traces: Path | None = None) -> dict:
     return res
 
 
-def banking77(tag: str, adapter_path: str | None, adapter_name: str | None, out: Path, per_intent: int) -> None:
+def banking77(tag: str, adapter_path: str | None, adapter_name: str | None, out: Path, per_intent: int,
+              backend: str = "vllm", openai_model: str | None = None) -> None:
+    """Same sample, loop and scoring as scripts/eval_real_queries.py. backend 'vllm' = the running server (32 threads,
+    ~minutes); 'hf' = transformers fp16 unbatched like the reference run (~25 s/episode on a T4, ~2 h for 270)."""
     import importlib.util
+    from concurrent.futures import ThreadPoolExecutor
     spec = importlib.util.spec_from_file_location("eval_real_queries", ROOT / "scripts/eval_real_queries.py")
     rq = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(rq)
     from desi_agent import fmt
-    from desi_agent.train.policy import load_policy
     eps = rq.sample(per_intent)
-    pol = load_policy(adapter=adapter_path, dtype="float16")  # T4 reference ran fp16; auto would pick bf16 here
-    rows, t0 = [], time.time()
-    for i, e in enumerate(eps):
+    if backend == "hf":
+        from desi_agent.train.policy import load_policy
+        pol, workers = load_policy(adapter=adapter_path, dtype="float16"), 1  # auto would pick bf16 on Ampere+
+    else:
+        from desi_agent.eval.runner import openai_policy
+        pol, workers = openai_policy(f"http://localhost:{PORT}/v1", openai_model), 32
+    t0 = time.time()
+
+    def one(e):
         run = fmt.run_episode(pol, [{"role": "user", "content": e["text"]}])
-        rows.append({**e, "messages": run.messages, "raw_outputs": run.raw_outputs,
-                     "scores": rq.score(e["text"], e["group"], run.messages, run.truncated)})
-        if i % 25 == 0:
-            print(f"[R] banking77 {i + 1}/{len(eps)} {time.time() - t0:.0f}s", flush=True)
+        return {**e, "messages": run.messages, "raw_outputs": run.raw_outputs,
+                "scores": rq.score(e["text"], e["group"], run.messages, run.truncated)}
+    with ThreadPoolExecutor(workers) as ex:
+        rows = []
+        for i, r in enumerate(ex.map(one, eps)):
+            rows.append(r)
+            if i % 25 == 0:
+                print(f"[R] banking77 {i + 1}/{len(eps)} {time.time() - t0:.0f}s", flush=True)
     (out / f"{tag}.traces.jsonl").write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in rows),
                                              encoding="utf-8")
     summary = {"dataset": "mteb/banking77 (PolyAI BANKING77 test split, English, human-written)", "seed": rq.SEED,
-               "per_intent": per_intent, "adapter": adapter_name, "dtype": "float16", "backend": "transformers",
+               "per_intent": per_intent, "adapter": adapter_name, "dtype": "float16", "backend": backend,
                "intents": {"act_no_details": rq.ACT_NO_DETAILS, "out_of_scope": rq.OUT_OF_SCOPE},
                tag: rq.summarize(rows)}
     (out / "manifest.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
@@ -339,44 +355,43 @@ def inside(a) -> None:
         "perturbed": f"python3 scripts/eval_variants.py --tag {dirname(a.tag, 'perturbed')} {common} {ident} --perturb",
         "multiturn": f"python3 scripts/eval_multiturn.py --tag {dirname(a.tag, 'multiturn')} {common} --n {a.multiturn_n}",
     }
-    vsuites = [s for s in suites if s in cmds]
+    manifest["banking77_backend"] = a.b77_backend
     failed = []
+
+    def run_suite(s: str) -> None:
+        d = work / dirname(a.tag, s)
+        d.mkdir(parents=True, exist_ok=True)
+        t0 = time.time()
+        try:
+            if s == "banking77":
+                banking77(a.tag, path, adapter_name, d, a.per_intent, a.b77_backend, model)
+            else:
+                sh(f"{cmds[s]} --out-dir {d}", log=d / "run.log")
+            if s == "ood":
+                v = ood_validated(d / "test.traces.jsonl", work / a.tag / "test.traces.jsonl")
+                (d / "validated.json").write_text(json.dumps(v, indent=2), encoding="utf-8")
+            manifest["suites"][s] = {"status": "ok", "minutes": round((time.time() - t0) / 60, 1)}
+        except Exception as e:  # noqa: BLE001
+            failed.append(s)
+            manifest["suites"][s] = {"status": f"failed: {e}", "minutes": round((time.time() - t0) / 60, 1)}
+        upload(d, f"{remote}/{d.name}", f"[R] stage2 eval {a.tag}: {s}")
+        manifest["total_minutes"] = round((time.time() - t_start) / 60, 1)
+        (work / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        upload(work / "manifest.json", f"{remote}/manifest.json", f"[R] stage2 eval {a.tag}: manifest")
+
+    vsuites = [s for s in suites if s in cmds or (s == "banking77" and a.b77_backend == "vllm")]
     if vsuites:
         lora_rank = max(64, 1 << (max(rank, 1) - 1).bit_length())
         extra = f"--enable-lora --max-lora-rank {lora_rank} --lora-modules sft={path}" if repo else ""
         srv = serve(BASE, work, extra)
         try:
             for s in vsuites:
-                d = work / dirname(a.tag, s)
-                d.mkdir(parents=True, exist_ok=True)
-                t0 = time.time()
-                try:
-                    sh(f"{cmds[s]} --out-dir {d}", log=d / "run.log")
-                    if s == "ood":
-                        v = ood_validated(d / "test.traces.jsonl", work / a.tag / "test.traces.jsonl")
-                        (d / "validated.json").write_text(json.dumps(v, indent=2), encoding="utf-8")
-                    manifest["suites"][s] = {"status": "ok", "minutes": round((time.time() - t0) / 60, 1)}
-                except Exception as e:  # noqa: BLE001
-                    failed.append(s)
-                    manifest["suites"][s] = {"status": f"failed: {e}", "minutes": round((time.time() - t0) / 60, 1)}
-                upload(d, f"{remote}/{d.name}", f"[R] stage2 eval {a.tag}: {s}")
+                run_suite(s)
         finally:
             sh(f"cp {work}/vllm.log {work}/{a.tag}-vllm.log || true", check=False)
             stop(srv)
-    if "banking77" in suites:
-        d = work / dirname(a.tag, "banking77")
-        d.mkdir(parents=True, exist_ok=True)
-        t0 = time.time()
-        try:
-            banking77(a.tag, path, adapter_name, d, a.per_intent)
-            manifest["suites"]["banking77"] = {"status": "ok", "minutes": round((time.time() - t0) / 60, 1)}
-        except Exception as e:  # noqa: BLE001
-            failed.append("banking77")
-            manifest["suites"]["banking77"] = {"status": f"failed: {e}", "minutes": round((time.time() - t0) / 60, 1)}
-        upload(d, f"{remote}/{d.name}", f"[R] stage2 eval {a.tag}: banking77")
-    manifest["total_minutes"] = round((time.time() - t_start) / 60, 1)
-    (work / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    upload(work / "manifest.json", f"{remote}/manifest.json", f"[R] stage2 eval {a.tag}: manifest")
+    if "banking77" in suites and a.b77_backend == "hf":
+        run_suite("banking77")
     if (work / f"{a.tag}-vllm.log").exists():
         upload(work / f"{a.tag}-vllm.log", f"{remote}/vllm.log", f"[R] stage2 eval {a.tag}: vllm log")
     print("[R] done:", json.dumps(manifest["suites"]), flush=True)
@@ -401,6 +416,8 @@ def main() -> None:
     p.add_argument("--git-sha", help="GitHub commit to run (default: local HEAD, must be pushed)")
     p.add_argument("--multiturn-n", type=int, default=300)
     p.add_argument("--per-intent", type=int, default=10)
+    p.add_argument("--b77-backend", choices=("vllm", "hf"), default="vllm",
+                   help="BANKING77 on the vLLM server (fast) or on transformers fp16 like the reference (~2 h on T4)")
     p.add_argument("--wait", action="store_true", help="follow the job, then fetch")
     p.add_argument("--fetch", action="store_true", help="download stage2/<tag>/ into results/")
     p.add_argument("--job", help="job id (with --fetch: also record runtime + cost in hfjob_manifest.json)")
