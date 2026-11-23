@@ -230,12 +230,12 @@ def inside(a) -> None:
     upload(out / "sample_summary.json", "sample_summary.json")
 
     tok = AutoTokenizer.from_pretrained(BASE)
-    train, stats = build(samples, tok, a.policy)
+    built, stats = build(samples, tok, a.policy)
     stats |= {"git_sha": os.environ.get("DESI_GIT_SHA"), "seed": SEED, "max_tokens": MAX_TOKENS,
               "sources": {"round1": "data/rl/train_rft.jsonl", "grounding": "data/round2/grounding_train.jsonl",
                           "langswitch_prompts": "data/round2/langswitch_train.jsonl"}, "sample": summary}
     print("[F] build:", json.dumps({k: v for k, v in stats.items() if k != "sample"}), flush=True)
-    wjl(out / "train.jsonl", train)
+    wjl(out / "train.jsonl", built)
     (out / "train.manifest.json").write_text(json.dumps(stats, indent=2), encoding="utf-8")
     upload(out / "train.jsonl", "train.jsonl")
     upload(out / "train.manifest.json", "train.manifest.json")
