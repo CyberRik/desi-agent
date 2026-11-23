@@ -1,10 +1,19 @@
-% STUB written by R from docs/ARTICLE.md so the paper compiles. K owns this file: replace freely.
+% [K] Training (F lane). Numbers from the run manifests on ToolW/desi-agent-training-logs (runs/<run>/manifest.json).
 \section{Training}
 \label{sec:training}
 
-Episodes are converted to AgentTune event logs and trained with \tool{Project.distill} using our own trainer: a
-transformers \tool{Trainer} with LoRA \citep{hu2022lora} (r=16, $\alpha$=32, all attention and MLP projections), loss
-on assistant tokens only. Every training row is re-rendered with the same formatter the evaluation parses. We train 2
-epochs (lr $2\times10^{-4}$, cosine, effective batch 16) on a free Kaggle T4$\times$2 in fp16: 2.2 hours. On T4s, bf16
-is reported as supported but is emulated; fp16 was 4.2$\times$ faster with the same loss curve. The checkpoint was fixed
-in advance to be chosen by validation loss, never by test.
+Episodes are converted to AgentTune event logs and trained with \tool{Project.distill} through our own trainer: a
+transformers \tool{Trainer} with LoRA \citep{hu2022lora} (r=16, $\alpha$=32, dropout 0.05, all attention and MLP
+projections) and loss on assistant tokens only. Every training row is re-rendered with the same formatter that the
+evaluation parses, so the tool-call syntax the model learns is byte-identical to what is scored. We train 2 epochs
+(lr $2\times10^{-4}$, cosine, 5\% warmup, effective batch 16, max length 2048 with no row truncated) on a free Kaggle
+T4$\times$2 with DDP in fp16: 2.2 hours. T4s report bf16 as supported but emulate it; fp16 was 4.2$\times$ faster with
+the same loss curve, so precision is chosen by native support, not by the library's flag. The checkpoint rule was
+fixed in advance: the final checkpoint by validation loss, never anything chosen on test.
+
+All later models reuse this pipeline unchanged; only the training file differs. The RL rounds of
+Section~\ref{sec:rl} retrain from the base model on the original training set plus the selected samples, so a round
+can only add data, never forget it. The round-1 RFT model trained on 2,054 rows (1,937 + 117) in 2.3 hours on the
+same T4s, reaching validation loss 0.271 (SFT: 0.273). The Stage 2 round runs as one Hugging Face Job: it samples from
+the round-1 model with vLLM, builds its training file, and trains on one L40S. There we keep the effective batch at 16
+(accumulation 16 on one GPU) and the precision is bf16, which the L40S supports natively.

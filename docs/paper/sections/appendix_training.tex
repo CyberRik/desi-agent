@@ -1,32 +1,40 @@
-% STUB written by R from docs/ARTICLE.md so the paper compiles. K owns this file: replace freely.
+% [K] Training details (F lane). Sources: runs/<run>/manifest.json and log_history.json on ToolW/desi-agent-training-logs.
 \section{Training details}
 \label{app:training}
 
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{ll}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lll}
 \toprule
-Base model & CohereLabs/tiny-aya-global (3.35B) \\
-Method & AgentTune distill, LoRA SFT \\
-LoRA & r=16, $\alpha$=32, dropout 0.05 \\
-Targets & all attention + MLP projections \\
-Epochs / steps & 2 / 244 \\
-LR & $2\times10^{-4}$, cosine, 5\% warmup \\
-Batch & 1 $\times$ 8 accum. $\times$ 2 GPUs = 16 \\
-Max length & 2048 (nothing truncated) \\
-Precision & fp16 \\
-Hardware & Kaggle T4$\times$2, DDP, 2.2 h \\
-Peak memory & 13.0 GiB per GPU (grad. checkpointing) \\
+ & SFT & RFT r1 \\
+\midrule
+Training rows & 1,937 & 2,054 \\
+Steps (2 epochs) & 244 & 258 \\
+Hardware & T4$\times$2 & T4$\times$2 \\
+Precision & fp16 & fp16 \\
+Time & 2.2 h & 2.3 h \\
+Final val.\ loss & 0.273 & 0.271 \\
+Peak memory/GPU & 13.0 GiB & 13.0 GiB \\
 \bottomrule
 \end{tabular}
-\caption{SFT configuration.}
+\caption{Training runs. Shared: CohereLabs/tiny-aya-global (3.35B), LoRA r=16, $\alpha$=32, dropout 0.05 on all
+attention and MLP projections; lr $2\times10^{-4}$, cosine, 5\% warmup; effective batch 16 (1 $\times$ 8 accumulation
+$\times$ 2 GPUs); max length 2048, nothing truncated; gradient checkpointing.}
+\label{tab:train-runs}
 \end{table}
 
-Validation loss at steps 50/100/150/200/244: 0.424, 0.329, 0.295, 0.276, 0.273. 86\% of each training row is the fixed
-system prompt (about 1,280 of 1,490 tokens), so rows have nearly equal length; batch size 2 runs out of memory on a T4,
-mostly due to the 262k-token vocabulary.
+SFT validation loss at steps 50/100/150/200/244: 0.424, 0.329, 0.295, 0.276, 0.273 (RFT r1 at 50/100/150/200/258:
+0.410, 0.326, 0.287, 0.275, 0.271). 86\% of each training row is the fixed system prompt (about 1,280 of 1,490 tokens),
+so rows have nearly equal length; batch size 2 runs out of memory on a T4, mostly due to the 262k-token vocabulary.
 
 \paragraph{GRPO probe (no-go).} With the SFT adapter, 8 first turns were sampled at $T{=}1$ for 377 training prompts in
 the SFT error areas (230 ask-first, 147 block-card). 95.7\% of samples succeeded and only 12.7\% of prompts showed any
 reward variance, with 1 prompt failing on all 8, so GRPO was not run on single-turn data.
+
+\paragraph{Stage 2 sampling.} From the round-1 RFT model, 8 conversations per prompt at $T{=}1$ on 482 new training
+language-switch prompts (2.3 minutes on one L40S with vLLM): 60.6\% of prompts had reward variance and 63.9\% had at
+least one fully correct sample. Switching into English stayed the hardest case (30 of 122 prompts with a correct
+sample, against 61 of 74 into Bengali). After the length filter, 289 samples were kept, giving 3,410 training rows with
+1,067 grounding examples. % [K] add the rft2 column to Table~\ref{tab:train-runs} when the run finishes.
