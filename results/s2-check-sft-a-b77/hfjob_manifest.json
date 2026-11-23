@@ -1,0 +1,46 @@
+{
+  "tag": "s2-check-sft-a-b77",
+  "git_sha": "d784a3935665db213f1d3821212c74757ec7b44d",
+  "image": "vllm/vllm-openai:v0.33.0",
+  "flavor": "t4-small",
+  "seed": 1234,
+  "base_model": "CohereLabs/tiny-aya-global",
+  "base_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "adapter": "ToolW/desi-agent-tinyaya-sft-lora",
+  "adapter_revision": "06f1d6acabbbd7021fc580346d8ed0fb11e7859d",
+  "lora_rank": 16,
+  "versions": {
+    "vllm": "0.33.0",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.20.2",
+    "peft": "0.22.0",
+    "auditkit": "1.1.12",
+    "python": "3.12.3"
+  },
+  "decoding": {
+    "temperature": 0.0,
+    "max_new_tokens": 256,
+    "stop": [
+      "</tool_call>"
+    ],
+    "dtype": "float16",
+    "max_steps": 6,
+    "workers": 32
+  },
+  "remote": "ToolW/desi-agent-eval-traces/stage2/s2-check-sft-a-b77",
+  "suites": {
+    "banking77": {
+      "status": "ok",
+      "minutes": 1.4
+    }
+  },
+  "banking77_backend": "vllm",
+  "total_minutes": 6.2,
+  "job": {
+    "job_id": "6b045037a02d1cf5a7b82682",
+    "stage": "COMPLETED",
+    "flavor": "t4-small",
+    "runtime_min": 6.5,
+    "est_cost_usd": 0.04
+  }
+}

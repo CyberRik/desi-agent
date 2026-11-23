@@ -2,13 +2,18 @@
 
 Same settings as the Kaggle runs behind results/ (so numbers are comparable): vLLM `--dtype half` (fp16), greedy
 (temperature 0), max_new_tokens 256, stop at `</tool_call>`, max 6 steps, 32 client threads, the shared
-`fmt.run_episode` loop, `--max-model-len 4096 --enable-prefix-caching`, LoRA served as `sft`. BANKING77 runs on HF
-transformers in fp16, unbatched, as `scripts/eval_real_queries.py` did on the T4s (load_policy would pick bf16 on an
-L4/A10G/L40S, so fp16 is forced here).
+`fmt.run_episode` loop, `--max-model-len 4096 --enable-prefix-caching`, LoRA served as `sft`. BANKING77 uses the
+same sample/scoring as `scripts/eval_real_queries.py` on the same vLLM server (the reference ran it on transformers
+fp16; `--b77-backend hf` does that, ~2 h on a T4). Validated 2026-11-23 on ToolW/desi-agent-tinyaya-sft-lora, T4:
+test 97.74 (every slice identical), OOD 90.14 / validated 91.84, perturbed 97.74, BANKING77 identical in every
+field, multiturn switch-both 33.67 vs 34.00 (1 of 300 episodes differs).
+
+Default flavor t4-small ($0.40/h): T4 is the reference hardware, and L4/A10G/L40S sat in "waiting for hardware"
+for 15+ min on 2026-11-23. Full suite ~40 min on a T4 (~$0.30).
 
     # launch (prints the job URL; --wait follows it and fetches when done)
     python scripts/eval_hf_job.py --adapter ToolW/desi-agent-tinyaya-sft-lora@main --tag s2-sft-a-check \
-        --suites test,ood,perturbed,multiturn,banking77 --flavor l4x1 --timeout 3h --wait
+        --suites test,ood,perturbed,multiturn,banking77 --flavor t4-small --timeout 2h --wait
     # later / from another machine
     python scripts/eval_hf_job.py --fetch --tag s2-sft-a-check
     python scripts/eval_compare.py tinyaya-sft-a-final tinyaya-rft-a s2-sft-a-check
@@ -410,8 +415,8 @@ def main() -> None:
     p.add_argument("--adapter", default="none", help="HF model repo[@revision] of a PEFT LoRA, or 'none' for the base")
     p.add_argument("--tag", required=True, help="results tag, e.g. tinyaya-s2-sft-b")
     p.add_argument("--suites", default=",".join(SUITES))
-    p.add_argument("--flavor", default="l4x1")
-    p.add_argument("--timeout", default="3h")
+    p.add_argument("--flavor", default="t4-small", help="t4-small | t4-medium | l4x1 | a10g-large | l40sx1 ...")
+    p.add_argument("--timeout", default="2h")
     p.add_argument("--out", help="local dir for the test suite (default results/<tag>); siblings get -ood etc.")
     p.add_argument("--git-sha", help="GitHub commit to run (default: local HEAD, must be pushed)")
     p.add_argument("--multiturn-n", type=int, default=300)
