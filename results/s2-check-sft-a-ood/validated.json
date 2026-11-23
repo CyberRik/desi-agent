@@ -1,0 +1,62 @@
+{
+  "valid_ids": "data/test_ood.valid.json",
+  "ood": {
+    "n": 380,
+    "task_success": 0.9184,
+    "false_action": 0.0553
+  },
+  "in_distribution_same_episodes": {
+    "n": 380,
+    "task_success": 0.9711,
+    "false_action": 0.0237
+  },
+  "ood_by_lang": {
+    "bn": {
+      "n": 70,
+      "task_success": 0.8714,
+      "false_action": 0.0857
+    },
+    "bn-en": {
+      "n": 63,
+      "task_success": 0.7778,
+      "false_action": 0.127
+    },
+    "en": {
+      "n": 71,
+      "task_success": 0.9859,
+      "false_action": 0.0141
+    },
+    "hi": {
+      "n": 88,
+      "task_success": 0.9886,
+      "false_action": 0.0114
+    },
+    "hi-en": {
+      "n": 88,
+      "task_success": 0.9318,
+      "false_action": 0.0568
+    }
+  },
+  "ood_by_category": {
+    "clarify": {
+      "n": 115,
+      "task_success": 0.9478,
+      "false_action": 0.0174
+    },
+    "multi_tool": {
+      "n": 83,
+      "task_success": 0.8554,
+      "false_action": 0.1084
+    },
+    "no_tool": {
+      "n": 68,
+      "task_success": 1.0,
+      "false_action": 0.0
+    },
+    "single_tool": {
+      "n": 114,
+      "task_success": 0.886,
+      "false_action": 0.0877
+    }
+  }
+}
