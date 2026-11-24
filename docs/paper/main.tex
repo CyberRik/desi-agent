@@ -288,8 +288,9 @@ so we then ran online GRPO \citep{shao2024deepseekmath} from RFT2: 25 steps, 16 
 conversations through the same agent loop and mock bank as evaluation, \tool{reward\_lang}, no KL term (63 minutes on
 one A100, about \$2.60; Appendix~\ref{app:training}). The per-step training reward stayed flat, since each step sees
 new prompts, but on the fixed evaluation sets switching into English rose from 20.3\% to 47.5\% (28 of 59), with no
-regression on the frozen or reworded tests. Every rollout is published with its reward parts: replies never echo the
-customer and their length did not change. Caveats: one seed, one learning rate, no KL penalty; switching into English
+regression on the frozen or reworded tests. Paired on the 300 switch conversations, GRPO fixed 26 that RFT2 failed and broke 1 (McNemar $p<10^{-4}$), 15 of
+the 16 into-English gains being replies RFT2 left in the old language; no GRPO training prompt is in the evaluation set.
+Rollouts are published with reward parts: no echoes, unchanged length, every top-reward rollout fully correct. Caveats: one seed, one learning rate, no KL penalty; switching into English
 is still the weakest case.
 
 \section{Cost}
@@ -482,7 +483,8 @@ conversation; a local playground runs the adapter on llama.cpp.
 \textbf{Ritankar Mondal} (GitHub \texttt{CyberRik}, HF \texttt{Rik0411}): data generation and curation, splits,
 evaluation harness and metrics, robustness checks, grounding guard, ROI, write-up; and the RL work: the multi-turn
 language-switch test and language detector, \tool{reward\_lang} and the reward-hacking audit, the multi-turn RL
-signal probe, the round-1 RFT data and run (rft-a), and the Stage~2 RFT data.
+signal probe, the round-1 RFT data and run (rft-a), the Stage~2 RFT data, and the Stage~2 evaluations and GRPO
+audit (paired test, leakage and reward-hacking checks).
 \textbf{Kanishk Sagar} (GitHub \texttt{ActiveMasquerade}): AgentTune training pipeline (SFT, RFT, Stage~2 job),
 the Stage~2 RFT2 run and multi-turn GRPO (\tool{grpo\_mt}),
 environment and chat-template checks, GRPO probe, BANKING77 real-query evaluation, Desi Agent Lab and demo.
