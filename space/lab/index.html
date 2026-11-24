@@ -201,7 +201,8 @@ const KNOWN = {  // display names + order; unknown tags (e.g. OOD runs) are appe
   "tinyaya-rft-a": {name: "Fine-tuned + RL, round 1", short: "RL r1", av: "R1"},
   "s2-rft2": {name: "Fine-tuned + RL, round 2", short: "RL r2", av: "R2"},
   "tinyaya-rft2": {name: "Fine-tuned + RL, round 2", short: "RL r2", av: "R2"},
-  "s2-grpo-mt": {name: "Round 2 + GRPO", short: "GRPO", av: "G"},
+  "s2-grpo-mt": {name: "Round 2 + GRPO (seed 1)", short: "GRPO 1", av: "G1"},
+  "s2-grpo-mt-seed2": {name: "Round 2 + GRPO (seed 2)", short: "GRPO 2", av: "G2"},
   "s2-check-sft-a": {name: "Fine-tuned · HF Jobs re-run", short: "FT re-run", av: "FT'"},
   "teacher-qwen3-14b": {name: "Teacher · Qwen3-14B", short: "Teacher", av: "T"},
 };
@@ -567,7 +568,7 @@ async function stage2() {
   const tj = async p => { try { return await j(p); } catch { return null; } };
   const legacy = (await tj("stage2_legacy.json")) || {}, rob = (await tj(RAW("results/robustness.json"))) || {};
   const valid = new Set(legacy.ood_valid_ids || []);
-  const ORDER = [BASE, FINAL, "tinyaya-rft-a", "s2-rft2", "tinyaya-rft2", "s2-grpo-mt"];  // training order; others after
+  const ORDER = [BASE, FINAL, "tinyaya-rft-a", "s2-rft2", "tinyaya-rft2", "s2-grpo-mt", "s2-grpo-mt-seed2"];  // training order; others after
   const tags = [...ORDER, ...D.s2].filter((t, i, a) => D.root[t] && a.indexOf(t) === i);
   const row = async tag => {
     const at = sfx => `${D.root[tag + sfx] ?? D.root[tag]}/${tag}${sfx}`, r = {tag};
@@ -601,16 +602,17 @@ async function stage2() {
   const body = cols.map(([k, n, dir]) => { const vs = rows.map(r => r[k] ?? null);
     return `<tr><td>${esc(n)} <span class="muted small">${dir === "max" ? "↑" : "↓"}</span></td>${vs.map(v => `<td class="${best(vs, v, dir)}">${pct(v)}</td>`).join("")}</tr>`; }).join("");
   const r1 = rows.find(r => r.tag === "tinyaya-rft-a"), r2 = rows.find(r => r.tag === "tinyaya-rft2" || r.tag === "s2-rft2");
-  const g = rows.find(r => r.tag === "s2-grpo-mt");
+  const g = rows.find(r => r.tag === "s2-grpo-mt"), g2 = rows.find(r => r.tag === "s2-grpo-mt-seed2");
+  const seed2 = g2 && g2.mt != null ? ` A second GRPO seed reproduces it: <b>${pct(g2.mt)}</b> on the language switch and ${pct(g2.mt_en)} into English, frozen test ${pct(g2.test)}.` : "";
   const lead = g && g.test != null && r2
-    ? `A second rejection-sampling round and then online GRPO keep frozen-test task success at <b>${pct(g.test)}</b> while the conversation that switches language goes from ${pct(r1?.mt)} (round 1) to ${pct(r2.mt)} to <b>${pct(g.mt)}</b>, and switching into English from ${pct(r1?.mt_en)} to <b>${pct(g.mt_en)}</b>. Real BANKING77 messages: no bank action executed without the details (fine-tuned: ${pct(rows.find(r => r.tag === FINAL)?.b77)}).`
+    ? `A second rejection-sampling round and then online GRPO keep frozen-test task success at <b>${pct(g.test)}</b> while the conversation that switches language goes from ${pct(r1?.mt)} (round 1) to ${pct(r2.mt)} to <b>${pct(g.mt)}</b>, and switching into English from ${pct(r1?.mt_en)} to <b>${pct(g.mt_en)}</b>. Real BANKING77 messages: no bank action executed without the details (fine-tuned: ${pct(rows.find(r => r.tag === FINAL)?.b77)}).${seed2}`
     : r2 && r2.test != null
     ? `Round 2 of RL keeps frozen-test task success at <b>${pct(r2.test)}</b> (round 1: ${pct(r1?.test)}) and moves the language-switch case from ${pct(r1?.mt)} to <b>${pct(r2.mt)}</b>.`
     : `Round 2 of RL is being evaluated; its column appears here as soon as the results are on the Hub.`;
   document.getElementById("app").innerHTML = `<div class="res"><h1>Stage 2: a second round of RL</h1>
     <p class="lead">${lead}</p>
     <h2>Every model, every test</h2><table><tr><th></th>${tags.map(t => `<th>${name(t)}</th>`).join("")}</tr>${body}</table>
-    <p class="note">What round 2 trained on: the round-1 RL set, plus the round-1 RL model's own best answers (8 tries each, scored by the language-aware reward) on 482 new language-switch conversations, plus 1,067 "missing card or transaction id, so ask first" examples. GRPO then trained the round-2 model online for 25 steps on those language-switch conversations with the same reward. All built from training data only, never test. Each conversation that switches language, and each test above, is in the <a href="#/explore">Test explorer</a> where the run has traces.</p>
+    <p class="note">What round 2 trained on: the round-1 RL set, plus the round-1 RL model's own best answers (8 tries each, scored by the language-aware reward) on 482 new language-switch conversations, plus 1,067 "missing card or transaction id, so ask first" examples. GRPO then trained the round-2 model online for 25 steps on those language-switch conversations with the same reward, run twice with different seeds. All built from training data only, never test. Each conversation that switches language, and each test above, is in the <a href="#/explore">Test explorer</a> where the run has traces.</p>
     <p class="note">Same evaluation settings as round 1 (fp16, greedy, max 6 steps, deterministic mock bank). Columns marked ↓ are better when lower. "–" means that test has not been run for that model yet.
     Data: <a href="https://huggingface.co/datasets/${REPO}/tree/main/stage2">${REPO}/stage2</a> · training data and logs: <a href="https://huggingface.co/datasets/ToolW/desi-agent-training-logs/tree/main/round2">ToolW/desi-agent-training-logs/round2</a></p></div>`;
 }
