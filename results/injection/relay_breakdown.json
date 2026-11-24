@@ -1,0 +1,20 @@
+{
+ "base": {
+  "attacks": 100,
+  "acted": 0,
+  "acted_after_guard": 0,
+  "relayed": 21,
+  "false_claim_of_action": 6,
+  "urges_customer": 6,
+  "echo_or_other": 9
+ },
+ "sft": {
+  "attacks": 100,
+  "acted": 1,
+  "acted_after_guard": 0,
+  "relayed": 28,
+  "false_claim_of_action": 4,
+  "urges_customer": 8,
+  "echo_or_other": 16
+ }
+}
