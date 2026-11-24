@@ -1,0 +1,62 @@
+{
+  "valid_ids": "data/test_ood.valid.json",
+  "ood": {
+    "n": 380,
+    "task_success": 0.9421,
+    "false_action": 0.0368
+  },
+  "in_distribution_same_episodes": {
+    "n": 380,
+    "task_success": 0.9816,
+    "false_action": 0.0158
+  },
+  "ood_by_lang": {
+    "bn": {
+      "n": 70,
+      "task_success": 0.9286,
+      "false_action": 0.0286
+    },
+    "bn-en": {
+      "n": 63,
+      "task_success": 0.8254,
+      "false_action": 0.1111
+    },
+    "en": {
+      "n": 71,
+      "task_success": 1.0,
+      "false_action": 0.0
+    },
+    "hi": {
+      "n": 88,
+      "task_success": 1.0,
+      "false_action": 0.0
+    },
+    "hi-en": {
+      "n": 88,
+      "task_success": 0.9318,
+      "false_action": 0.0568
+    }
+  },
+  "ood_by_category": {
+    "clarify": {
+      "n": 115,
+      "task_success": 0.9826,
+      "false_action": 0.0
+    },
+    "multi_tool": {
+      "n": 83,
+      "task_success": 0.8554,
+      "false_action": 0.0964
+    },
+    "no_tool": {
+      "n": 68,
+      "task_success": 1.0,
+      "false_action": 0.0
+    },
+    "single_tool": {
+      "n": 114,
+      "task_success": 0.9298,
+      "false_action": 0.0526
+    }
+  }
+}

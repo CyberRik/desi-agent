@@ -1,0 +1,11 @@
+slice          task_success tool_selecti   args_exact schema_valid false_action redundant_ca            n
+overall              0.9815          1.0       0.9815          1.0       0.0165          0.0          486
+lang=bn                0.99          1.0         0.99          1.0          0.0          0.0          100
+lang=bn-en           0.9604          1.0       0.9604          1.0       0.0396          0.0          101
+lang=en                 1.0          1.0          1.0          1.0          0.0          0.0           89
+lang=hi                 1.0          1.0          1.0          1.0          0.0          0.0           96
+lang=hi-en             0.96          1.0         0.96          1.0         0.04          0.0          100
+cat=clarify             1.0          1.0          1.0          1.0          0.0          0.0          132
+cat=multi_tool        0.973          1.0        0.973          1.0        0.027          0.0          111
+cat=no_tool             1.0          1.0          1.0          1.0          0.0          0.0           95
+cat=single_tool       0.9595          1.0       0.9595          1.0       0.0338          0.0          148

@@ -1,0 +1,1 @@
+s2-grpo-mt-multiturn {"switch": {"n": 300, "task_success": 0.9767, "lang_match": 0.7667, "both": 0.7467, "false_action": 0.0133}, "same": {"n": 300, "task_success": 0.9567, "lang_match": 0.9767, "both": 0.9333, "false_action": 0.02}}
