@@ -329,7 +329,8 @@ account per user; real banking APIs, authentication and multi-session context ar
 Banglish and Hinglish replies contain some garbled words our checks did not catch; replies are not scored, but the
 model has learned some of that noise. The test set was reviewed by an LLM agent rather than by native speakers. The RL
 gain lacks a no-selection control. Reworded inputs and the language-switch test rely on an LLM rewriter, an LLM judge
-and an automatic language detector, which are weakest on code-mixed Bengali.
+and an automatic language detector, which are weakest on code-mixed Bengali. In multi-turn conversations about 1\% of replies claim an action
+without calling a tool, which our scorer does not count as an error (Appendix~ef{app:licenses}).
 
 \section*{Ethics Statement}
 
@@ -447,6 +448,16 @@ Test & 89 & 96 & 100 & 100 & 101 & 486 \\
 \paragraph{Checking the automatic judges.} The reply-language detector agrees with the gold replies' language on
 97--100\% of episodes per language. The checklist judge was checked by reading all 46 flagged test episodes and a
 60-episode random sample; it is precise but misses garbled code-mixed words (Limitations).
+
+\paragraph{Second check of the language detector.} We drew 60 GRPO language-switch conversations (12 per target
+language, seed 1234, oversampling detector failures) and had an LLM annotator (Claude), blind to the detector, judge
+whether the final reply was in the customer's new language and script. Agreement was 56/60 (Cohen's $\kappa=0.85$):
+the detector rejected 3 replies the annotator accepted (English names and numbers inside Hindi or Banglish) and
+accepted 1 Banglish reply to an English message, so if anything it is slightly strict. This is not a native-speaker
+check. The same reading found a failure our metrics miss: replies that \emph{claim} an action (``your card is
+blocked'', with an invented reference) without calling a tool. A scan of all multi-turn traces finds this in 7 of 600
+GRPO conversations (12 of 600 for RFT2) and in none of the single-turn test sets; the scorer counts them as
+successes, because the gold expects no call. Sheets: \texttt{results/human\_check/}.
 
 \section{Compute and cost}
 
