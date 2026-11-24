@@ -1,0 +1,55 @@
+{
+  "tag": "s2-grpo-mt",
+  "git_sha": "bcfda20fe2e4c38dabcae8f43ff73219cf08a032",
+  "image": "vllm/vllm-openai:v0.33.0",
+  "flavor": "t4-small",
+  "seed": 1234,
+  "base_model": "CohereLabs/tiny-aya-global",
+  "base_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "adapter": "ToolW/desi-agent-tinyaya-grpo-mt-lora",
+  "adapter_revision": "36e0eeca6fde5c429dae8df07992f8aab380b13a",
+  "lora_rank": 16,
+  "versions": {
+    "vllm": "0.33.0",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.20.2",
+    "peft": "0.22.0",
+    "auditkit": "1.1.12",
+    "python": "3.12.3"
+  },
+  "decoding": {
+    "temperature": 0.0,
+    "max_new_tokens": 256,
+    "stop": [
+      "</tool_call>"
+    ],
+    "dtype": "float16",
+    "max_steps": 6,
+    "workers": 32
+  },
+  "remote": "ToolW/desi-agent-eval-traces/stage2/s2-grpo-mt",
+  "suites": {
+    "test": {
+      "status": "ok",
+      "minutes": 5.6
+    },
+    "ood": {
+      "status": "ok",
+      "minutes": 5.3
+    },
+    "perturbed": {
+      "status": "ok",
+      "minutes": 5.6
+    },
+    "multiturn": {
+      "status": "ok",
+      "minutes": 8.5
+    },
+    "banking77": {
+      "status": "ok",
+      "minutes": 1.1
+    }
+  },
+  "banking77_backend": "vllm",
+  "total_minutes": 30.8
+}

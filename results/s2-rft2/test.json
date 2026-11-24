@@ -1,0 +1,166 @@
+{
+  "model_tag": "s2-rft2",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "adapter": "ToolW/desi-agent-tinyaya-rft2-lora",
+  "split": "test",
+  "n": 486,
+  "git_sha": "e1b70f289e4355fcd0851d0607fec0b7dd7f4b0c",
+  "seed": 1234,
+  "decoding": {
+    "temperature": 0.0,
+    "max_new_tokens": 256,
+    "stop": [
+      "</tool_call>"
+    ],
+    "no_thinking": false
+  },
+  "max_steps": 6,
+  "overall": {
+    "schema_valid": 1.0,
+    "tool_selection_correct": 1.0,
+    "args_exact": 0.9815,
+    "task_success": 0.9815,
+    "n_calls": 0.7613,
+    "redundant_calls": 0.0,
+    "false_action": 0.0165,
+    "truncated": 0.0,
+    "n": 486
+  },
+  "by_lang": {
+    "bn": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 0.99,
+      "task_success": 0.99,
+      "n_calls": 0.72,
+      "redundant_calls": 0.0,
+      "false_action": 0.0,
+      "truncated": 0.0,
+      "n": 100
+    },
+    "bn-en": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 0.9604,
+      "task_success": 0.9604,
+      "n_calls": 0.7822,
+      "redundant_calls": 0.0,
+      "false_action": 0.0396,
+      "truncated": 0.0,
+      "n": 101
+    },
+    "en": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 1.0,
+      "task_success": 1.0,
+      "n_calls": 0.764,
+      "redundant_calls": 0.0,
+      "false_action": 0.0,
+      "truncated": 0.0,
+      "n": 89
+    },
+    "hi": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 1.0,
+      "task_success": 1.0,
+      "n_calls": 0.7604,
+      "redundant_calls": 0.0,
+      "false_action": 0.0,
+      "truncated": 0.0,
+      "n": 96
+    },
+    "hi-en": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 0.96,
+      "task_success": 0.96,
+      "n_calls": 0.78,
+      "redundant_calls": 0.0,
+      "false_action": 0.04,
+      "truncated": 0.0,
+      "n": 100
+    }
+  },
+  "by_category": {
+    "clarify": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 1.0,
+      "task_success": 1.0,
+      "n_calls": 0.0,
+      "redundant_calls": 0.0,
+      "false_action": 0.0,
+      "truncated": 0.0,
+      "n": 132
+    },
+    "multi_tool": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 0.973,
+      "task_success": 0.973,
+      "n_calls": 2.0,
+      "redundant_calls": 0.0,
+      "false_action": 0.027,
+      "truncated": 0.0,
+      "n": 111
+    },
+    "no_tool": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 1.0,
+      "task_success": 1.0,
+      "n_calls": 0.0,
+      "redundant_calls": 0.0,
+      "false_action": 0.0,
+      "truncated": 0.0,
+      "n": 95
+    },
+    "single_tool": {
+      "schema_valid": 1.0,
+      "tool_selection_correct": 1.0,
+      "args_exact": 0.9595,
+      "task_success": 0.9595,
+      "n_calls": 1.0,
+      "redundant_calls": 0.0,
+      "false_action": 0.0338,
+      "truncated": 0.0,
+      "n": 148
+    }
+  },
+  "mean_latency_s": 21.537,
+  "traces_path": "/out/s2-rft2/test.traces.jsonl",
+  "auditkit": {
+    "path": "/out/s2-rft2/test.auditkit.json",
+    "scorers": [
+      "tool_call_f1",
+      "tool_call_validity",
+      "trajectory_match",
+      "redundant_tool_calls",
+      "agent_loop_detection"
+    ],
+    "means": {
+      "agent_loop_detection": 1.0,
+      "redundant_tool_calls": 0.0,
+      "tool_call_exact": 0.9774,
+      "tool_call_f1": 0.9805,
+      "tool_call_precision": 0.9805,
+      "tool_call_recall": 0.9805,
+      "tool_call_validity": 1.0,
+      "trajectory_in_order": 0.9774,
+      "trajectory_strict": 0.9774
+    },
+    "n_scored": {
+      "tool_call_precision": 486,
+      "tool_call_recall": 486,
+      "tool_call_f1": 486,
+      "tool_call_exact": 486,
+      "trajectory_strict": 486,
+      "trajectory_in_order": 486,
+      "tool_call_validity": 259,
+      "redundant_tool_calls": 259,
+      "agent_loop_detection": 259
+    }
+  }
+}

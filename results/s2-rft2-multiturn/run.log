@@ -1,0 +1,1 @@
+s2-rft2-multiturn {"switch": {"n": 300, "task_success": 0.9567, "lang_match": 0.6867, "both": 0.6633, "false_action": 0.02}, "same": {"n": 300, "task_success": 0.9533, "lang_match": 0.9767, "both": 0.93, "false_action": 0.0167}}

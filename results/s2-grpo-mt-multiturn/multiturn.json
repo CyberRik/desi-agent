@@ -1,0 +1,97 @@
+{
+  "model_tag": "s2-grpo-mt-multiturn",
+  "seed": 1234,
+  "n_targets": 300,
+  "switch": {
+    "overall": {
+      "n": 300,
+      "task_success": 0.9767,
+      "lang_match": 0.7667,
+      "both": 0.7467,
+      "false_action": 0.0133
+    },
+    "by_target_lang": {
+      "bn": {
+        "n": 69,
+        "task_success": 0.9855,
+        "lang_match": 0.8986,
+        "both": 0.8841,
+        "false_action": 0.0
+      },
+      "bn-en": {
+        "n": 67,
+        "task_success": 0.9552,
+        "lang_match": 0.8806,
+        "both": 0.8358,
+        "false_action": 0.0299
+      },
+      "en": {
+        "n": 59,
+        "task_success": 1.0,
+        "lang_match": 0.4746,
+        "both": 0.4746,
+        "false_action": 0.0
+      },
+      "hi": {
+        "n": 50,
+        "task_success": 1.0,
+        "lang_match": 0.88,
+        "both": 0.88,
+        "false_action": 0.0
+      },
+      "hi-en": {
+        "n": 55,
+        "task_success": 0.9455,
+        "lang_match": 0.6727,
+        "both": 0.6364,
+        "false_action": 0.0364
+      }
+    }
+  },
+  "same": {
+    "overall": {
+      "n": 300,
+      "task_success": 0.9567,
+      "lang_match": 0.9767,
+      "both": 0.9333,
+      "false_action": 0.02
+    },
+    "by_target_lang": {
+      "bn": {
+        "n": 69,
+        "task_success": 0.942,
+        "lang_match": 1.0,
+        "both": 0.942,
+        "false_action": 0.029
+      },
+      "bn-en": {
+        "n": 67,
+        "task_success": 0.9254,
+        "lang_match": 0.9403,
+        "both": 0.8657,
+        "false_action": 0.0299
+      },
+      "en": {
+        "n": 59,
+        "task_success": 1.0,
+        "lang_match": 1.0,
+        "both": 1.0,
+        "false_action": 0.0
+      },
+      "hi": {
+        "n": 50,
+        "task_success": 0.98,
+        "lang_match": 0.94,
+        "both": 0.92,
+        "false_action": 0.02
+      },
+      "hi-en": {
+        "n": 55,
+        "task_success": 0.9455,
+        "lang_match": 1.0,
+        "both": 0.9455,
+        "false_action": 0.0182
+      }
+    }
+  }
+}
