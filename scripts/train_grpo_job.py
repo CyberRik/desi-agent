@@ -31,7 +31,7 @@ LOGS = "ToolW/desi-agent-training-logs"
 IMAGE = "vllm/vllm-openai:v0.33.0"  # same image as the other jobs; training runs in its own py3.12 venv
 PROTECTED = {"ToolW/desi-agent-tinyaya-sft-lora", "ToolW/desi-agent-tinyaya-rft-lora",
              "ToolW/desi-agent-tinyaya-rft2-lora"}
-KEYS = ("group", "prompts_per_step", "steps", "lr", "temperature", "gen_batch", "save_every")
+KEYS = ("group", "prompts_per_step", "steps", "lr", "temperature", "gen_batch", "save_every", "seed")
 
 
 def jl(path: Path) -> list[dict]:
@@ -202,6 +202,7 @@ def main() -> None:
     p.add_argument("--temperature", type=float, default=1.0)
     p.add_argument("--gen-batch", type=int, default=64)
     p.add_argument("--save-every", type=int, default=10)
+    p.add_argument("--seed", type=int, default=1234, help="prompt order + sampling seed (grpo-mt used 1234, sampling unseeded)")
     p.add_argument("--flavor", default="a100-large")
     p.add_argument("--timeout", default="3h")
     p.add_argument("--git-sha")
