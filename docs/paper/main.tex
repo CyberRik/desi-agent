@@ -35,7 +35,7 @@ then attack our own headline: unseen wording from another model family (91.8\%),
 (97.7\%), real BANKING77 customer messages, where we find and close a grounding failure (executed unsafe actions
 6.3\%~$\rightarrow$~0.4\% with a guard, 0.0\% once grounding examples are in training), and multi-turn language
 switches, where an audited reward, two rounds of rejection-sampling fine-tuning and online GRPO raise
-right-action-in-the-right-language from 34.0\% to 74.7\% with no regression. All models, data and
+right-action-in-the-right-language from 34.0\% to 74.7--78.3\% (two GRPO seeds) with no regression. All models, data and
 evaluation traces are public.
 \end{abstract}
 
@@ -252,24 +252,23 @@ conversations), add them to the training set, and retrain with the unchanged pip
 \begin{table}[t]
 \centering
 \small
-\setlength{\tabcolsep}{4pt}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lrrrr}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lrrrrr}
 \toprule
- & SFT & RFT1 & RFT2 & \textbf{GRPO} \\
+ & SFT & RFT1 & RFT2 & GRPO$_1$ & GRPO$_2$ \\
 \midrule
-Switch: new language & 38.3 & 55.0 & 68.7 & \textbf{76.7} \\
-Switch: right action & 84.3 & 94.0 & 95.7 & \textbf{97.7} \\
-Switch: both & 34.0 & 52.7 & 66.3 & \textbf{74.7} \\
-\quad into English & -- & 15.3 & 20.3 & \textbf{47.5} \\
-Same lang.: both & 81.7 & 87.7 & 93.0 & \textbf{93.3} \\
-Frozen: task success & 97.7 & 98.2 & 98.2 & \textbf{98.4} \\
-Frozen: wrong action $\downarrow$ & 1.8 & 1.7 & 1.7 & \textbf{1.4} \\
-Reworded: task success & 91.8 & 93.7 & 94.2 & \textbf{94.2} \\
+Switch: new lang. & 38.3 & 55.0 & 68.7 & 76.7 & \textbf{80.3} \\
+Switch: right action & 84.3 & 94.0 & 95.7 & \textbf{97.7} & 97.0 \\
+Switch: both & 34.0 & 52.7 & 66.3 & 74.7 & \textbf{78.3} \\
+\quad into English & -- & 15.3 & 20.3 & 47.5 & \textbf{50.8} \\
+Same lang.: both & 81.7 & 87.7 & 93.0 & 93.3 & \textbf{93.7} \\
+Frozen: success & 97.7 & 98.2 & 98.2 & 98.4 & \textbf{98.6} \\
+Frozen: wrong act.\,$\downarrow$ & 1.8 & 1.7 & 1.7 & 1.4 & \textbf{1.2} \\
+Reworded: success & 91.8 & 93.7 & 94.2 & 94.2 & \textbf{94.5} \\
 \bottomrule
 \end{tabular}
 \caption{Each RL step from the SFT model, same evaluation sets (\%; 300 switch and 300 same-language conversations,
-59 switching into English; both = right action in the right language). RFT1/RFT2: rejection-sampling rounds; GRPO: 25 online steps from RFT2.}
+59 switching into English; both = right action in the right language). RFT1/RFT2: rejection-sampling rounds; GRPO$_{1,2}$: 25 online steps from RFT2, two seeds.}
 \label{tab:rl}
 \end{table}
 
@@ -290,7 +289,7 @@ one A100, about \$2.60; Appendix~\ref{app:training}). The per-step training rewa
 new prompts, but on the fixed evaluation sets switching into English rose from 20.3\% to 47.5\% (28 of 59), with no
 regression on the frozen or reworded tests. Paired on the 300 switch conversations, GRPO fixed 26 that RFT2 failed and broke 1 (McNemar $p<10^{-4}$), 15 of
 the 16 into-English gains being replies RFT2 left in the old language; no GRPO training prompt is in the evaluation set.
-Rollouts are published with reward parts: no echoes, unchanged length, every top-reward rollout fully correct. Caveats: one seed, one learning rate, no KL penalty; switching into English
+Rollouts are published with reward parts: no echoes, unchanged length, every top-reward rollout fully correct. A second seed (31 minutes) reproduced it: 78.3\% both right on switches (36 fixed, 0 broken vs RFT2) and 50.8\% into English, again with no regression. Caveats: two seeds, one learning rate, no KL penalty; switching into English
 is still the weakest case.
 
 \section{Cost}
@@ -308,7 +307,7 @@ cost comparison only; we did not measure API models' accuracy on this task.
 Planned work and expected effect (forecasts, not measurements):
 \textbf{(1) Native-speaker test set and real transcripts}: a few hundred reviewed, anonymised messages per language;
 we expect the headline to fall toward the reworded score ($\approx$92\%), the more honest target.
-\textbf{(2) More online RL on the language switch}: several seeds, a KL term and longer runs, aimed at switching
+\textbf{(2) More online RL on the language switch}: more seeds, a KL term and longer runs, aimed at switching
 into English (47.5\% now), gated on the frozen test.
 \textbf{(3) Grounding beyond BANKING77}: our English grounding rows come from BANKING77's train split; real
 anonymised requests from another source, in all five languages, would test whether the 0.0\% unsafe-action result holds.
@@ -330,7 +329,8 @@ Banglish and Hinglish replies contain some garbled words our checks did not catc
 model has learned some of that noise. The test set was reviewed by an LLM agent rather than by native speakers. The RL
 gain lacks a no-selection control. Reworded inputs and the language-switch test rely on an LLM rewriter, an LLM judge
 and an automatic language detector, which are weakest on code-mixed Bengali. In multi-turn conversations about 1\% of replies claim an action
-without calling a tool, which our scorer does not count as an error (Appendix~ef{app:licenses}).
+without calling a tool, which our scorer does not count as an error (Appendix~
+ef{app:licenses}).
 
 \section*{Ethics Statement}
 
