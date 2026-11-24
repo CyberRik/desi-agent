@@ -34,6 +34,11 @@ Agentic Fine-tuning** (reliable tool calling · agentic distillation · efficien
 | Two-step tasks | 0.0% | **97.3%** | 43.2% |
 | Asks for missing details instead of acting | 38.6% | **96.2%** | 43.2% |
 
+This table is the Stage 1 SFT model. Our final model is the Stage 2 GRPO adapter
+([`-grpo-mt-lora`](https://huggingface.co/ToolW/desi-agent-tinyaya-grpo-mt-lora)). It keeps these numbers (task success
+98.4%, wrong bank actions 1.4%) and fixes language switches (34.0% to 74.7% right action in the right language) and
+unsafe actions on real BANKING77 requests (6.3% to 0.0%); see [Stage 2](#stage-2-language-switches-and-grounding).
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/results-dark.png">
@@ -44,6 +49,51 @@ Agentic Fine-tuning** (reliable tool calling · agentic distillation · efficien
 **The 3B student beats the 14B teacher it was distilled from.** That isn't magic: the teacher only writes the
 customer's words and the final reply, while every tool call in the training data comes from code, so the labels
 are correct by construction and the student never learns the teacher's tool-calling mistakes (see [How it works](#how-it-works)).
+
+## Stage 2: language switches and grounding
+
+The table above is the SFT model. In Stage 2 we went after the two weak spots it left:
+- **Language switches.** When a customer changes language mid-conversation, the SFT model often answers in the old one.
+- **Grounding on real messages.** On real BANKING77 customer requests that lack the account details, it sometimes acts anyway.
+
+Each model is scored on the same sets. RFT rounds retrain from the base model on a growing training set, and GRPO
+continues from RFT 2:
+- **RFT 1:** one round of rejection-sampling fine-tuning on multi-turn switches.
+- **RFT 2:** a second round, plus 1,148 grounding examples.
+- **GRPO:** 25 steps of online multi-turn GRPO, run through the same agent loop and mock bank as evaluation, with two
+  seeds (GRPO 1 and GRPO 2).
+
+| | SFT | RFT 1 | RFT 2 | GRPO 1 | **GRPO 2** |
+|---|---:|---:|---:|---:|---:|
+| Language switch: right action *and* right language (300 conversations) | 34.0% | 52.7% | 66.3% | 74.7% | **78.3%** |
+| ... switching into English (59) | n/a | 15.3% | 20.3% | 47.5% | **50.8%** |
+| Same language: right action and language (300) | 81.7% | 87.7% | 93.0% | 93.3% | **93.7%** |
+| Frozen test: task success (486) | 97.7% | 98.2% | 98.2% | 98.4% | **98.6%** |
+| Frozen test: wrong bank actions | 1.8% | 1.7% | 1.7% | 1.4% | **1.2%** |
+| Reworded (OOD, judge-validated) test: task success | 91.8% | 93.7% | 94.2% | 94.2% | **94.5%** |
+| BANKING77, action requests without details: unsafe action executed | 6.3% | n/a | 0.0% | 0.0% | **0.0%** |
+
+Nothing regressed at any step.
+
+One caveat on BANKING77: the 381 English grounding rows used in training are BANKING77 *train* messages (test texts removed). The 0.0% is therefore partly in-distribution. It shows the model learned to ask on this dataset's phrasing, not yet on unseen sources.
+
+The reward (`reward_lang`) was audited against scripted cheating policies before any optimization. The audit found that echoing the customer scored 0.77 of 1.30 on the plain metric; `reward_lang` closes that.
+
+**GRPO runs:**
+- **Cost:** 63 minutes on one A100 (about $2.60) for seed 1, and 31 minutes for seed 2.
+- **Training reward:** flat per step, because each step sees new prompts. The gain shows up on the fixed evaluation sets.
+- **Paired result:** on the 300 paired switch conversations, GRPO 1 fixed 26 that RFT 2 failed and broke 1 (McNemar
+  p<1e-4). GRPO 2 fixed 36 and broke 0. No GRPO training prompt is in the eval set.
+- **Hacking checks:** every rollout is published with its reward parts. No echoes, and reply length did not change.
+- **Caveats:** two seeds, one learning rate, no KL penalty.
+
+Adapters:
+[`-rft-lora`](https://huggingface.co/ToolW/desi-agent-tinyaya-rft-lora),
+[`-rft2-lora`](https://huggingface.co/ToolW/desi-agent-tinyaya-rft2-lora),
+[`-grpo-mt-lora`](https://huggingface.co/ToolW/desi-agent-tinyaya-grpo-mt-lora),
+[`-grpo-mt-seed2-lora`](https://huggingface.co/ToolW/desi-agent-tinyaya-grpo-mt-seed2-lora).
+Rollouts and logs: [training-logs `round2/`](https://huggingface.co/datasets/ToolW/desi-agent-training-logs/tree/main/round2).
+Eval traces: [eval-traces `stage2/`](https://huggingface.co/datasets/ToolW/desi-agent-eval-traces/tree/main/stage2).
 
 ## See it
 
@@ -140,12 +190,9 @@ The full write-up, including data decisions, error analysis and limits, is in [`
 - **RL only where there is signal.** On single-turn prompts a GRPO probe found almost nothing to learn (95.7% of
   samples already right, 12.7% of prompts with any reward difference). Multi-turn language switches were different:
   54.7% of prompts showed reward variance under a language-aware reward we audited for hacks first (it closes two
-  exploits in the plain metric: echoing the customer, and "asking" without a question). One round of
-  rejection-sampling fine-tuning on the best samples
-  ([ToolW/desi-agent-tinyaya-rft-lora](https://huggingface.co/ToolW/desi-agent-tinyaya-rft-lora)) raised
-  language-switch accuracy (right action and right language) from 34.0% to 52.7%, test success from 97.7% to 98.2%
-  and validated-OOD success from 91.8% to 93.7%, with no overall regression (single-action tasks dip from 98.0% to
-  96.0%). The headline numbers above stay the SFT model's.
+  exploits in the plain metric: echoing the customer, and "asking" without a question). Two rounds of
+  rejection-sampling fine-tuning and a short GRPO run (two seeds) took language-switch accuracy from 34.0% to 74.7-78.3%
+  ([Stage 2](#stage-2-language-switches-and-grounding)).
 - **Runs on a laptop.** The adapter converts to a GGUF LoRA for llama.cpp. The base Q4_K_M model plus our LoRA
   answers in about 3 to 13 s per turn on 2 CPU cores.
 
@@ -167,6 +214,9 @@ uv pip install -e ".[dev]" && python -m pytest -q          # contracts, data for
 | Train (SFT, LoRA) | `python scripts/train_kaggle.py push --run sft-a -- --epochs 2` | Kaggle T4 x2, ~2.2 h |
 | Evaluate base, teacher, ours | Kaggle script kernel `scripts/eval_kaggle_baseline.py` (`ADAPTER_REPO=ToolW/desi-agent-tinyaya-sft-lora` for ours) | Kaggle T4 x2 |
 | Robustness (OOD + perturbed bank) | Kaggle script kernel `scripts/eval_kaggle_robustness.py`, then `scripts/eval_ood_validate.py` (judge) and `python scripts/eval_ood_summary.py` | Kaggle T4 x2 |
+| Stage 2: RFT round 2 (sample, build, train) | `python scripts/train_round2_job.py` | one HF Job, L40S, ~0.8 h train |
+| Stage 2: multi-turn GRPO | `python scripts/train_grpo_job.py --run grpo-mt` (seed 2: `--seed 4321`) | one HF Job, A100, ~1 h |
+| Stage 2: full eval of any adapter | `python scripts/eval_hf_job.py` (see the script's docstring) | one HF Job |
 | Lab / README figures | `python space/lab/push_lab.py` · `python docs/assets/make_readme_assets.py` | CPU |
 
 The splits are in [`data/`](data) (test frozen) and on
