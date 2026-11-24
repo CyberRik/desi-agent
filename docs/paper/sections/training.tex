@@ -16,4 +16,6 @@ Section~\ref{sec:rl} retrain from the base model on the original training set pl
 can only add data, never forget it. The round-1 RFT model trained on 2,054 rows (1,937 + 117) in 2.3 hours on the
 same T4s, reaching validation loss 0.271 (SFT: 0.273). The Stage 2 round runs as one Hugging Face Job: it samples from
 the round-1 model with vLLM, builds its training file, and trains on one L40S. There we keep the effective batch at 16
-(accumulation 16 on one GPU) and the precision is bf16, which the L40S supports natively.
+(accumulation 16 on one GPU) and the precision is bf16, which the L40S supports natively. The final step is online GRPO
+from the round-2 model (\tool{grpo\_mt.py}, one Job on an A100): rollouts run through the shared agent loop and mock
+bank, and only the model's own turn-2 tokens are trained (Appendix~\ref{app:training}).
