@@ -68,6 +68,8 @@ Each step below starts from the previous model and is scored on the same sets:
 
 Nothing regressed at any step.
 
+One caveat on BANKING77: the 381 English grounding rows used in training are BANKING77 *train* messages (test texts removed). The 0.0% is therefore partly in-distribution. It shows the model learned to ask on this dataset's phrasing, not yet on unseen sources.
+
 The reward (`reward_lang`) was audited against scripted cheating policies before any optimization. The audit found that echoing the customer scored 0.77 of 1.30 on the plain metric; `reward_lang` closes that.
 
 **GRPO run:**
