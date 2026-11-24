@@ -281,7 +281,9 @@ multi-turn data at all.
 set, fully correct samples of the RFT1 model on 482 new switch prompts weighted toward English targets, and 1,148
 grounding examples (missing identifier $\rightarrow$ ask, each paired with a control that includes it). With the
 grounding rows, executed unsafe actions on BANKING77 requests without account details fell from 6.3\% (SFT, no
-guard) to 0.0\%, and the model asks for the details in 93\% of them. Multi-turn data had enough reward variance,
+guard) to 0.0\%, and the model asks for the details in 93\% of them. This result is partly in-distribution: the 381
+English grounding rows are BANKING77 \emph{train} messages (test texts removed), so it shows the model learned to ask on
+this dataset's phrasing, not yet on unseen sources. Multi-turn data had enough reward variance,
 so we then ran online GRPO \citep{shao2024deepseekmath} from RFT2: 25 steps, 16 prompts $\times$ 8 full
 conversations through the same agent loop and mock bank as evaluation, \tool{reward\_lang}, no KL term (63 minutes on
 one A100, about \$2.60; Appendix~\ref{app:training}). The per-step training reward stayed flat, since each step sees
@@ -307,16 +309,16 @@ Planned work and expected effect (forecasts, not measurements):
 we expect the headline to fall toward the reworded score ($\approx$92\%), the more honest target.
 \textbf{(2) More online RL on the language switch}: several seeds, a KL term and longer runs, aimed at switching
 into English (47.5\% now), gated on the frozen test.
-\textbf{(3) Grounding on real requests}: our grounding rows are synthetic; real anonymised requests with missing
-identifiers would test whether the 0.0\% unsafe-action result on BANKING77 holds.
+\textbf{(3) Grounding beyond BANKING77}: our English grounding rows come from BANKING77's train split; real
+anonymised requests from another source, in all five languages, would test whether the 0.0\% unsafe-action result holds.
 \textbf{(4) A larger Cohere student} (Aya Expanse 8B) as an upper bound on how much remaining error is model size.
 
 \section{Conclusion}
 
 Distilling a teacher's language while taking decisions from code produced a 3B agent that is more reliable than its
 14B teacher at multilingual banking tool calls. Measuring beyond the headline exposed a grounding failure that only
-real customers trigger, and a language-switch failure that no single-turn test sees. A guard and a small, audited RL
-step address both without regressions.
+real customers trigger, and a language-switch failure that no single-turn test sees. A guard and a few small, audited RL
+steps address both without regressions.
 
 \section*{Limitations}
 
@@ -449,7 +451,8 @@ Test & 89 & 96 & 100 & 100 & 101 & 486 \\
 
 Round 1 ran entirely on free Kaggle T4$\times$2 sessions: teacher generation (vLLM), SFT (2.2\,h; RFT 2.3\,h) and all
 evaluations. Stage~2 used Hugging Face Jobs paid from the shortlist credits: evaluation on one T4 ($\approx$40\,min,
-$\approx$\$0.30 per model for all five suites) and round-2 sampling and training on one L40S. Serving at full load on
+$\approx$\$0.30 per model for all five suites), round-2 sampling and training on one L40S, and the GRPO run on one
+A100 (63\,min, $\approx$\$2.60). Serving at full load on
 one T4 (5,000 conversations/h at \$0.50/h) costs about \textbf{\$0.10 per 1,000 conversations}; at the API list prices
 of Table~\ref{tab:cost} (100k/day tier) the same 1,000 conversations cost about \$0.14 (Haiku 5.5), \$2.48 (Sonnet 5.5) and
 \$4.96 (Opus 5.5).
@@ -481,6 +484,7 @@ evaluation harness and metrics, robustness checks, grounding guard, ROI, write-u
 language-switch test and language detector, \tool{reward\_lang} and the reward-hacking audit, the multi-turn RL
 signal probe, the round-1 RFT data and run (rft-a), and the Stage~2 RFT data.
 \textbf{Kanishk Sagar} (GitHub \texttt{ActiveMasquerade}): AgentTune training pipeline (SFT, RFT, Stage~2 job),
+the Stage~2 RFT2 run and multi-turn GRPO (\tool{grpo\_mt}),
 environment and chat-template checks, GRPO probe, BANKING77 real-query evaluation, Desi Agent Lab and demo.
 \textbf{Declaration}: all code, data, models and evaluations were created during the hackathon (first commit
 12 November 2026); nothing was built before it. The Lexsi kits, Tiny Aya, Qwen3-14B, Aya Expanse 8B and BANKING77 are
