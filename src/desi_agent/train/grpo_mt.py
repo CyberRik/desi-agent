@@ -156,6 +156,7 @@ def train_grpo_mt(policy, rows: list[dict], cfg: dict, out: Path, on_save=None) 
     import torch
     c = {**DEFAULTS, **cfg}
     rng = random.Random(c["seed"])
+    torch.manual_seed(c["seed"])
     order = rows[:]
     rng.shuffle(order)
     model, tok = policy.model, policy.tok
