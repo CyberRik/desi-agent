@@ -52,3 +52,9 @@ training reward was flat within noise (1.315 for steps 0--7, 1.293 for 17--24), 
 the fixed evaluation sets measure the change (Section~\ref{sec:rl}). Every sampled conversation is published with
 its reward parts for auditing: no echoing, reply length unchanged (129 to 131 characters), and three single-step
 spikes of wrong actions (12--15\%) that did not persist and do not appear in evaluation.
+A second seed (4321, which sets prompt order and sampling; the first run fixed only the prompt order) used the same
+configuration from the same RFT r2 adapter and took 31 minutes on one A100
+(\texttt{-grpo-mt-seed2-lora}, logs in \texttt{round2/grpo-mt-seed2/}). Between 25\% and 63\% of groups had reward
+variance per step, and the mean training reward went from 1.231 (steps 0--7) to 1.320 (17--24). Reply length moved from
+133 to 139 characters, echoes stayed below 1\% of rollouts, and wrong actions in rollouts stayed below 12\% at every step,
+with no trend. Its evaluation is the GRPO$_2$ column of Table~\ref{tab:rl}.
