@@ -33,8 +33,9 @@ customer's words and the final reply. On 486 held-out conversations, task succes
 wrong or unrequested account actions fall from 20.8\% to 1.8\%; the 3B student beats its 14B teacher (67.5\%). We
 then attack our own headline: unseen wording from another model family (91.8\%), a bank returning shifted values
 (97.7\%), real BANKING77 customer messages, where we find and close a grounding failure (executed unsafe actions
-6.3\%~$\rightarrow$~0.4\% with a guard), and multi-turn language switches, where an audited reward and rejection-sampling
-fine-tuning raise right-action-in-the-right-language from 34.0\% to 52.7\% with no regression. All models, data and
+6.3\%~$\rightarrow$~0.4\% with a guard, 0.0\% once grounding examples are in training), and multi-turn language
+switches, where an audited reward, two rounds of rejection-sampling fine-tuning and online GRPO raise
+right-action-in-the-right-language from 34.0\% to 74.7\% with no regression. All models, data and
 evaluation traces are public.
 \end{abstract}
 
@@ -44,7 +45,7 @@ evaluation traces are public.
 14B teacher.
 \textbf{Headline:} task success 45.9\%~$\rightarrow$~97.7\%; wrong account actions 20.8\%~$\rightarrow$~1.8\%.
 \textbf{Base model + method:} CohereLabs/tiny-aya-global + LoRA SFT distillation from code-labelled Qwen3-14B
-trajectories, then rejection-sampling fine-tuning.
+trajectories, then rejection-sampling fine-tuning and online multi-turn GRPO.
 \textbf{Track:} 3, Agentic Fine-tuning. \textbf{Problem statements:} reliable tool calling; agentic distillation;
 efficient trajectories; reward design against reward hacking (RL step).
 \textbf{Kits:} AgentTune, CuratorKIT, AuditKIT.
@@ -252,30 +253,45 @@ conversations), add them to the training set, and retrain with the unchanged pip
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{lrr}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrr}
 \toprule
- & SFT & \textbf{+RFT} \\
+ & SFT & RFT1 & RFT2 & \textbf{GRPO} \\
 \midrule
-Switch: reply in new language & 38.3 & \textbf{55.0} \\
-Switch: right action & 84.3 & \textbf{94.0} \\
-Switch: right action \& language & 34.0 & \textbf{52.7} \\
-Same language: right action \& language & 81.7 & \textbf{87.7} \\
-Frozen test: task success & 97.7 & \textbf{98.2} \\
-Frozen test: wrong action $\downarrow$ & 1.8 & \textbf{1.7} \\
-Reworded test: task success & 91.8 & \textbf{93.7} \\
+Switch: new language & 38.3 & 55.0 & 68.7 & \textbf{76.7} \\
+Switch: right action & 84.3 & 94.0 & 95.7 & \textbf{97.7} \\
+Switch: both & 34.0 & 52.7 & 66.3 & \textbf{74.7} \\
+\quad into English & -- & 15.3 & 20.3 & \textbf{47.5} \\
+Same lang.: both & 81.7 & 87.7 & 93.0 & \textbf{93.3} \\
+Frozen: task success & 97.7 & 98.2 & 98.2 & \textbf{98.4} \\
+Frozen: wrong action $\downarrow$ & 1.8 & 1.7 & 1.7 & \textbf{1.4} \\
+Reworded: task success & 91.8 & 93.7 & 94.2 & \textbf{94.2} \\
 \bottomrule
 \end{tabular}
-\caption{One round of rejection-sampling fine-tuning with the audited reward (\%).}
+\caption{Each RL step from the SFT model, same evaluation sets (\%; 300 switch and 300 same-language conversations,
+59 switching into English; both = right action in the right language). RFT1/RFT2: rejection-sampling rounds; GRPO: 25 online steps from RFT2.}
 \label{tab:rl}
 \end{table}
 
-Table~\ref{tab:rl}: the targeted behaviour improved most and nothing regressed. Two caveats: we did not train a
-control on the same multi-turn conversations without reward selection, so part of the gain may come from seeing
-multi-turn data at all; and switching \emph{into} English remains weak (15\%).
+Table~\ref{tab:rl}: the targeted behaviour improved at every step and nothing regressed. We did not train a control
+on the same multi-turn conversations without reward selection, so part of the RFT gain may come from seeing
+multi-turn data at all.
 
-\paragraph{Stage 2 round.} [STAGE2: a second RFT round from the round-1 RFT model, adding 482 new language-switch
-prompts weighted toward English targets and 1,148 grounding examples (missing identifier $\rightarrow$ ask, each paired
-with a control that includes it). Results to be filled from the evaluation of \tool{rft2}.]
+\paragraph{Stage 2: a second RFT round, then online GRPO.} RFT2 starts again from the base model with the round-1
+set, fully correct samples of the RFT1 model on 482 new switch prompts weighted toward English targets, and 1,148
+grounding examples (missing identifier $\rightarrow$ ask, each paired with a control that includes it). With the
+grounding rows, executed unsafe actions on BANKING77 requests without account details fell from 6.3\% (SFT, no
+guard) to 0.0\%, and the model asks for the details in 93\% of them. This result is partly in-distribution: the 381
+English grounding rows are BANKING77 \emph{train} messages (test texts removed), so it shows the model learned to ask on
+this dataset's phrasing, not yet on unseen sources. Multi-turn data had enough reward variance,
+so we then ran online GRPO \citep{shao2024deepseekmath} from RFT2: 25 steps, 16 prompts $\times$ 8 full
+conversations through the same agent loop and mock bank as evaluation, \tool{reward\_lang}, no KL term (63 minutes on
+one A100, about \$2.60; Appendix~\ref{app:training}). The per-step training reward stayed flat, since each step sees
+new prompts, but on the fixed evaluation sets switching into English rose from 20.3\% to 47.5\% (28 of 59), with no
+regression on the frozen or reworded tests. Paired on the 300 switch conversations, GRPO fixed 26 that RFT2 failed and broke 1 (McNemar $p<10^{-4}$), 15 of
+the 16 into-English gains being replies RFT2 left in the old language; no GRPO training prompt is in the evaluation set.
+Rollouts are published with reward parts: no echoes, unchanged length, every top-reward rollout fully correct. Caveats: one seed, one learning rate, no KL penalty; switching into English
+is still the weakest case.
 
 \section{Cost}
 
@@ -292,18 +308,18 @@ cost comparison only; we did not measure API models' accuracy on this task.
 Planned work and expected effect (forecasts, not measurements):
 \textbf{(1) Native-speaker test set and real transcripts}: a few hundred reviewed, anonymised messages per language;
 we expect the headline to fall toward the reworded score ($\approx$92\%), the more honest target.
-\textbf{(2) Online RL on the language switch} with \tool{reward\_lang} and the hacking checks: several rounds should
-take right-action-in-the-right-language past 70\% (from 52.7\%), gated on the frozen test.
-\textbf{(3) Grounding in training}: missing-identifier cases with a penalty for invented ids; we expect executed unsafe
-actions on BANKING77 below 1\% without the guard (from 6.3\%).
+\textbf{(2) More online RL on the language switch}: several seeds, a KL term and longer runs, aimed at switching
+into English (47.5\% now), gated on the frozen test.
+\textbf{(3) Grounding beyond BANKING77}: our English grounding rows come from BANKING77's train split; real
+anonymised requests from another source, in all five languages, would test whether the 0.0\% unsafe-action result holds.
 \textbf{(4) A larger Cohere student} (Aya Expanse 8B) as an upper bound on how much remaining error is model size.
 
 \section{Conclusion}
 
 Distilling a teacher's language while taking decisions from code produced a 3B agent that is more reliable than its
 14B teacher at multilingual banking tool calls. Measuring beyond the headline exposed a grounding failure that only
-real customers trigger, and a language-switch failure that no single-turn test sees. A guard and a small, audited RL
-step address both without regressions.
+real customers trigger, and a language-switch failure that no single-turn test sees. A guard and a few small, audited RL
+steps address both without regressions.
 
 \section*{Limitations}
 
@@ -436,7 +452,8 @@ Test & 89 & 96 & 100 & 100 & 101 & 486 \\
 
 Round 1 ran entirely on free Kaggle T4$\times$2 sessions: teacher generation (vLLM), SFT (2.2\,h; RFT 2.3\,h) and all
 evaluations. Stage~2 used Hugging Face Jobs paid from the shortlist credits: evaluation on one T4 ($\approx$40\,min,
-$\approx$\$0.30 per model for all five suites) and round-2 sampling and training on one L40S. Serving at full load on
+$\approx$\$0.30 per model for all five suites), round-2 sampling and training on one L40S, and the GRPO run on one
+A100 (63\,min, $\approx$\$2.60). Serving at full load on
 one T4 (5,000 conversations/h at \$0.50/h) costs about \textbf{\$0.10 per 1,000 conversations}; at the API list prices
 of Table~\ref{tab:cost} (100k/day tier) the same 1,000 conversations cost about \$0.14 (Haiku 5.5), \$2.48 (Sonnet 5.5) and
 \$4.96 (Opus 5.5).
@@ -445,7 +462,7 @@ of Table~\ref{tab:cost} (100k/day tier) the same 1,000 conversations cost about 
 
 Two of three teacher generation runs were discarded after reading them (\S\ref{sec:data}). CuratorKIT's 0--1 reward
 gate with a 14B judge was uncalibrated. GRPO on single-turn data had almost no reward variance and was not run
-(Appendix~\ref{app:training}). The first Stage~2 training job failed at dependency install after sampling.
+(Appendix~\ref{app:training}); it worked on multi-turn data. The first Stage~2 training job failed at dependency install after sampling.
 
 \section{Artifacts and reproduction}
 
@@ -456,7 +473,7 @@ script, a fixed seed (1234) and a JSON manifest; data generation, training and e
 T4$\times$2 (\texttt{scripts/data\_kaggle\_generate.sh}, \texttt{train\_kaggle.py}, \texttt{eval\_kaggle\_baseline.py})
 or as one HF Job (\texttt{eval\_hf\_job.py}, \texttt{train\_round2\_job.py}). Python 3.12.
 \textbf{Hugging Face} (\texttt{ToolW}, public, un-gated): models collection (adapters \texttt{desi-agent-tinyaya-sft-lora},
-\texttt{-rft-lora}, \texttt{-rft2-lora}); datasets collection (\texttt{desi-bank-toolcalls},
+\texttt{-rft-lora}, \texttt{-rft2-lora}, \texttt{-grpo-mt-lora}); datasets collection (\texttt{desi-bank-toolcalls},
 \texttt{desi-agent-training-logs}, \texttt{desi-agent-eval-traces} with every scored trace).
 \textbf{Demo}: the Desi Agent Lab (\url{https://huggingface.co/spaces/ToolW/desi-agent-lab}) replays every evaluated
 conversation; a local playground runs the adapter on llama.cpp.
@@ -466,8 +483,10 @@ conversation; a local playground runs the adapter on llama.cpp.
 \textbf{Ritankar Mondal} (GitHub \texttt{CyberRik}, HF \texttt{Rik0411}): data generation and curation, splits,
 evaluation harness and metrics, robustness checks, grounding guard, ROI, write-up; and the RL work: the multi-turn
 language-switch test and language detector, \tool{reward\_lang} and the reward-hacking audit, the multi-turn RL
-signal probe, the round-1 RFT data and run (rft-a), and the Stage~2 RFT data.
+signal probe, the round-1 RFT data and run (rft-a), the Stage~2 RFT data, and the Stage~2 evaluations and GRPO
+audit (paired test, leakage and reward-hacking checks).
 \textbf{Kanishk Sagar} (GitHub \texttt{ActiveMasquerade}): AgentTune training pipeline (SFT, RFT, Stage~2 job),
+the Stage~2 RFT2 run and multi-turn GRPO (\tool{grpo\_mt}),
 environment and chat-template checks, GRPO probe, BANKING77 real-query evaluation, Desi Agent Lab and demo.
 \textbf{Declaration}: all code, data, models and evaluations were created during the hackathon (first commit
 12 November 2026); nothing was built before it. The Lexsi kits, Tiny Aya, Qwen3-14B, Aya Expanse 8B and BANKING77 are
