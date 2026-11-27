@@ -60,9 +60,9 @@ acting when a required detail is missing; and (3)~do both in the customer's lang
 code-mixed text that models handle poorly \citep{khanuja2020gluecos}. Small open models are attractive here because
 they can run inside the bank, so customer data never leaves it.
 
-We ask whether a 3B multilingual model \citep{tinyaya2026,ustun2024aya} can be made reliable at this with modest data
-and compute, and we use the Lexsi toolkits \citep{lexsi2026toolkits}: AgentTune for distillation, CuratorKIT for data
-filtering and AuditKIT for an independent evaluation. Our contributions:
+We ask whether a 3B multilingual model \citep{salamanca2026tinyaya,ustun2024aya} can be made reliable at this with modest data
+and compute, and we use the Lexsi toolkits \citep{lexsi2026toolkits}: AgentTune \citep{lyngkhoi2026agenttune} for distillation,
+CuratorKIT \citep{bhattacharjee2026curatorkit} for data filtering and AuditKIT \citep{arora2026auditkit} for an independent evaluation. Our contributions:
 
 \begin{itemize}
 \setlength\itemsep{0pt}
@@ -117,12 +117,12 @@ removed; see Limitations).
 \section{How the Lexsi kits connect}
 \label{sec:kits}
 
-\textbf{CuratorKIT} sits between generation and splitting: \tool{TextCleaner}, \tool{SecretsGate}, exact
+\textbf{CuratorKIT} \citep{bhattacharjee2026curatorkit} sits between generation and splitting: \tool{TextCleaner}, \tool{SecretsGate}, exact
 deduplication and MinHash (0.85) near-duplicate removal; its \tool{RewardGate} was tried with a 0--1 LLM score and
 replaced by our checklist judge when the scores proved uncalibrated (\S\ref{sec:data}).
-\textbf{AgentTune} turns the curated episodes into full-tier event logs and trains them with \tool{Project.distill},
+\textbf{AgentTune} \citep{lyngkhoi2026agenttune} turns the curated episodes into full-tier event logs and trains them with \tool{Project.distill},
 through our own trainer factory so that rows are rendered by the same formatter the evaluation parses (\S\ref{sec:training}).
-\textbf{AuditKIT} ingests the evaluation traces directly (\tool{episode\_from\_openai\_messages}) and scores them with
+\textbf{AuditKIT} \citep{arora2026auditkit} ingests the evaluation traces directly (\tool{episode\_from\_openai\_messages}) and scores them with
 \tool{agent\_eval} (tool-call exact match, F1, validity, trajectory match, loop detection) as an independent check on
 our own metric code. Episodes are stored once, as OpenAI-style messages plus gold labels, and every kit reads that
 format, so the pipeline is: scenario code $\rightarrow$ teacher $\rightarrow$ CuratorKIT $\rightarrow$ frozen splits
@@ -329,8 +329,7 @@ Banglish and Hinglish replies contain some garbled words our checks did not catc
 model has learned some of that noise. The test set was reviewed by an LLM agent rather than by native speakers. The RL
 gain lacks a no-selection control. Reworded inputs and the language-switch test rely on an LLM rewriter, an LLM judge
 and an automatic language detector, which are weakest on code-mixed Bengali. In multi-turn conversations about 1\% of replies claim an action
-without calling a tool, which our scorer does not count as an error (Appendix~
-ef{app:licenses}).
+without calling a tool, which our scorer does not count as an error (Appendix~\ref{app:licenses}).
 
 \section*{Ethics Statement}
 
